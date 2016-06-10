@@ -168,13 +168,9 @@ public:
 
     /// Set the automatic fragment size option
     void
-    set_option(auto_fragment_size const& o)
+    set_option(auto_fragment const& o)
     {
-        if(o.value <= 0)
-            wr_frag_size_ =
-                std::numeric_limits<std::size_t>::max();
-        else
-            wr_frag_size_ = o.value;
+        wr_autofrag_ = o.value;
     }
 
     /// Set the decorator used for HTTP messages
@@ -1268,7 +1264,7 @@ public:
 
         The current setting of the @ref message_type option controls
         whether the message opcode is set to text or binary. If the
-        @ref auto_fragment_size option is set, the message will be split
+        @ref auto_fragment option is set, the message will be split
         into one or more frames as necessary. The actual payload contents
         sent may be transformed as per the WebSocket protocol settings.
 
@@ -1303,7 +1299,7 @@ public:
 
         The current setting of the @ref message_type option controls
         whether the message opcode is set to text or binary. If the
-        @ref auto_fragment_size option is set, the message will be split
+        @ref auto_fragment option is set, the message will be split
         into one or more frames as necessary. The actual payload contents
         sent may be transformed as per the WebSocket protocol settings.
 
@@ -1345,7 +1341,7 @@ public:
 
         The current setting of the @ref message_type option controls
         whether the message opcode is set to text or binary. If the
-        @ref auto_fragment_size option is set, the message will be split
+        @ref auto_fragment option is set, the message will be split
         into one or more frames as necessary. The actual payload contents
         sent may be transformed as per the WebSocket protocol settings.
 
@@ -1379,12 +1375,15 @@ public:
     async_write(ConstBufferSequence const& buffers,
         WriteHandler&& handler);
 
-    /** Send a message frame on the stream.
+    /** Write partial message data on the stream.
 
-        This function is used to write a frame to the stream. The
-        call will block until one of the following conditions is true:
+        This function is used to write some or all of a message's
+        payload to the stream. The call will block until one of the
+        following conditions is true:
 
-        @li The entire frame is sent.
+        @li A frame is sent.
+
+        @li Message data is transferred to the write buffer.
 
         @li An error occurs.
 
@@ -1398,8 +1397,9 @@ public:
 
         @param fin `true` if this is the last frame in the message.
 
-        @param buffers One or more buffers containing the frame's
-        payload data.
+        @param buffers The input buffer sequence holding the data to write.
+
+        @return The number of bytes consumed in the input buffers.
 
         @throws boost::system::system_error Thrown on failure.
     */
@@ -1407,18 +1407,20 @@ public:
     void
     write_frame(bool fin, ConstBufferSequence const& buffers);
 
-    /** Send a message frame on the stream.
+    /** Write partial message data on the stream.
 
-        This function is used to write a frame to the stream. The
-        call will block until one of the following conditions is true:
+        This function is used to write some or all of a message's
+        payload to the stream. The call will block until one of the
+        following conditions is true:
 
-        @li The entire frame is sent.
+        @li A frame is sent.
+
+        @li Message data is transferred to the write buffer.
 
         @li An error occurs.
 
         This operation is implemented in terms of one or more calls
-        to the stream's `write_some` function. The actual payload sent
-        may be transformed as per the WebSocket protocol settings.
+        to the stream's `write_some` function.
 
         If this is the beginning of a new message, the message opcode
         will be set to text or binary as per the current setting of
@@ -1427,10 +1429,11 @@ public:
 
         @param fin `true` if this is the last frame in the message.
 
-        @param buffers One or more buffers containing the frame's
-        payload data.
+        @param buffers The input buffer sequence holding the data to write.
 
         @param ec Set to indicate what error occurred, if any.
+
+        @return The number of bytes consumed in the input buffers.
     */
     template<class ConstBufferSequence>
     void
