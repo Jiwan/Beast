@@ -1,3 +1,11 @@
+1.0.0-b7
+
+API Changes:
+
+* websocket option write_buffer_size replaces mask_buffer_size
+
+--------------------------------------------------------------------------------
+
 1.0.0-b6
 
 * Use SFINAE on return values
