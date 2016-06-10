@@ -2,7 +2,8 @@
 
 API Changes:
 
-* websocket option write_buffer_size replaces mask_buffer_size
+* write_buffer_size replaces mask_buffer_size
+* auto_fragment is now a bool switch, replacing autofragment_size
 
 --------------------------------------------------------------------------------
 
