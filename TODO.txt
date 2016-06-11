@@ -11,6 +11,7 @@ Docs:
   e.g. in basic_streambuf move constructor members
 * Don't put using namespace at file scope in examples,
   do something like "using ba = boost::asio" instead.
+* Document token_list, other rfc7230 wrappers
 
 Core:
 * Replace Jamroot with Jamfile

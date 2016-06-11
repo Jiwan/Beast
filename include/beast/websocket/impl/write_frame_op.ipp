@@ -54,7 +54,7 @@ class stream<NextLayer>::write_frame_op
                 is_continuation(h))
         {
             fh.op = ws.wr_.cont ?
-                opcode::cont : ws.wr_opcode_;
+                opcode::cont : ws.opt_.wr_opc;
             ws.wr_.cont = ! fin;
             fh.fin = fin;
             fh.rsv1 = false;
@@ -67,7 +67,7 @@ class stream<NextLayer>::write_frame_op
                 fh.key = ws.maskgen_();
                 detail::prepare_key(key, fh.key);
                 tmp_size = detail::clamp(
-                    fh.len, ws.wr_buf_size_);
+                    fh.len, ws.opt_.wr_buf_size);
                 tmp = boost_asio_handler_alloc_helpers::
                     allocate(tmp_size, h);
                 remain = fh.len;

@@ -7,6 +7,30 @@
 
 import os ;
 
+zlib_sources =
+    ../test/core/zlib/zconf.h
+    ../test/core/zlib/zlib.h
+    ../test/core/zlib/crc32.h
+    ../test/core/zlib/deflate.h
+    ../test/core/zlib/inffast.h
+    ../test/core/zlib/inffixed.h
+    ../test/core/zlib/inflate.h
+    ../test/core/zlib/inftrees.h
+    ../test/core/zlib/trees.h
+    ../test/core/zlib/zutil.h
+    ../test/core/zlib/adler32.c
+    ../test/core/zlib/compress.c
+    ../test/core/zlib/crc32.c
+    ../test/core/zlib/deflate.c
+    ../test/core/zlib/inflate.c
+    ../test/core/zlib/infback.c
+    ../test/core/zlib/inftrees.c
+    ../test/core/zlib/inffast.c
+    ../test/core/zlib/trees.c
+    ../test/core/zlib/uncompr.c
+    ../test/core/zlib/zutil.c
+    ;
+
 exe http-crawl :
     http_crawl.cpp
     urls_large_data.cpp
@@ -21,6 +45,7 @@ exe http-example :
     ;
 
 exe websocket-example :
+    $(zlib_sources)
     websocket_example.cpp
     ;
 

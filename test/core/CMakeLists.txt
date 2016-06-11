@@ -2,10 +2,12 @@
 
 GroupSources(extras/beast beast)
 GroupSources(include/beast beast)
+GroupSources(test/core/zlib zlib)
 GroupSources(test/core "/")
 
 add_executable (core-tests
     ${BEAST_INCLUDES}
+    ${ZLIB_SOURCES}
     ../../extras/beast/unit_test/main.cpp
     buffer_test.hpp
     async_completion.cpp
@@ -31,6 +33,7 @@ add_executable (core-tests
     detail/empty_base_optimization.cpp
     detail/get_lowest_layer.cpp
     detail/sha1.cpp
+    detail/zistream.cpp
 )
 
 if (NOT WIN32)

@@ -12,7 +12,32 @@ compile http.cpp : : ;
 compile version.cpp : : ;
 compile websocket.cpp : : ;
 
+zlib_sources =
+    ../test/core/zlib/zconf.h
+    ../test/core/zlib/zlib.h
+    ../test/core/zlib/crc32.h
+    ../test/core/zlib/deflate.h
+    ../test/core/zlib/inffast.h
+    ../test/core/zlib/inffixed.h
+    ../test/core/zlib/inflate.h
+    ../test/core/zlib/inftrees.h
+    ../test/core/zlib/trees.h
+    ../test/core/zlib/zutil.h
+    ../test/core/zlib/adler32.c
+    ../test/core/zlib/compress.c
+    ../test/core/zlib/crc32.c
+    ../test/core/zlib/deflate.c
+    ../test/core/zlib/inflate.c
+    ../test/core/zlib/infback.c
+    ../test/core/zlib/inftrees.c
+    ../test/core/zlib/inffast.c
+    ../test/core/zlib/trees.c
+    ../test/core/zlib/uncompr.c
+    ../test/core/zlib/zutil.c
+    ;
+
 unit-test core-tests :
+    $(zlib_sources)
     ../extras/beast/unit_test/main.cpp
     core/async_completion.cpp
     core/basic_streambuf.cpp
@@ -37,6 +62,7 @@ unit-test core-tests :
     core/detail/empty_base_optimization.cpp
     core/detail/get_lowest_layer.cpp
     core/detail/sha1.cpp
+    core/detail/zistream.cpp
     ;
 
 unit-test http-tests :
@@ -70,6 +96,7 @@ unit-test bench-tests :
     ;
 
 unit-test websocket-tests :
+    $(zlib_sources)
     ../extras/beast/unit_test/main.cpp
     websocket/error.cpp
     websocket/option.cpp
@@ -83,5 +110,6 @@ unit-test websocket-tests :
     ;
 
 exe websocket-echo :
+    $(zlib_sources)
     websocket/websocket_echo.cpp
     ;

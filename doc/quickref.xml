@@ -96,6 +96,7 @@
             <member><link linkend="beast.ref.websocket__read_buffer_size">read_buffer_size</link></member>
             <member><link linkend="beast.ref.websocket__read_message_max">read_message_max</link></member>
             <member><link linkend="beast.ref.websocket__write_buffer_size">write_buffer_size</link></member>
+            <member><link linkend="beast.ref.websocket__write_compression">write_compression</link></member>
           </simplelist>
         </entry>
         <entry valign="top">

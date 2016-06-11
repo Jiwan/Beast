@@ -170,7 +170,7 @@ public:
     void
     set_option(auto_fragment const& o)
     {
-        wr_autofrag_ = o.value;
+        opt_.autofrag = o.value;
     }
 
     /// Set the decorator used for HTTP messages
@@ -184,14 +184,14 @@ public:
     void
     set_option(keep_alive const& o)
     {
-        keep_alive_ = o.value;
+        opt_.keepalive = o.value;
     }
 
     /// Set the outgoing message type
     void
     set_option(message_type const& o)
     {
-        wr_opcode_ = o.value;
+        opt_.wr_opc = o.value;
     }
 
     /// Set the pong callback
@@ -205,22 +205,29 @@ public:
     void
     set_option(read_buffer_size const& o)
     {
-        stream_.capacity(o.value);
+        opt_.rd_buf_size = o.value;
     }
 
     /// Set the maximum incoming message size allowed
     void
     set_option(read_message_max const& o)
     {
-        rd_msg_max_ = o.value;
+        opt_.msg_max = o.value;
     }
 
     /// Set the size of the mask buffer
     void
     set_option(write_buffer_size const& o)
     {
-        wr_buf_size_ = o.value;
+        opt_.wr_buf_size = o.value;
         stream_.capacity(o.value);
+    }
+
+    /// Set the write compression option
+    void
+    set_option(write_compression const& o)
+    {
+        opt_.compress = o.value;
     }
 
     /** Get the io_service associated with the stream.

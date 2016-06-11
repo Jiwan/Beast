@@ -3,9 +3,11 @@
 GroupSources(extras/beast beast)
 GroupSources(include/beast beast)
 GroupSources(test/websocket "/")
+GroupSources(test/core/zlib zlib)
 
 add_executable (websocket-tests
     ${BEAST_INCLUDES}
+    ${ZLIB_SOURCES}
     ../../extras/beast/unit_test/main.cpp
     websocket_async_echo_peer.hpp
     websocket_sync_echo_peer.hpp
@@ -26,6 +28,7 @@ endif()
 
 add_executable (websocket-echo
     ${BEAST_INCLUDES}
+    ${ZLIB_SOURCES}
     websocket_async_echo_peer.hpp
     websocket_sync_echo_peer.hpp
     websocket_echo.cpp

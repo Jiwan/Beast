@@ -90,7 +90,7 @@ public:
                         return;
                     if(! expect(sb.size() == 0))
                         return;
-                    expect(stream.rd_fh_ == fh);
+                    expect(stream.rd_.fh == fh);
                 };
 
             test_fh fh;

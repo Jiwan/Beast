@@ -1,7 +1,10 @@
 1.0.0-b7
 
+* permessage-deflate extension implemented
+
 API Changes:
 
+* read_buffer_size meaning changed
 * write_buffer_size replaces mask_buffer_size
 * auto_fragment is now a bool switch, replacing autofragment_size
 
