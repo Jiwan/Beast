@@ -233,21 +233,28 @@ struct pong_callback
 
 /** Read buffer size option.
 
-    Sets the number of bytes allocated to the socket's read buffer.
-    If this is zero, then reads are not buffered. Setting this
-    higher can improve performance when expecting to receive
-    many small frames.
+    Sets the size of the read buffer used by the implementation to
+    receive frames. The read buffer is used to decompress frames
+    when the permessage-deflate extension has been successfully
+    negotiated on a connection.
 
-    The default is no buffering.
+    Lowering the size of the buffer can decrease the memory requirements
+    for each connection, while increasing the size of the buffer can
+    reduce the number of calls made to the next layer to read data.
+
+    The default setting is 4096. The minimum value is 8.
+
+    Changes to the read buffer size will take effect upon the beginning
+    of the next received message.
 
     @note Objects of this type are passed to @ref stream::set_option.
 
     @par Example
-    Setting the read buffer size.
+    Setting the write buffer size.
     @code
     ...
     websocket::stream<ip::tcp::socket> ws(ios);
-    ws.set_option(read_buffer_size{16 * 1024});
+    ws.set_option(write_buffer_size{8192});
     @endcode
 */
 #if GENERATING_DOCS
@@ -255,12 +262,14 @@ using read_buffer_size = implementation_defined;
 #else
 struct read_buffer_size
 {
-    std::size_t value;
+    std::uint16_t value;
 
     explicit
-    read_buffer_size(std::size_t n)
+    read_buffer_size(std::uint16_t n)
         : value(n)
     {
+        if(n < 8)
+            throw std::domain_error("read buffer size is too small");
     }
 };
 #endif
@@ -272,7 +281,7 @@ struct read_buffer_size
     message size over this limit will cause a protocol failure.
 
     The default setting is 16 megabytes. A value of zero indicates
-    a limit of `std::numeric_limits<std::uint64_t>::max()`.
+    a limit of `std::numeric_limits<std::size_t>::max()`.
 
     @note Objects of this type are passed to @ref stream::set_option.
 
@@ -312,9 +321,8 @@ struct read_message_max
 
     The default setting is 4096. The minimum value is 8.
 
-    The write buffer size can only be changed when the stream is not
-    open. Undefined behavior results if the option is modified after a
-    successful WebSocket handshake.
+    Changes to the write buffer size will take effect upon the beginning
+    of the next sent message.
 
     @note Objects of this type are passed to @ref stream::set_option.
 
@@ -331,14 +339,50 @@ using write_buffer_size = implementation_defined;
 #else
 struct write_buffer_size
 {
-    std::size_t value;
+    std::uint16_t value;
 
     explicit
-    write_buffer_size(std::size_t n)
+    write_buffer_size(std::uint16_t n)
         : value(n)
     {
         if(n < 8)
             throw std::domain_error("write buffer size is too small");
+    }
+};
+#endif
+
+/** Write compression option.
+
+    Sets whether or not sent messages are compressed. In order for
+    compression to occur, the permessage-deflate extension must also
+    have been successfully negotiated.
+
+    The default setting is to compress sent messages.
+
+    Changes to the write compression option will take effect upon the
+    beginning of the next sent messsage.
+
+    @note Objects of this type are passed to @ref stream::set_option.
+
+    @par Example
+    Disable write compression
+    @code
+    ...
+    websocket::stream<ip::tcp::socket> ws(ios);
+    ws.set_option(write_compression{false});
+    @endcode
+*/
+#if GENERATING_DOCS
+using write_compression = implementation_defined;
+#else
+struct write_compression
+{
+    bool value;
+
+    explicit
+    write_compression(bool v)
+        : value(v)
+    {
     }
 };
 #endif

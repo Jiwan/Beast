@@ -179,7 +179,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
                             boost::asio::error::operation_aborted, 0));
                     return;
                 }
-                d.state =  d.ws.rd_need_ > 0 ?
+                d.state =  d.ws.rd_.need > 0 ?
                     do_read_payload : do_read_fh;
                 break;
 
@@ -188,7 +188,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
             case do_read_payload:
                 d.state = do_read_payload + 1;
                 d.dmb = d.db.prepare(
-                    detail::clamp(d.ws.rd_need_));
+                    detail::clamp(d.ws.rd_.need));
                 // receive payload data
                 d.ws.stream_.async_read_some(
                     *d.dmb, std::move(*this));
@@ -196,16 +196,16 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
 
             case do_read_payload + 1:
             {
-                d.ws.rd_need_ -= bytes_transferred;
+                d.ws.rd_.need -= bytes_transferred;
                 auto const pb = prepare_buffers(
                     bytes_transferred, *d.dmb);
-                if(d.ws.rd_fh_.mask)
-                    detail::mask_inplace(pb, d.ws.rd_key_);
-                if(d.ws.rd_opcode_ == opcode::text)
+                if(d.ws.rd_.fh.mask)
+                    detail::mask_inplace(pb, d.ws.rd_.key);
+                if(d.ws.rd_.opc == opcode::text)
                 {
-                    if(! d.ws.rd_utf8_check_.write(pb) ||
-                        (d.ws.rd_need_ == 0 && d.ws.rd_fh_.fin &&
-                            ! d.ws.rd_utf8_check_.finish()))
+                    if(! d.ws.rd_.utf8_check.write(pb) ||
+                        (d.ws.rd_.need == 0 && d.ws.rd_.fh.fin &&
+                            ! d.ws.rd_.utf8_check.finish()))
                     {
                         // invalid utf8
                         code = close_code::bad_payload;
@@ -214,7 +214,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
                     }
                 }
                 d.db.commit(bytes_transferred);
-                if(d.ws.rd_need_ > 0)
+                if(d.ws.rd_.need > 0)
                 {
                     d.state = do_read_payload;
                     break;
@@ -226,9 +226,9 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
 
             case do_frame_done:
                 // call handler
-                d.fi.op = d.ws.rd_opcode_;
-                d.fi.fin = d.ws.rd_fh_.fin &&
-                    d.ws.rd_need_ == 0;
+                d.fi.op = d.ws.rd_.opc;
+                d.fi.fin = d.ws.rd_.fh.fin &&
+                    d.ws.rd_.need == 0;
                 goto upcall;
 
             //------------------------------------------------------------------
@@ -272,14 +272,14 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
                     d.state = do_fail;
                     break;
                 }
-                if(detail::is_control(d.ws.rd_fh_.op))
+                if(detail::is_control(d.ws.rd_.fh.op))
                 {
-                    if(d.ws.rd_fh_.len > 0)
+                    if(d.ws.rd_.fh.len > 0)
                     {
                         // read control payload
                         d.state = do_control_payload;
                         d.fmb = d.fb.prepare(static_cast<
-                            std::size_t>(d.ws.rd_fh_.len));
+                            std::size_t>(d.ws.rd_.fh.len));
                         boost::asio::async_read(d.ws.stream_,
                             *d.fmb, std::move(*this));
                         return;
@@ -287,7 +287,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
                     d.state = do_control;
                     break;
                 }
-                if(d.ws.rd_need_ > 0)
+                if(d.ws.rd_.need > 0)
                 {
                     d.state = do_read_payload;
                     break;
@@ -299,9 +299,9 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
             //------------------------------------------------------------------
 
             case do_control_payload:
-                if(d.ws.rd_fh_.mask)
+                if(d.ws.rd_.fh.mask)
                     detail::mask_inplace(
-                        *d.fmb, d.ws.rd_key_);
+                        *d.fmb, d.ws.rd_.key);
                 d.fb.commit(bytes_transferred);
                 d.state = do_control; // VFALCO fall through?
                 break;
@@ -309,7 +309,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
             //------------------------------------------------------------------
 
             case do_control:
-                if(d.ws.rd_fh_.op == opcode::ping)
+                if(d.ws.rd_.fh.op == opcode::ping)
                 {
                     ping_data data;
                     detail::read(data, d.fb.data());
@@ -334,7 +334,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
                     d.state = do_pong;
                     break;
                 }
-                else if(d.ws.rd_fh_.op == opcode::pong)
+                else if(d.ws.rd_.fh.op == opcode::pong)
                 {
                     code = close_code::none;
                     ping_data payload;
@@ -345,7 +345,7 @@ operator()(error_code ec,std::size_t bytes_transferred, bool again)
                     d.state = do_read_fh;
                     break;
                 }
-                assert(d.ws.rd_fh_.op == opcode::close);
+                assert(d.ws.rd_.fh.op == opcode::close);
                 {
                     detail::read(d.ws.cr_, d.fb.data(), code);
                     if(code != close_code::none)
