@@ -1019,6 +1019,7 @@ int flush;
         case LEN_:
             state->mode = LEN;
         case LEN:
+#if 0
             if (have >= 6 && left >= 258) {
                 RESTORE();
                 inflate_fast(strm, out);
@@ -1027,6 +1028,7 @@ int flush;
                     state->back = -1;
                 break;
             }
+#endif
             state->back = 0;
             for (;;) {
                 here = state->lencode[BITS(state->lenbits)];
