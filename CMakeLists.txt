@@ -69,7 +69,7 @@ set (ZLIB_SOURCES
     ${PROJECT_SOURCE_DIR}/test/core/zlib/adler32.c
     ${PROJECT_SOURCE_DIR}/test/core/zlib/compress.c
     ${PROJECT_SOURCE_DIR}/test/core/zlib/crc32.c
-    ${PROJECT_SOURCE_DIR}/test/core/zlib/deflate.c
+    ${PROJECT_SOURCE_DIR}/test/core/zlib/deflate.cpp
     ${PROJECT_SOURCE_DIR}/test/core/zlib/inflate.c
     ${PROJECT_SOURCE_DIR}/test/core/zlib/infback.c
     ${PROJECT_SOURCE_DIR}/test/core/zlib/inftrees.c
