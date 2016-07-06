@@ -32,6 +32,7 @@ add_executable (core-tests
 #    detail/empty_base_optimization.cpp
 #    detail/get_lowest_layer.cpp
 #    detail/sha1.cpp
+     detail/zlib.cpp
 )
 
 if (NOT WIN32)
