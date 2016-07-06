@@ -330,11 +330,6 @@
      /* No need for _export, use ZLIB.DEF instead. */
      /* For complete Windows compatibility, use WINAPI, not __stdcall. */
 #    define ZEXPORT WINAPI
-#    ifdef WIN32
-#      define ZEXPORTVA WINAPIV
-#    else
-#      define ZEXPORTVA FAR CDECL
-#    endif
 #  endif
 #endif
 
@@ -342,10 +337,8 @@
 #  ifdef ZLIB_DLL
 #    ifdef ZLIB_INTERNAL
 #      define ZEXPORT   __declspec(dllexport)
-#      define ZEXPORTVA __declspec(dllexport)
 #    else
 #      define ZEXPORT   __declspec(dllimport)
-#      define ZEXPORTVA __declspec(dllimport)
 #    endif
 #  endif
 #endif
@@ -355,9 +348,6 @@
 #endif
 #ifndef ZEXPORT
 #  define ZEXPORT
-#endif
-#ifndef ZEXPORTVA
-#  define ZEXPORTVA
 #endif
 
 #ifndef FAR
