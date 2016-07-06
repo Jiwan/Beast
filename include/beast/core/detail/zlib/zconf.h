@@ -327,27 +327,11 @@
 #      undef FAR
 #    endif
 #    include <windows.h>
-     /* No need for _export, use ZLIB.DEF instead. */
-     /* For complete Windows compatibility, use WINAPI, not __stdcall. */
-#    define ZEXPORT WINAPI
-#  endif
-#endif
-
-#if defined (__BEOS__)
-#  ifdef ZLIB_DLL
-#    ifdef ZLIB_INTERNAL
-#      define ZEXPORT   __declspec(dllexport)
-#    else
-#      define ZEXPORT   __declspec(dllimport)
-#    endif
 #  endif
 #endif
 
 #ifndef ZEXTERN
 #  define ZEXTERN extern
-#endif
-#ifndef ZEXPORT
-#  define ZEXPORT
 #endif
 
 #ifndef FAR

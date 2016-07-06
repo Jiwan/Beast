@@ -31,12 +31,12 @@ z_const char * const z_errmsg[10] = {
 ""};
 
 
-const char * ZEXPORT zlibVersion()
+const char * zlibVersion()
 {
     return ZLIB_VERSION;
 }
 
-uLong ZEXPORT zlibCompileFlags()
+uLong zlibCompileFlags()
 {
     uLong flags;
 
@@ -137,7 +137,7 @@ void ZLIB_INTERNAL z_error (m)
 /* exported to allow conversion of error code to string for compress() and
  * uncompress()
  */
-const char * ZEXPORT zError(
+const char * zError(
     int err)
 {
     return ERR_MSG(err);
