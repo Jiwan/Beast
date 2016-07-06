@@ -7,10 +7,6 @@
        subject to change. Applications should only use zlib.h.
      */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
     static const code lenfix[512] = {
         {96,7,0},{0,8,80},{0,8,16},{20,8,115},{18,7,31},{0,8,112},{0,8,48},
         {0,9,192},{16,7,10},{0,8,96},{0,8,32},{0,9,160},{0,8,0},{0,8,128},
@@ -97,6 +93,3 @@ extern "C" {
         {22,5,193},{64,5,0}
     };
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
