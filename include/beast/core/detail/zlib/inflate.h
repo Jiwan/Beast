@@ -17,6 +17,10 @@
 #endif
 
 /* Possible inflate modes between inflate() calls */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     HEAD,       /* i: waiting for magic header */
     FLAGS,      /* i: waiting for method and flags (gzip) */
@@ -120,3 +124,7 @@ struct inflate_state {
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
 };
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
