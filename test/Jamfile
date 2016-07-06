@@ -16,7 +16,7 @@ zlib_sources =
     ../include/beast/core/detail/zlib/adler32.c
     ../include/beast/core/detail/zlib/compress.c
     ../include/beast/core/detail/zlib/crc32.c
-    ../include/beast/core/detail/zlib/deflate.c
+    ../include/beast/core/detail/zlib/deflate.cpp
     ../include/beast/core/detail/zlib/infback.c
     ../include/beast/core/detail/zlib/inffast.c
     ../include/beast/core/detail/zlib/inflate.c

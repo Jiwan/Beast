@@ -29,6 +29,10 @@
 #  include <stdlib.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef Z_SOLO
    typedef long ptrdiff_t;  /* guess -- will be caught if guess is wrong */
 #endif
@@ -249,5 +253,9 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* Reverse the bytes in a 32-bit value */
 #define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif /* ZUTIL_H */
