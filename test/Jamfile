@@ -13,17 +13,17 @@ compile version.cpp : : ;
 compile websocket.cpp : : ;
 
 zlib_sources =
-    ../include/beast/core/detail/zlib/adler32.c
-    ../include/beast/core/detail/zlib/compress.c
-    ../include/beast/core/detail/zlib/crc32.c
+    ../include/beast/core/detail/zlib/adler32.cpp
+    ../include/beast/core/detail/zlib/compress.cpp
+    ../include/beast/core/detail/zlib/crc32.cpp
     ../include/beast/core/detail/zlib/deflate.cpp
-    ../include/beast/core/detail/zlib/infback.c
-    ../include/beast/core/detail/zlib/inffast.c
-    ../include/beast/core/detail/zlib/inflate.c
-    ../include/beast/core/detail/zlib/inftrees.c
-    ../include/beast/core/detail/zlib/trees.c
-    ../include/beast/core/detail/zlib/uncompr.c
-    ../include/beast/core/detail/zlib/zutil.c
+    ../include/beast/core/detail/zlib/infback.cpp
+    ../include/beast/core/detail/zlib/inffast.cpp
+    ../include/beast/core/detail/zlib/inflate.cpp
+    ../include/beast/core/detail/zlib/inftrees.cpp
+    ../include/beast/core/detail/zlib/trees.cpp
+    ../include/beast/core/detail/zlib/uncompr.cpp
+    ../include/beast/core/detail/zlib/zutil.cpp
     ../include/beast/core/detail/zlib/crc32.h
     ../include/beast/core/detail/zlib/deflate.h
     ../include/beast/core/detail/zlib/gzguts.h
