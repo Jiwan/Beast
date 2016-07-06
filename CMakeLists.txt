@@ -83,7 +83,7 @@ set (ZLIB_SOURCES
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inffast.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inflate.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inftrees.cpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/trees.c
+    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/trees.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/uncompr.c
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zutil.c
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/crc32.h
