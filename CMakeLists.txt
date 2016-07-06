@@ -99,10 +99,10 @@ set (ZLIB_SOURCES
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zutil.h
     )
 
-add_subdirectory (examples)
-add_subdirectory (test)
+#add_subdirectory (examples)
+#add_subdirectory (test)
 add_subdirectory (test/core)
-add_subdirectory (test/http)
-add_subdirectory (test/websocket)
+#add_subdirectory (test/http)
+#add_subdirectory (test/websocket)
 
 #enable_testing()
