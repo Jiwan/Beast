@@ -428,7 +428,7 @@ local int updatewindow(
 
 /* Macros for inflate(): */
 
-/* check function to use adler32() for zlib or crc32() for gzip */
+/* check function to use: adler32() for zlib */
 #define UPDATE(check, buf, len) adler32(check, buf, len)
 
 /* Load registers with state in inflate() for speed */

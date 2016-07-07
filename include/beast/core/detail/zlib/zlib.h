@@ -1145,46 +1145,6 @@ extern uLong adler32 (uLong adler, const Bytef *buf, uInt len);
      if (adler != original_adler) error();
 */
 
-/*
-extern uLong adler32_combine (uLong adler1, uLong adler2,
-                                          z_off_t len2);
-
-     Combine two Adler-32 checksums into one.  For two sequences of bytes, seq1
-   and seq2 with lengths len1 and len2, Adler-32 checksums were calculated for
-   each, adler1 and adler2.  adler32_combine() returns the Adler-32 checksum of
-   seq1 and seq2 concatenated, requiring only adler1, adler2, and len2.  Note
-   that the z_off_t type (like off_t) is a signed integer.  If len2 is
-   negative, the result has no meaning or utility.
-*/
-
-extern uLong crc32   (uLong crc, const Bytef *buf, uInt len);
-/*
-     Update a running CRC-32 with the bytes buf[0..len-1] and return the
-   updated CRC-32.  If buf is Z_NULL, this function returns the required
-   initial value for the crc.  Pre- and post-conditioning (one's complement) is
-   performed within this function so it shouldn't be done by the application.
-
-   Usage example:
-
-     uLong crc = crc32(0L, Z_NULL, 0);
-
-     while (read_buffer(buffer, length) != EOF) {
-       crc = crc32(crc, buffer, length);
-     }
-     if (crc != original_crc) error();
-*/
-
-/*
-extern uLong crc32_combine (uLong crc1, uLong crc2, z_off_t len2);
-
-     Combine two CRC-32 check values into one.  For two sequences of bytes,
-   seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
-   calculated for each, crc1 and crc2.  crc32_combine() returns the CRC-32
-   check value of seq1 and seq2 concatenated, requiring only crc1, crc2, and
-   len2.
-*/
-
-
                         /* various hacks, don't look :) */
 
 /* deflateInit and inflateInit are macros to allow checking the zlib version
