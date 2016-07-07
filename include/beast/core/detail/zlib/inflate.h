@@ -9,11 +9,9 @@
  */
 
 /* Possible inflate modes between inflate() calls */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-typedef enum {
+enum inflate_mode
+{
     HEAD,       /* i: waiting for magic header */
     FLAGS,      /* i: waiting for method and flags (gzip) */
     TIME,       /* i: waiting for modification time (gzip) */
@@ -46,7 +44,7 @@ typedef enum {
     BAD,        /* got a data error -- remain here until reset */
     MEM,        /* got an inflate() memory error -- remain here until reset */
     SYNC        /* looking for synchronization bytes to restart inflate() */
-} inflate_mode;
+};
 
 /*
     State transitions between above modes -
@@ -74,7 +72,8 @@ typedef enum {
  */
 
 /* state maintained between inflate() calls.  Approximately 10K bytes. */
-struct inflate_state {
+struct inflate_state
+{
     inflate_mode mode;          /* current inflate mode */
     int last;                   /* true if processing last block */
     int wrap;                   /* bit 0 true for zlib, bit 1 true for gzip */
@@ -116,7 +115,3 @@ struct inflate_state {
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
 };
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
