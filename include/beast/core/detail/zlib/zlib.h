@@ -1323,10 +1323,6 @@ extern int gzgetc_ (gzFile file);  /* backward compatibility */
      extern uLong crc32_combine64 (uLong, uLong, z_off_t);
 #  endif
 #else
-   extern gzFile gzopen (const char *, const char *);
-   extern z_off_t gzseek (gzFile, z_off_t, int);
-   extern z_off_t gztell (gzFile);
-   extern z_off_t gzoffset (gzFile);
    extern uLong adler32_combine (uLong, uLong, z_off_t);
    extern uLong crc32_combine (uLong, uLong, z_off_t);
 #endif
@@ -1350,17 +1346,6 @@ extern const z_crc_t FAR * get_crc_table    (void);
 extern int            inflateUndermine (z_streamp, int);
 extern int            inflateResetKeep (z_streamp);
 extern int            deflateResetKeep (z_streamp);
-#if defined(_WIN32) && !defined(Z_SOLO)
-extern gzFile         gzopen_w (const wchar_t *path,
-                                            const char *mode);
-#endif
-#if defined(STDC) || defined(Z_HAVE_STDARG_H)
-#  ifndef Z_SOLO
-extern int            gzvprintf Z_ARG((gzFile file,
-                                                  const char *format,
-                                                  va_list va));
-#  endif
-#endif
 
 #ifdef __cplusplus
 }

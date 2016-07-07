@@ -166,21 +166,11 @@
 #    define WIN32
 #  endif
 #endif
-#if (defined(MSDOS) || defined(OS2) || defined(WINDOWS)) && !defined(WIN32)
-#  if !defined(__GNUC__) && !defined(__FLAT__) && !defined(__386__)
-#    ifndef SYS16BIT
-#      define SYS16BIT
-#    endif
-#  endif
-#endif
 
 /*
  * Compile with -DMAXSEG_64K if the alloc function cannot allocate more
  * than 64k bytes at a time (needed on systems with 16-bit int).
  */
-#ifdef SYS16BIT
-#  define MAXSEG_64K
-#endif
 #ifdef MSDOS
 #  define UNALIGNED_OK
 #endif
@@ -261,41 +251,6 @@
 */
 
                         /* Type declarations */
-
-#ifndef Z_ARG /* function prototypes for stdarg */
-#  if defined(STDC) || defined(Z_HAVE_STDARG_H)
-#    define Z_ARG(args)  args
-#  else
-#    define Z_ARG(args)  ()
-#  endif
-#endif
-
-/* The following definitions for FAR are needed only for MSDOS mixed
- * model programming (small or medium model with some far allocations).
- * This was tested only with MSC; for other MSDOS compilers you may have
- * to define NO_MEMCPY in zutil.h.  If you don't need the mixed model,
- * just define FAR to be empty.
- */
-#ifdef SYS16BIT
-#  if defined(M_I86SM) || defined(M_I86MM)
-     /* MSC small or medium model */
-#    define SMALL_MEDIUM
-#    ifdef _MSC_VER
-#      define FAR _far
-#    else
-#      define FAR far
-#    endif
-#  endif
-#  if (defined(__SMALL__) || defined(__MEDIUM__))
-     /* Turbo C small or medium model */
-#    define SMALL_MEDIUM
-#    ifdef __BORLANDC__
-#      define FAR _far
-#    else
-#      define FAR far
-#    endif
-#  endif
-#endif
 
 #if defined(WINDOWS) || defined(WIN32)
    /* If building or using zlib with the WINAPI/WINAPIV calling convention,
