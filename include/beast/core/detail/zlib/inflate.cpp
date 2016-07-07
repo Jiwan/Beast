@@ -110,8 +110,6 @@ int inflateResetKeep(
     state = (struct inflate_state *)strm->state;
     strm->total_in = strm->total_out = state->total = 0;
     strm->msg = Z_NULL;
-    if (state->wrap)        /* to support ill-conceived Java test suite */
-        strm->adler = state->wrap & 1;
     state->mode = HEAD;
     state->last = 0;
     state->havedict = 0;
@@ -143,21 +141,11 @@ int inflateReset2(
     z_streamp strm,
     int windowBits)
 {
-    int wrap;
     struct inflate_state *state;
 
     /* get the state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-
-    /* extract wrap request from windowBits parameter */
-    if (windowBits < 0) {
-        wrap = 0;
-        windowBits = -windowBits;
-    }
-    else {
-        wrap = (windowBits >> 4) + 1;
-    }
 
     /* set number of window bits, free window if different */
     if (windowBits && (windowBits < 8 || windowBits > 15))
@@ -168,7 +156,6 @@ int inflateReset2(
     }
 
     /* update state and reset the rest of it */
-    state->wrap = wrap;
     state->wbits = (unsigned)windowBits;
     return inflateReset(strm);
 }
@@ -599,36 +586,7 @@ int inflate(
     for (;;)
         switch (state->mode) {
         case HEAD:
-            if (state->wrap == 0) {
-                state->mode = TYPEDO;
-                break;
-            }
-            NEEDBITS(16);
-            if (
-                ((BITS(8) << 8) + (hold >> 8)) % 31) {
-                strm->msg = (char *)"incorrect header check";
-                state->mode = BAD;
-                break;
-            }
-            if (BITS(4) != Z_DEFLATED) {
-                strm->msg = (char *)"unknown compression method";
-                state->mode = BAD;
-                break;
-            }
-            DROPBITS(4);
-            len = BITS(4) + 8;
-            if (state->wbits == 0)
-                state->wbits = len;
-            else if (len > state->wbits) {
-                strm->msg = (char *)"invalid window size";
-                state->mode = BAD;
-                break;
-            }
-            state->dmax = 1U << len;
-            Tracev((stderr, "inflate:   zlib header ok\n"));
-            strm->adler = state->check = adler32(0L, Z_NULL, 0);
-            state->mode = hold & 0x200 ? DICTID : TYPE;
-            INITBITS();
+            state->mode = TYPEDO;
             break;
         case DICTID:
             NEEDBITS(32);
@@ -991,24 +949,6 @@ int inflate(
             state->mode = LEN;
             break;
         case CHECK:
-            if (state->wrap) {
-                NEEDBITS(32);
-                out -= left;
-                strm->total_out += out;
-                state->total += out;
-                if (out)
-                    strm->adler = state->check =
-                        UPDATE(state->check, put - out, out);
-                out = left;
-                if ((
-                     ZSWAP32(hold)) != state->check) {
-                    strm->msg = (char *)"incorrect data check";
-                    state->mode = BAD;
-                    break;
-                }
-                INITBITS();
-                Tracev((stderr, "inflate:   check matches trailer\n"));
-            }
             state->mode = DONE;
         case DONE:
             ret = Z_STREAM_END;
@@ -1042,9 +982,6 @@ int inflate(
     strm->total_in += in;
     strm->total_out += out;
     state->total += out;
-    if (state->wrap && out)
-        strm->adler = state->check =
-            UPDATE(state->check, strm->next_out - out, out);
     strm->data_type = state->bits + (state->last ? 64 : 0) +
                       (state->mode == TYPE ? 128 : 0) +
                       (state->mode == LEN_ || state->mode == COPY_ ? 256 : 0);
@@ -1102,8 +1039,6 @@ int inflateSetDictionary(
     /* check state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-    if (state->wrap != 0 && state->mode != DICT)
-        return Z_STREAM_ERROR;
 
     /* check for correct dictionary identifier */
     if (state->mode == DICT) {
@@ -1122,23 +1057,6 @@ int inflateSetDictionary(
     }
     state->havedict = 1;
     Tracev((stderr, "inflate:   dictionary set\n"));
-    return Z_OK;
-}
-
-int inflateGetHeader(
-    z_streamp strm,
-    gz_headerp head)
-{
-    struct inflate_state *state;
-
-    /* check state */
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
-    if ((state->wrap & 2) == 0) return Z_STREAM_ERROR;
-
-    /* save header structure */
-    state->head = head;
-    head->done = 0;
     return Z_OK;
 }
 

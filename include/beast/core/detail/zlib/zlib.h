@@ -933,45 +933,6 @@ extern long inflateMark (z_streamp strm);
    source stream state was inconsistent.
 */
 
-extern int inflateGetHeader(z_streamp strm, gz_headerp head);
-/*
-     inflateGetHeader() requests that gzip header information be stored in the
-   provided gz_header structure.  inflateGetHeader() may be called after
-   inflateInit2() or inflateReset(), and before the first call of inflate().
-   As inflate() processes the gzip stream, head->done is zero until the header
-   is completed, at which time head->done is set to one.  If a zlib stream is
-   being decoded, then head->done is set to -1 to indicate that there will be
-   no gzip header information forthcoming.  Note that Z_BLOCK or Z_TREES can be
-   used to force inflate() to return immediately after header processing is
-   complete and before any actual data is decompressed.
-
-     The text, time, xflags, and os fields are filled in with the gzip header
-   contents.  hcrc is set to true if there is a header CRC.  (The header CRC
-   was valid if done is set to one.) If extra is not Z_NULL, then extra_max
-   contains the maximum number of bytes to write to extra.  Once done is true,
-   extra_len contains the actual extra field length, and extra contains the
-   extra field, or that field truncated if extra_max is less than extra_len.
-   If name is not Z_NULL, then up to name_max characters are written there,
-   terminated with a zero unless the length is greater than name_max.  If
-   comment is not Z_NULL, then up to comm_max characters are written there,
-   terminated with a zero unless the length is greater than comm_max.  When any
-   of extra, name, or comment are not Z_NULL and the respective field is not
-   present in the header, then that field is set to Z_NULL to signal its
-   absence.  This allows the use of deflateSetHeader() with the returned
-   structure to duplicate the header.  However if those fields are set to
-   allocated memory, then the application will need to save those pointers
-   elsewhere so that they can be eventually freed.
-
-     If inflateGetHeader is not used, then the header information is simply
-   discarded.  The header is always checked for validity, including the header
-   CRC if present.  inflateReset() will reset the process to discard the header
-   information.  The application would need to call inflateGetHeader() again to
-   retrieve the header from the next gzip stream.
-
-     inflateGetHeader returns Z_OK if success, or Z_STREAM_ERROR if the source
-   stream state was inconsistent.
-*/
-
                         /* gzip file access functions */
 
 /*
