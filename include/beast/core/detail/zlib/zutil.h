@@ -20,10 +20,6 @@
 #include <cstdlib>
 #include <memory>
 
-#ifdef Z_SOLO
-   typedef long ptrdiff_t;  /* guess -- will be caught if guess is wrong */
-#endif
-
 #ifndef local
 #  define local static
 #endif
@@ -106,11 +102,9 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define Tracecv(c,x)
 #endif
 
-#ifndef Z_SOLO
-   voidpf zcalloc (voidpf opaque, unsigned items,
-                                    unsigned size);
-   void zcfree  (voidpf opaque, voidpf ptr);
-#endif
+voidpf zcalloc (voidpf opaque, unsigned items,
+                                unsigned size);
+void zcfree  (voidpf opaque, voidpf ptr);
 
 #define ZALLOC(strm, items, size) \
            (*((strm)->zalloc))((strm)->opaque, (items), (size))

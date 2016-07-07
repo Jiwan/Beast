@@ -6,9 +6,7 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
-#ifndef Z_SOLO
-#  include "gzguts.h"
-#endif
+#include "gzguts.h"
 
 #ifndef NO_DUMMY_DECL
 struct internal_state      {int dummy;}; /* for buggy compilers */
@@ -56,8 +54,6 @@ const char * zError(
     return ERR_MSG(err);
 }
 
-#ifndef Z_SOLO
-
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
 voidpf zcalloc (
@@ -79,5 +75,3 @@ void zcfree (
 }
 
 #endif /* MY_ZCALLOC */
-
-#endif /* !Z_SOLO */

@@ -991,8 +991,6 @@ extern int inflateGetHeader(z_streamp strm, gz_headerp head);
    stream state was inconsistent.
 */
 
-#ifndef Z_SOLO
-
                         /* gzip file access functions */
 
 /*
@@ -1003,8 +1001,6 @@ extern int inflateGetHeader(z_streamp strm, gz_headerp head);
 */
 
 typedef struct gzFile_s *gzFile;    /* semi-opaque gzip file descriptor */
-
-#endif /* !Z_SOLO */
 
                         /* checksum functions */
 
@@ -1058,8 +1054,6 @@ extern int inflateInit2_ (z_streamp strm, int  windowBits,
 #define inflateInit2(strm, windowBits) \
         inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
                       (int)sizeof(z_stream))
-
-#ifndef Z_SOLO
 
 /* gzgetc() macro and its supporting function and exposed data structure.  Note
  * that the real internal state is much larger than the exposed structure.
@@ -1126,13 +1120,6 @@ extern int gzgetc_ (gzFile file);  /* backward compatibility */
    extern uLong adler32_combine (uLong, uLong, z_off_t);
    extern uLong crc32_combine (uLong, uLong, z_off_t);
 #endif
-
-#else /* Z_SOLO */
-
-   extern uLong adler32_combine (uLong, uLong, z_off_t);
-   extern uLong crc32_combine (uLong, uLong, z_off_t);
-
-#endif /* !Z_SOLO */
 
 /* hack for buggy compilers */
 #if !defined(ZUTIL_H) && !defined(NO_DUMMY_DECL)
