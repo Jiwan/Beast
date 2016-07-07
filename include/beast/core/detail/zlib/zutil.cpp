@@ -72,12 +72,6 @@ const char * zError(
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-#ifndef STDC
-extern voidp  malloc (uInt size);
-extern voidp  calloc (uInt items, uInt size);
-extern void   free   (voidpf ptr);
-#endif
-
 voidpf zcalloc (
     voidpf opaque,
     unsigned items,

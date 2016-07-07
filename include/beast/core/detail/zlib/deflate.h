@@ -308,7 +308,7 @@ void _tr_stored_block (deflate_state *s, charf *bu,
 #ifndef DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-#if defined(GEN_TREES_H) || !defined(STDC)
+#if defined(GEN_TREES_H)
   extern uch _length_code[];
   extern uch _dist_code[];
 #else

@@ -14,11 +14,9 @@
 
 #include <stdio.h>
 #include "zlib.h"
-#ifdef STDC
-#  include <string.h>
-#  include <stdlib.h>
-#  include <limits.h>
-#endif
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
 #include <fcntl.h>
 
 #ifdef _WIN32
@@ -105,12 +103,6 @@ extern "C" {
 #  define local static
 #endif
 /* compile with -Dlocal if your debugger can't find static symbols */
-
-/* gz* functions always use library allocation functions */
-#ifndef STDC
-  extern voidp  malloc (uInt size);
-  extern void   free   (voidpf ptr);
-#endif
 
 /* get errno and strerror definition */
 #if defined UNDER_CE
