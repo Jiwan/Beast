@@ -40,10 +40,6 @@
 #  include <ctype.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* ===========================================================================
  * Constants
  */
@@ -1230,7 +1226,3 @@ local void copy_block(
         put_byte(s, *buf++);
     }
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

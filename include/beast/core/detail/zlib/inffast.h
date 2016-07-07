@@ -8,12 +8,4 @@
    subject to change. Applications should only use zlib.h.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void inflate_fast (z_streamp strm, unsigned start);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

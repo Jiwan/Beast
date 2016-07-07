@@ -91,10 +91,6 @@
 #  endif
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* function prototypes */
 local void fixedtables (struct inflate_state *state);
 local int updatewindow (z_streamp strm, const unsigned char *end,
@@ -1324,7 +1320,3 @@ long inflateMark(
         (state->mode == COPY ? state->length :
             (state->mode == MATCH ? state->was - state->length : 0));
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

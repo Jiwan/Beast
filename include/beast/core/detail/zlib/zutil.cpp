@@ -10,10 +10,6 @@
 #  include "gzguts.h"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef NO_DUMMY_DECL
 struct internal_state      {int dummy;}; /* for buggy compilers */
 #endif
@@ -93,7 +89,3 @@ void zcfree (
 #endif /* MY_ZCALLOC */
 
 #endif /* !Z_SOLO */
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

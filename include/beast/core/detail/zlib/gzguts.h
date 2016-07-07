@@ -27,10 +27,6 @@
 #  include <io.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef WINAPI_FAMILY
 #  define open _open
 #  define read _read
@@ -196,8 +192,4 @@ char *gz_strwinerror (DWORD error);
 #else
 unsigned gz_intmax (void);
 #  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > gz_intmax())
-#endif
-
-#ifdef __cplusplus
-} // extern "C"
 #endif

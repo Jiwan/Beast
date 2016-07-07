@@ -15,10 +15,6 @@
 
 #include "zutil.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* ===========================================================================
  * Internal compression state.
  */
@@ -337,10 +333,6 @@ void _tr_stored_block (deflate_state *s, charf *bu,
 # define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
 # define _tr_tally_dist(s, distance, length, flush) \
               flush = _tr_tally(s, distance, length)
-#endif
-
-#ifdef __cplusplus
-} // extern "C"
 #endif
 
 #endif /* DEFLATE_H */

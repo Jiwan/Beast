@@ -15,10 +15,6 @@
 #include "inflate.h"
 #include "inffast.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* function prototypes */
 local void fixedtables (struct inflate_state *state);
 
@@ -642,7 +638,3 @@ z_streamp strm)
     Tracev((stderr, "inflate: end\n"));
     return Z_OK;
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

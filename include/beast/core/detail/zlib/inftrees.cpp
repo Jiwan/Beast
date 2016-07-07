@@ -6,10 +6,6 @@
 #include "zutil.h"
 #include "inftrees.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MAXBITS 15
 
 const char inflate_copyright[] =
@@ -308,7 +304,3 @@ int inflate_table(
     *bits = root;
     return 0;
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

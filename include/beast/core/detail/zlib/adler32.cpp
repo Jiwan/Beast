@@ -7,10 +7,6 @@
 
 #include "zutil.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define local static
 
 local uLong adler32_combine_ (uLong adler1, uLong adler2, z_off64_t len2);
@@ -181,7 +177,3 @@ uLong adler32_combine64(
 {
     return adler32_combine_(adler1, adler2, len2);
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif

@@ -33,10 +33,6 @@
 
 #include "zconf.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define ZLIB_VERSION "1.2.8"
 #define ZLIB_VERNUM 0x1280
 #define ZLIB_VER_MAJOR 1
@@ -1265,9 +1261,5 @@ extern const z_crc_t * get_crc_table    (void);
 extern int            inflateUndermine (z_streamp, int);
 extern int            inflateResetKeep (z_streamp);
 extern int            deflateResetKeep (z_streamp);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* ZLIB_H */
