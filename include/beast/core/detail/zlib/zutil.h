@@ -15,13 +15,10 @@
 
 #include "zlib.h"
 
+#include <cstddef>
+#include <cstring>
+#include <cstdlib>
 #include <memory>
-
-#if !(defined(_WIN32_WCE) && defined(_MSC_VER))
-#  include <stddef.h>
-#endif
-#include <string.h>
-#include <stdlib.h>
 
 #ifdef Z_SOLO
    typedef long ptrdiff_t;  /* guess -- will be caught if guess is wrong */
