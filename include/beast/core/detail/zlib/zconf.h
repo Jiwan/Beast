@@ -262,14 +262,6 @@
 
                         /* Type declarations */
 
-#ifndef OF /* function prototypes */
-#  ifdef STDC
-#    define OF(args)  args
-#  else
-#    define OF(args)  ()
-#  endif
-#endif
-
 #ifndef Z_ARG /* function prototypes for stdarg */
 #  if defined(STDC) || defined(Z_HAVE_STDARG_H)
 #    define Z_ARG(args)  args
