@@ -619,23 +619,6 @@ extern int deflateSetDictionary (z_streamp strm,
    not perform any compression: this will be done by deflate().
 */
 
-extern int deflateCopy (z_streamp dest, z_streamp source);
-/*
-     Sets the destination stream as a complete copy of the source stream.
-
-     This function can be useful when several compression strategies will be
-   tried, for example when there are several ways of pre-processing the input
-   data with a filter.  The streams that will be discarded should then be freed
-   by calling deflateEnd.  Note that deflateCopy duplicates the internal
-   compression state which can be quite large, so this strategy is slow and can
-   consume lots of memory.
-
-     deflateCopy returns Z_OK if success, Z_MEM_ERROR if there was not
-   enough memory, Z_STREAM_ERROR if the source stream state was inconsistent
-   (such as zalloc being Z_NULL).  msg is left unchanged in both source and
-   destination.
-*/
-
 extern int deflateReset (z_streamp strm);
 /*
      This function is equivalent to deflateEnd followed by deflateInit,
@@ -1125,7 +1108,6 @@ extern int gzgetc_ (gzFile file);  /* backward compatibility */
 #endif
 
 /* undocumented functions */
-extern const char   * zError           (int);
 extern int            inflateSyncPoint (z_streamp);
 extern const z_crc_t * get_crc_table    (void);
 extern int            inflateUndermine (z_streamp, int);
