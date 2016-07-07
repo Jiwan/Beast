@@ -14,7 +14,6 @@ compile websocket.cpp : : ;
 
 zlib_sources =
     ../include/beast/core/detail/zlib/adler32.cpp
-    ../include/beast/core/detail/zlib/compress.cpp
     ../include/beast/core/detail/zlib/crc32.cpp
     ../include/beast/core/detail/zlib/deflate.cpp
     ../include/beast/core/detail/zlib/infback.cpp
@@ -22,7 +21,6 @@ zlib_sources =
     ../include/beast/core/detail/zlib/inflate.cpp
     ../include/beast/core/detail/zlib/inftrees.cpp
     ../include/beast/core/detail/zlib/trees.cpp
-    ../include/beast/core/detail/zlib/uncompr.cpp
     ../include/beast/core/detail/zlib/zutil.cpp
     ../include/beast/core/detail/zlib/crc32.h
     ../include/beast/core/detail/zlib/deflate.h
