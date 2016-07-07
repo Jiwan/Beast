@@ -579,7 +579,7 @@ int inflate(
     int flush)
 {
     struct inflate_state *state;
-    z_const unsigned char *next;    /* next input */
+    const unsigned char *next;    /* next input */
     unsigned char *put;     /* next output */
     unsigned have, left;        /* available input and output */
     unsigned long hold;         /* bit buffer */
