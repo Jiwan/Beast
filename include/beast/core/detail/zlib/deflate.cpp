@@ -51,6 +51,7 @@
 
 #include "deflate.h"
 
+#include <cstring>
 #include <memory>
 
 const char deflate_copyright[] =
