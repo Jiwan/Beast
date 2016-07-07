@@ -151,43 +151,6 @@ const char * zError(
     int errno = 0;
 #endif
 
-#ifndef HAVE_MEMCPY
-
-void zmemcpy(
-    Bytef* dest,
-    const Bytef* source,
-    uInt  len)
-{
-    if (len == 0) return;
-    do {
-        *dest++ = *source++; /* ??? to be unrolled */
-    } while (--len != 0);
-}
-
-int zmemcmp(
-    const Bytef* s1,
-    const Bytef* s2,
-    uInt  len)
-{
-    uInt j;
-
-    for (j = 0; j < len; j++) {
-        if (s1[j] != s2[j]) return 2*(s1[j] > s2[j])-1;
-    }
-    return 0;
-}
-
-void zmemzero(
-    Bytef* dest,
-    uInt  len)
-{
-    if (len == 0) return;
-    do {
-        *dest++ = 0;  /* ??? to be unrolled */
-    } while (--len != 0);
-}
-#endif
-
 #ifndef Z_SOLO
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
