@@ -834,8 +834,6 @@ int deflateEnd (
 
 /* =========================================================================
  * Copy the source state to the destination state.
- * To simplify the source, this is not supported for 16-bit MSDOS (which
- * doesn't have enough memory anyway to duplicate compression states).
  */
 int deflateCopy (
     z_streamp dest,
@@ -874,7 +872,6 @@ int deflateCopy (
         deflateEnd (dest);
         return Z_MEM_ERROR;
     }
-    /* following std::memcpy do not work for 16-bit MSDOS */
     std::memcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
     std::memcpy((voidpf)ds->prev, (voidpf)ss->prev, ds->w_size * sizeof(Pos));
     std::memcpy((voidpf)ds->head, (voidpf)ss->head, ds->hash_size * sizeof(Pos));

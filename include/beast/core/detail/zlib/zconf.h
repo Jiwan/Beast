@@ -8,9 +8,6 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-#if defined(__MSDOS__) && !defined(MSDOS)
-#  define MSDOS
-#endif
 #if (defined(OS_2) || defined(__OS2__)) && !defined(OS2)
 #  define OS2
 #endif
@@ -21,14 +18,6 @@
 #  ifndef WIN32
 #    define WIN32
 #  endif
-#endif
-
-/*
- * Compile with -DMAXSEG_64K if the alloc function cannot allocate more
- * than 64k bytes at a time (needed on systems with 16-bit int).
- */
-#ifdef MSDOS
-#  define UNALIGNED_OK
 #endif
 
 /* Some Mac compilers merge all .h files incorrectly: */
