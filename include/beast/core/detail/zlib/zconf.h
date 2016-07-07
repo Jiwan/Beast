@@ -265,6 +265,8 @@
 #  endif
 #endif
 
+#define NO_GZIP
+
 #ifndef FAR
 #  define FAR
 #endif
