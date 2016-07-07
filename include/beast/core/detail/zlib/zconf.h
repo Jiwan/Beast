@@ -252,21 +252,6 @@
 
                         /* Type declarations */
 
-#if defined(WINDOWS) || defined(WIN32)
-   /* If building or using zlib with the WINAPI/WINAPIV calling convention,
-    * define ZLIB_WINAPI.
-    * Caution: the standard ZLIB1.DLL is NOT compiled using ZLIB_WINAPI.
-    */
-#  ifdef ZLIB_WINAPI
-#    ifdef FAR
-#      undef FAR
-#    endif
-#    include <windows.h>
-#  endif
-#endif
-
-#define NO_GZIP
-
 #ifndef FAR
 #  define FAR
 #endif
@@ -277,19 +262,19 @@ typedef unsigned char  Byte;  /* 8 bits */
 typedef unsigned int   uInt;  /* 16 bits or more */
 typedef unsigned long  uLong; /* 32 bits or more */
 
-typedef Byte  FAR Bytef;
-typedef char  FAR charf;
-typedef int   FAR intf;
-typedef uInt  FAR uIntf;
-typedef uLong FAR uLongf;
+typedef Byte  Bytef;
+typedef char  charf;
+typedef int   intf;
+typedef uInt  uIntf;
+typedef uLong uLongf;
 
 #ifdef STDC
    typedef void const *voidpc;
-   typedef void FAR   *voidpf;
+   typedef void   *voidpf;
    typedef void       *voidp;
 #else
    typedef Byte const *voidpc;
-   typedef Byte FAR   *voidpf;
+   typedef Byte   *voidpf;
    typedef Byte       *voidp;
 #endif
 

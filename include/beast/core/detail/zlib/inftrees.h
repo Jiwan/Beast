@@ -61,9 +61,9 @@ typedef enum {
     DISTS
 } codetype;
 
-int inflate_table (codetype type, unsigned short FAR *lens,
-                             unsigned codes, code FAR * FAR *table,
-                             unsigned FAR *bits, unsigned short FAR *work);
+int inflate_table (codetype type, unsigned short *lens,
+                             unsigned codes, code * *table,
+                             unsigned *bits, unsigned short *work);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -35,11 +35,11 @@ const char inflate_copyright[] =
  */
 int inflate_table(
     codetype type,
-    unsigned short FAR *lens,
+    unsigned short *lens,
     unsigned codes,
-    code FAR * FAR *table,
-    unsigned FAR *bits,
-    unsigned short FAR *work)
+    code * *table,
+    unsigned *bits,
+    unsigned short *work)
 {
     unsigned len;               /* a code's length in bits */
     unsigned sym;               /* index of code symbols */
@@ -55,9 +55,9 @@ int inflate_table(
     unsigned low;               /* low bits for current root entry */
     unsigned mask;              /* mask for low root bits */
     code here;                  /* table entry for duplication */
-    code FAR *next;             /* next available space in table */
-    const unsigned short FAR *base;     /* base value table to use */
-    const unsigned short FAR *extra;    /* extra bits table to use */
+    code *next;             /* next available space in table */
+    const unsigned short *base;     /* base value table to use */
+    const unsigned short *extra;    /* extra bits table to use */
     int end;                    /* use base and extra for symbol > end */
     unsigned short count[MAXBITS+1];    /* number of codes of each length */
     unsigned short offs[MAXBITS+1];     /* offsets in table for each length */

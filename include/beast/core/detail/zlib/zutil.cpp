@@ -83,9 +83,6 @@ uLong zlibCompileFlags()
 #ifdef NO_GZCOMPRESS
     flags += 1L << 16;
 #endif
-#ifdef NO_GZIP
-    flags += 1L << 17;
-#endif
 #ifdef PKZIP_BUG_WORKAROUND
     flags += 1L << 20;
 #endif

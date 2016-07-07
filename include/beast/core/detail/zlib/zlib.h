@@ -92,7 +92,7 @@ typedef struct z_stream_s {
     uLong    total_out; /* total number of bytes output so far */
 
     z_const char *msg;  /* last error message, NULL if no error */
-    struct internal_state FAR *state; /* not visible by applications */
+    struct internal_state *state; /* not visible by applications */
 
     alloc_func zalloc;  /* used to allocate the internal state */
     free_func  zfree;   /* used to free the internal state */
@@ -103,7 +103,7 @@ typedef struct z_stream_s {
     uLong   reserved;   /* reserved for future use */
 } z_stream;
 
-typedef z_stream FAR *z_streamp;
+typedef z_stream *z_streamp;
 
 /*
      gzip header information passed to and from zlib routines.  See RFC 1952
@@ -126,7 +126,7 @@ typedef struct gz_header_s {
                            when writing a gzip file) */
 } gz_header;
 
-typedef gz_header FAR *gz_headerp;
+typedef gz_header *gz_headerp;
 
 /*
      The application must update next_in and avail_in when avail_in has dropped
@@ -1001,7 +1001,7 @@ extern int inflateGetHeader (z_streamp strm,
 
 /*
 extern int inflateBackInit (z_streamp strm, int windowBits,
-                                        unsigned char FAR *window);
+                                        unsigned char *window);
 
      Initialize the internal stream state for decompression using inflateBack()
    calls.  The fields zalloc, zfree and opaque in strm must be initialized
@@ -1021,13 +1021,13 @@ extern int inflateBackInit (z_streamp strm, int windowBits,
    the version of the header file.
 */
 
-typedef unsigned (*in_func) (void FAR *,
-                                z_const unsigned char FAR * FAR *);
-typedef int (*out_func) (void FAR *, unsigned char FAR *, unsigned);
+typedef unsigned (*in_func) (void *,
+                                z_const unsigned char * *);
+typedef int (*out_func) (void *, unsigned char *, unsigned);
 
 extern int inflateBack (z_streamp strm,
-                                    in_func in, void FAR *in_desc,
-                                    out_func out, void FAR *out_desc);
+                                    in_func in, void *in_desc,
+                                    out_func out, void *out_desc);
 /*
      inflateBack() does a raw inflate with a single call using a call-back
    interface for input and output.  This is potentially more efficient than
@@ -1242,7 +1242,7 @@ extern int deflateInit2_ (z_streamp strm, int  level, int  method,
 extern int inflateInit2_ (z_streamp strm, int  windowBits,
                                       const char *version, int stream_size);
 extern int inflateBackInit_ (z_streamp strm, int windowBits,
-                                         unsigned char FAR *window,
+                                         unsigned char *window,
                                          const char *version,
                                          int stream_size);
 #define deflateInit(strm, level) \
@@ -1342,7 +1342,7 @@ extern int gzgetc_ (gzFile file);  /* backward compatibility */
 /* undocumented functions */
 extern const char   * zError           (int);
 extern int            inflateSyncPoint (z_streamp);
-extern const z_crc_t FAR * get_crc_table    (void);
+extern const z_crc_t * get_crc_table    (void);
 extern int            inflateUndermine (z_streamp, int);
 extern int            inflateResetKeep (z_streamp);
 extern int            deflateResetKeep (z_streamp);
