@@ -1298,7 +1298,7 @@ extern int gzgetc_ (gzFile file);  /* backward compatibility */
    extern uLong crc32_combine64 (uLong, uLong, z_off64_t);
 #endif
 
-#if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
+#if defined(Z_WANT64)
 #  ifdef Z_PREFIX_SET
 #    define z_gzopen z_gzopen64
 #    define z_gzseek z_gzseek64

@@ -297,13 +297,13 @@ typedef struct internal_state {
    memory checker errors from longest match routines */
 
         /* in trees.c */
-void ZLIB_INTERNAL _tr_init (deflate_state *s);
-int ZLIB_INTERNAL _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
-void ZLIB_INTERNAL _tr_flush_block (deflate_state *s, charf *buf,
+void _tr_init (deflate_state *s);
+int _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
+void _tr_flush_block (deflate_state *s, charf *buf,
                         ulg stored_len, int last);
-void ZLIB_INTERNAL _tr_flush_bits (deflate_state *s);
-void ZLIB_INTERNAL _tr_align (deflate_state *s);
-void ZLIB_INTERNAL _tr_stored_block (deflate_state *s, charf *bu,
+void _tr_flush_bits (deflate_state *s);
+void _tr_align (deflate_state *s);
+void _tr_stored_block (deflate_state *s, charf *bu,
                         ulg stored_len, int last);
 
 #define d_code(dist) \
@@ -317,11 +317,11 @@ void ZLIB_INTERNAL _tr_stored_block (deflate_state *s, charf *bu,
 /* Inline versions of _tr_tally for speed: */
 
 #if defined(GEN_TREES_H) || !defined(STDC)
-  extern uch ZLIB_INTERNAL _length_code[];
-  extern uch ZLIB_INTERNAL _dist_code[];
+  extern uch _length_code[];
+  extern uch _dist_code[];
 #else
-  extern const uch ZLIB_INTERNAL _length_code[];
-  extern const uch ZLIB_INTERNAL _dist_code[];
+  extern const uch _length_code[];
+  extern const uch _dist_code[];
 #endif
 
 # define _tr_tally_lit(s, c, flush) \

@@ -350,14 +350,14 @@ void gen_trees_header()
                 static_dtree[i].Len, SEPARATOR(i, D_CODES-1, 5));
     }
 
-    fprintf(header, "const uch ZLIB_INTERNAL _dist_code[DIST_CODE_LEN] = {\n");
+    fprintf(header, "const uch _dist_code[DIST_CODE_LEN] = {\n");
     for (i = 0; i < DIST_CODE_LEN; i++) {
         fprintf(header, "%2u%s", _dist_code[i],
                 SEPARATOR(i, DIST_CODE_LEN-1, 20));
     }
 
     fprintf(header,
-        "const uch ZLIB_INTERNAL _length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
+        "const uch _length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
     for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
         fprintf(header, "%2u%s", _length_code[i],
                 SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
@@ -382,7 +382,7 @@ void gen_trees_header()
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
  */
-void ZLIB_INTERNAL _tr_init(
+void _tr_init(
     deflate_state *s)
 {
     tr_static_init();
@@ -868,7 +868,7 @@ local void send_all_trees(
 /* ===========================================================================
  * Send a stored block
  */
-void ZLIB_INTERNAL _tr_stored_block(
+void _tr_stored_block(
     deflate_state *s,
     charf *buf,       /* input block */
     ulg stored_len,   /* length of input block */
@@ -885,7 +885,7 @@ void ZLIB_INTERNAL _tr_stored_block(
 /* ===========================================================================
  * Flush the bits in the bit buffer to pending output (leaves at most 7 bits)
  */
-void ZLIB_INTERNAL _tr_flush_bits(
+void _tr_flush_bits(
     deflate_state *s)
 {
     bi_flush(s);
@@ -895,7 +895,7 @@ void ZLIB_INTERNAL _tr_flush_bits(
  * Send one empty static block to give enough lookahead for inflate.
  * This takes 10 bits, of which 7 may remain in the bit buffer.
  */
-void ZLIB_INTERNAL _tr_align(
+void _tr_align(
     deflate_state *s)
 {
     send_bits(s, STATIC_TREES<<1, 3);
@@ -910,7 +910,7 @@ void ZLIB_INTERNAL _tr_align(
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and output the encoded block to the zip file.
  */
-void ZLIB_INTERNAL _tr_flush_block(
+void _tr_flush_block(
     deflate_state *s,
     charf *buf,       /* input block, or NULL if too old */
     ulg stored_len,   /* length of input block */
@@ -1013,7 +1013,7 @@ void ZLIB_INTERNAL _tr_flush_block(
  * Save the match info and tally the frequency counts. Return true if
  * the current block must be flushed.
  */
-int ZLIB_INTERNAL _tr_tally (
+int _tr_tally (
     deflate_state *s,
     unsigned dist,  /* distance of matched string */
     unsigned lc)    /* match length-MIN_MATCH or unmatched char (if dist==0) */

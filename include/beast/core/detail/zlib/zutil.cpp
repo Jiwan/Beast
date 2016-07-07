@@ -124,9 +124,9 @@ uLong zlibCompileFlags()
 #  ifndef verbose
 #    define verbose 0
 #  endif
-int ZLIB_INTERNAL z_verbose = verbose;
+int z_verbose = verbose;
 
-void ZLIB_INTERNAL z_error (m)
+void z_error (m)
     char *m;
 {
     fprintf(stderr, "%s\n", m);
@@ -153,7 +153,7 @@ const char * zError(
 
 #ifndef HAVE_MEMCPY
 
-void ZLIB_INTERNAL zmemcpy(
+void zmemcpy(
     Bytef* dest,
     const Bytef* source,
     uInt  len)
@@ -164,7 +164,7 @@ void ZLIB_INTERNAL zmemcpy(
     } while (--len != 0);
 }
 
-int ZLIB_INTERNAL zmemcmp(
+int zmemcmp(
     const Bytef* s1,
     const Bytef* s2,
     uInt  len)
@@ -177,7 +177,7 @@ int ZLIB_INTERNAL zmemcmp(
     return 0;
 }
 
-void ZLIB_INTERNAL zmemzero(
+void zmemzero(
     Bytef* dest,
     uInt  len)
 {
@@ -221,7 +221,7 @@ local ptr_table table[MAX_PTR];
  * a protected system like OS/2. Use Microsoft C instead.
  */
 
-voidpf ZLIB_INTERNAL zcalloc (voidpf opaque, unsigned items, unsigned size)
+voidpf zcalloc (voidpf opaque, unsigned items, unsigned size)
 {
     voidpf buf = opaque; /* just to make some compilers happy */
     ulg bsize = (ulg)items*size;
@@ -245,7 +245,7 @@ voidpf ZLIB_INTERNAL zcalloc (voidpf opaque, unsigned items, unsigned size)
     return buf;
 }
 
-void ZLIB_INTERNAL zcfree (voidpf opaque, voidpf ptr)
+void zcfree (voidpf opaque, voidpf ptr)
 {
     int n;
     if (*(ush*)&ptr != 0) { /* object < 64K */
@@ -280,13 +280,13 @@ void ZLIB_INTERNAL zcfree (voidpf opaque, voidpf ptr)
 #  define _hfree   hfree
 #endif
 
-voidpf ZLIB_INTERNAL zcalloc (voidpf opaque, uInt items, uInt size)
+voidpf zcalloc (voidpf opaque, uInt items, uInt size)
 {
     if (opaque) opaque = 0; /* to make compiler happy */
     return _halloc((long)items, size);
 }
 
-void ZLIB_INTERNAL zcfree (voidpf opaque, voidpf ptr)
+void zcfree (voidpf opaque, voidpf ptr)
 {
     if (opaque) opaque = 0; /* to make compiler happy */
     _hfree(ptr);
@@ -305,7 +305,7 @@ extern voidp  calloc (uInt items, uInt size);
 extern void   free   (voidpf ptr);
 #endif
 
-voidpf ZLIB_INTERNAL zcalloc (
+voidpf zcalloc (
     voidpf opaque,
     unsigned items,
     unsigned size)
@@ -315,7 +315,7 @@ voidpf ZLIB_INTERNAL zcalloc (
                               (voidpf)calloc(items, size);
 }
 
-void ZLIB_INTERNAL zcfree (
+void zcfree (
     voidpf opaque,
     voidpf ptr)
 {

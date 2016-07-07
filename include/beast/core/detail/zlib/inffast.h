@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-void ZLIB_INTERNAL inflate_fast (z_streamp strm, unsigned start);
+void inflate_fast (z_streamp strm, unsigned start);
 
 #ifdef __cplusplus
 } // extern "C"
