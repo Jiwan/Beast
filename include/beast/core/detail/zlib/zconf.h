@@ -31,14 +31,6 @@
 #  define UNALIGNED_OK
 #endif
 
-#ifdef __STDC_VERSION__
-#  if __STDC_VERSION__ >= 199901L
-#    ifndef STDC99
-#      define STDC99
-#    endif
-#  endif
-#endif
-
 /* Some Mac compilers merge all .h files incorrectly: */
 #if defined(__MWERKS__)||defined(applec)||defined(THINK_C)||defined(__SC__)
 #  define NO_DUMMY_DECL
