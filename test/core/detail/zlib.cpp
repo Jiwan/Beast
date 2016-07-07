@@ -98,7 +98,7 @@ public:
             zs.opaque = Z_NULL;
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
-            expect(inflateInit2(&zs, -1*15) == Z_OK);
+            expect(inflateInit2(&zs, 15) == Z_OK);
             zs.next_out = output.data();
             zs.avail_out = output.capacity();
             if(i > 0)

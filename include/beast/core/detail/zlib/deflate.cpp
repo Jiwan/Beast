@@ -224,7 +224,6 @@ int deflateInit2_(
     int stream_size)
 {
     deflate_state *s;
-    int wrap = 1;
     static const char my_version[] = ZLIB_VERSION;
 
     ushf *overlay;
@@ -253,7 +252,6 @@ int deflateInit2_(
 #endif
 
     if (windowBits < 0) { /* suppress zlib wrapper */
-        wrap = 0;
         windowBits = -windowBits;
     }
     if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED ||
@@ -267,8 +265,6 @@ int deflateInit2_(
     strm->state = (struct internal_state *)s;
     s->strm = strm;
 
-    s->wrap = wrap;
-    s->gzhead = Z_NULL;
     s->w_bits = windowBits;
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
@@ -315,30 +311,21 @@ int deflateSetDictionary (
 {
     deflate_state *s;
     uInt str, n;
-    int wrap;
     unsigned avail;
     const unsigned char *next;
 
     if (strm == Z_NULL || strm->state == Z_NULL || dictionary == Z_NULL)
         return Z_STREAM_ERROR;
     s = strm->state;
-    wrap = s->wrap;
-    if (wrap == 2 || (wrap == 1 && s->status != INIT_STATE) || s->lookahead)
+    if (s->lookahead)
         return Z_STREAM_ERROR;
-
-    /* when using zlib wrappers, compute Adler-32 for provided dictionary */
-    if (wrap == 1)
-        strm->adler = adler32(strm->adler, dictionary, dictLength);
-    s->wrap = 0;                    /* avoid computing Adler-32 in read_buf */
 
     /* if dictionary would fill window, just replace the history */
     if (dictLength >= s->w_size) {
-        if (wrap == 0) {            /* already empty otherwise */
-            CLEAR_HASH(s);
-            s->strstart = 0;
-            s->block_start = 0L;
-            s->insert = 0;
-        }
+        CLEAR_HASH(s);
+        s->strstart = 0;
+        s->block_start = 0L;
+        s->insert = 0;
         dictionary += dictLength - s->w_size;  /* use the tail */
         dictLength = s->w_size;
     }
@@ -372,7 +359,6 @@ int deflateSetDictionary (
     s->match_available = 0;
     strm->next_in = next;
     strm->avail_in = avail;
-    s->wrap = wrap;
     return Z_OK;
 }
 
@@ -395,10 +381,7 @@ int deflateResetKeep (
     s->pending = 0;
     s->pending_out = s->pending_buf;
 
-    if (s->wrap < 0) {
-        s->wrap = -s->wrap; /* was made negative by deflate(..., Z_FINISH); */
-    }
-    s->status = s->wrap ? INIT_STATE : BUSY_STATE;
+    s->status = BUSY_STATE;
     strm->adler =
         adler32(0L, Z_NULL, 0);
     s->last_flush = Z_NO_FLUSH;
@@ -418,17 +401,6 @@ int deflateReset (
     if (ret == Z_OK)
         lm_init(strm->state);
     return ret;
-}
-
-/* ========================================================================= */
-int deflateSetHeader (
-    z_streamp strm,
-    gz_headerp head)
-{
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    if (strm->state->wrap != 2) return Z_STREAM_ERROR;
-    strm->state->gzhead = head;
-    return Z_OK;
 }
 
 /* ========================================================================= */
@@ -554,7 +526,6 @@ uLong deflateBound(
 {
     deflate_state *s;
     uLong complen, wraplen;
-    Bytef *str;
 
     /* conservative upper bound for compressed data */
     complen = sourceLen +
@@ -566,35 +537,7 @@ uLong deflateBound(
 
     /* compute wrapper length */
     s = strm->state;
-    switch (s->wrap) {
-    case 0:                                 /* raw deflate */
-        wraplen = 0;
-        break;
-    case 1:                                 /* zlib wrapper */
-        wraplen = 6 + (s->strstart ? 4 : 0);
-        break;
-    case 2:                                 /* gzip wrapper */
-        wraplen = 18;
-        if (s->gzhead != Z_NULL) {          /* user-supplied gzip header */
-            if (s->gzhead->extra != Z_NULL)
-                wraplen += 2 + s->gzhead->extra_len;
-            str = s->gzhead->name;
-            if (str != Z_NULL)
-                do {
-                    wraplen++;
-                } while (*str++);
-            str = s->gzhead->comment;
-            if (str != Z_NULL)
-                do {
-                    wraplen++;
-                } while (*str++);
-            if (s->gzhead->hcrc)
-                wraplen += 2;
-        }
-        break;
-    default:                                /* for compiler happiness */
-        wraplen = 6;
-    }
+    wraplen = 0;
 
     /* if not default parameters, return conservative bound */
     if (s->w_bits != 15 || s->hash_bits != 8 + 7)
@@ -780,17 +723,7 @@ int deflate (
     Assert(strm->avail_out > 0, "bug2");
 
     if (flush != Z_FINISH) return Z_OK;
-    if (s->wrap <= 0) return Z_STREAM_END;
-
-    /* Write the trailer */
-    putShortMSB(s, (uInt)(strm->adler >> 16));
-    putShortMSB(s, (uInt)(strm->adler & 0xffff));
-    flush_pending(strm);
-    /* If avail_out is zero, the application will call deflate again
-     * to flush the rest.
-     */
-    if (s->wrap > 0) s->wrap = -s->wrap; /* write the trailer only once! */
-    return s->pending != 0 ? Z_OK : Z_STREAM_END;
+    return Z_STREAM_END;
 }
 
 /* ========================================================================= */
@@ -844,9 +777,6 @@ local int read_buf(
     strm->avail_in  -= len;
 
     std::memcpy(buf, strm->next_in, len);
-    if (strm->state->wrap == 1) {
-        strm->adler = adler32(strm->adler, buf, len);
-    }
     strm->next_in  += len;
     strm->total_in += len;
 

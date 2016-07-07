@@ -102,29 +102,6 @@ typedef struct z_stream_s {
 typedef z_stream *z_streamp;
 
 /*
-     gzip header information passed to and from zlib routines.  See RFC 1952
-  for more details on the meanings of these fields.
-*/
-typedef struct gz_header_s {
-    int     text;       /* true if compressed data believed to be text */
-    uLong   time;       /* modification time */
-    int     xflags;     /* extra flags (not used when writing a gzip file) */
-    int     os;         /* operating system */
-    Bytef   *extra;     /* pointer to extra field or Z_NULL if none */
-    uInt    extra_len;  /* extra field length (valid if extra != Z_NULL) */
-    uInt    extra_max;  /* space at extra (only when reading header) */
-    Bytef   *name;      /* pointer to zero-terminated file name or Z_NULL */
-    uInt    name_max;   /* space at name (only when reading header) */
-    Bytef   *comment;   /* pointer to zero-terminated comment or Z_NULL */
-    uInt    comm_max;   /* space at comment (only when reading header) */
-    int     hcrc;       /* true if there was or will be a header crc */
-    int     done;       /* true when done reading gzip header (not used
-                           when writing a gzip file) */
-} gz_header;
-
-typedef gz_header *gz_headerp;
-
-/*
      The application must update next_in and avail_in when avail_in has dropped
    to zero.  It must update next_out and avail_out when avail_out has dropped
    to zero.  The application must initialize zalloc, zfree and opaque before
@@ -713,30 +690,6 @@ extern int deflatePrime (z_streamp strm,
      deflatePrime returns Z_OK if success, Z_BUF_ERROR if there was not enough
    room in the internal buffer to insert the bits, or Z_STREAM_ERROR if the
    source stream state was inconsistent.
-*/
-
-extern int deflateSetHeader (z_streamp strm,
-                                         gz_headerp head);
-/*
-     deflateSetHeader() provides gzip header information for when a gzip
-   stream is requested by deflateInit2().  deflateSetHeader() may be called
-   after deflateInit2() or deflateReset() and before the first call of
-   deflate().  The text, time, os, extra field, name, and comment information
-   in the provided gz_header structure are written to the gzip header (xflag is
-   ignored -- the extra flags are set according to the compression level).  The
-   caller must assure that, if not Z_NULL, name and comment are terminated with
-   a zero byte, and that if extra is not Z_NULL, that extra_len bytes are
-   available there.  If hcrc is true, a gzip header crc is included.  Note that
-   the current versions of the command-line version of gzip (up through version
-   1.3.x) do not support header crc's, and will report that it is a "multi-part
-   gzip file" and give up.
-
-     If deflateSetHeader is not used, the default gzip header has text false,
-   the time set to zero, and os set to 255, with no extra, name, or comment
-   fields.  The gzip header is returned to the default state by deflateReset().
-
-     deflateSetHeader returns Z_OK if success, or Z_STREAM_ERROR if the source
-   stream state was inconsistent.
 */
 
 /*

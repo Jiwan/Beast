@@ -106,7 +106,8 @@ int inflateResetKeep(
 {
     struct inflate_state *state;
 
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == Z_NULL || strm->state == Z_NULL)
+        return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
     strm->total_in = strm->total_out = state->total = 0;
     strm->msg = Z_NULL;
@@ -114,7 +115,6 @@ int inflateResetKeep(
     state->last = 0;
     state->havedict = 0;
     state->dmax = 32768U;
-    state->head = Z_NULL;
     state->hold = 0;
     state->bits = 0;
     state->lencode = state->distcode = state->next = state->codes;
@@ -129,7 +129,8 @@ int inflateReset(
 {
     struct inflate_state *state;
 
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == Z_NULL || strm->state == Z_NULL)
+        return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
     state->wsize = 0;
     state->whave = 0;
@@ -144,13 +145,15 @@ int inflateReset2(
     struct inflate_state *state;
 
     /* get the state */
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == Z_NULL || strm->state == Z_NULL)
+        return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
 
     /* set number of window bits, free window if different */
     if (windowBits && (windowBits < 8 || windowBits > 15))
         return Z_STREAM_ERROR;
-    if (state->window != Z_NULL && state->wbits != (unsigned)windowBits) {
+    if (state->window != Z_NULL && state->wbits != (unsigned)windowBits)
+    {
         ZFREE(strm, state->window);
         state->window = Z_NULL;
     }
