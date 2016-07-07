@@ -40,15 +40,6 @@ void z_error (m)
 }
 #endif
 
-/* exported to allow conversion of error code to string for compress() and
- * uncompress()
- */
-const char * zError(
-    int err)
-{
-    return ERR_MSG(err);
-}
-
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
 voidpf zcalloc (
