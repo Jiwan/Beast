@@ -200,13 +200,11 @@ typedef gz_header *gz_headerp;
 
 #define Z_NULL  0  /* for initializing zalloc, zfree, opaque */
 
-#define zlib_version zlibVersion()
 /* for compatibility with versions < 1.0.2 */
 
 
                         /* basic functions */
 
-extern const char * zlibVersion (void);
 /* The application can compare zlibVersion and ZLIB_VERSION for consistency.
    If the first character differs, the library code actually used is not
    compatible with the zlib.h header file used by the application.  This check

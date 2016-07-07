@@ -25,11 +25,6 @@ const char * const z_errmsg[10] = {
 ""};
 
 
-const char * zlibVersion()
-{
-    return ZLIB_VERSION;
-}
-
 #ifdef DEBUG
 
 #  ifndef verbose
