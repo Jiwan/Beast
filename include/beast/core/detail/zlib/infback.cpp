@@ -348,7 +348,7 @@ int inflateBack(
                 ROOM();
                 if (copy > have) copy = have;
                 if (copy > left) copy = left;
-                zmemcpy(put, next, copy);
+                std::memcpy(put, next, copy);
                 have -= copy;
                 next += copy;
                 left -= copy;

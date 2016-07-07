@@ -15,6 +15,8 @@
 
 #include "zlib.h"
 
+#include <memory>
+
 #if defined(STDC) && !defined(Z_SOLO)
 #  if !(defined(_WIN32_WCE) && defined(_MSC_VER))
 #    include <stddef.h>
@@ -179,10 +181,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
          /* functions */
-
-#define zmemcpy memcpy
-#define zmemcmp memcmp
-#define zmemzero(dest, len) memset(dest, 0, len)
 
 /* Diagnostic functions */
 #ifdef DEBUG
