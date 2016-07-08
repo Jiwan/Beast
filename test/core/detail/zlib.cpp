@@ -208,31 +208,34 @@ public:
                 {
                     for(int strategy = 0; strategy <= 4; ++strategy)
                     {
-                        z_stream zs;
-                        zs.zalloc = Z_NULL;
-                        zs.zfree = Z_NULL;
-                        zs.opaque = Z_NULL;
-                        zs.avail_in = 0;
-                        zs.next_in = Z_NULL;
-                        expect(deflateInit2(&zs, 
-                            level,
-                            Z_DEFLATED,
-                            -15,
-                            4,
-                            strategy) == Z_OK);
-                        if(! dict.empty())
-                            expect(deflateSetDictionary(&zs,
-                                dict.data(), dict.size()) == Z_OK);
-                        buffer output(deflateBound(&zs, original.size()));
-                        zs.next_in = (Bytef*)original.data();
-                        zs.avail_in = original.size();
-                        zs.next_out = output.data();
-                        zs.avail_out = output.capacity();
-                        auto result = deflate(&zs, Z_FULL_FLUSH);
-                        deflateEnd(&zs);
-                        expect(result == Z_OK);
-                        output.resize(output.capacity() - zs.avail_out);
-                        checkInflate(output, dict, original);
+                        for(int wbits = 8; wbits <= 15; ++ wbits)
+                        {
+                            z_stream zs;
+                            zs.zalloc = Z_NULL;
+                            zs.zfree = Z_NULL;
+                            zs.opaque = Z_NULL;
+                            zs.avail_in = 0;
+                            zs.next_in = Z_NULL;
+                            expect(deflateInit2(&zs, 
+                                level,
+                                Z_DEFLATED,
+                                -wbits,
+                                4,
+                                strategy) == Z_OK);
+                            if(! dict.empty())
+                                expect(deflateSetDictionary(&zs,
+                                    dict.data(), dict.size()) == Z_OK);
+                            buffer output(deflateBound(&zs, original.size()));
+                            zs.next_in = (Bytef*)original.data();
+                            zs.avail_in = original.size();
+                            zs.next_out = output.data();
+                            zs.avail_out = output.capacity();
+                            auto result = deflate(&zs, Z_FULL_FLUSH);
+                            deflateEnd(&zs);
+                            expect(result == Z_OK);
+                            output.resize(output.capacity() - zs.avail_out);
+                            checkInflate(output, dict, original);
+                        }
                     }
                 }
             }
