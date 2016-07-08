@@ -98,8 +98,6 @@ local int updatewindow (z_streamp strm, const unsigned char *end,
 #ifdef BUILDFIXED
    void makefixed (void);
 #endif
-local unsigned syncsearch (unsigned *have, const unsigned char *buf,
-                              unsigned len);
 
 int inflateResetKeep(
     z_streamp strm)
