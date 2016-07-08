@@ -6,8 +6,8 @@
 //
 
 // Test that header file is self-contained.
-#include <beast/core/detail/zlib/zlib.h>
 #include <beast/core/detail/zlib/deflate.hpp>
+#include <beast/core/detail/zlib/inflate_stream.hpp>
 
 #include <beast/unit_test/suite.hpp>
 #include <array>
@@ -142,7 +142,7 @@ public:
         for(std::size_t i = 0; i < input.size(); ++i)
         {
             buffer output(original.size());
-            inflate_state zs;
+            inflate_stream zs;
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
             expect(inflateInit2(&zs, 15) == Z_OK);

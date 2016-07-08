@@ -49,7 +49,7 @@
 
 /* @(#) $Id$ */
 
-#include "deflate.hpp"
+#include <beast/core/detail/zlib/deflate.hpp>
 
 #include <cstring>
 #include <memory>

@@ -8,4 +8,3 @@
    subject to change. Applications should only use zlib.h.
  */
 
-void inflate_fast (inflate_state* strm, unsigned start);

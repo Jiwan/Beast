@@ -5,6 +5,7 @@
 
 #include "zlib.h"
 #include "zutil.h"
+#include <beast/core/detail/zlib/inflate_stream.hpp>
 
 #define MAXBITS 15
 

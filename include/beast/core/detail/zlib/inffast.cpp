@@ -4,7 +4,7 @@
  */
 
 #include "zutil.h"
-#include "inffast.h"
+#include <beast/core/detail/zlib/inflate_stream.hpp>
 
 #ifndef ASMINF
 
@@ -63,7 +63,7 @@
       output space.
  */
 void inflate_fast(
-inflate_state* strm,
+inflate_stream* strm,
 unsigned start)         /* inflate()'s starting value for strm->avail_out */
 {
     const unsigned char *in;      /* local strm->next_in */

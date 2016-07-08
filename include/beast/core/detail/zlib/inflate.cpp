@@ -84,6 +84,8 @@
 #include "inftrees.h"
 #include "inffast.h"
 
+#include <beast/core/detail/zlib/inflate_stream.hpp>
+
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
 #    define BUILDFIXED
@@ -91,15 +93,15 @@
 #endif
 
 /* function prototypes */
-local void fixedtables (inflate_state *state);
-local int updatewindow (inflate_state* strm, const unsigned char *end,
+local void fixedtables (inflate_stream *state);
+local int updatewindow (inflate_stream* strm, const unsigned char *end,
                            unsigned copy);
 #ifdef BUILDFIXED
    void makefixed (void);
 #endif
 
 int inflateResetKeep(
-    inflate_state* strm)
+    inflate_stream* strm)
 {
     auto state = strm;
     strm->total_in = strm->total_out = state->total = 0;
@@ -117,7 +119,7 @@ int inflateResetKeep(
 }
 
 int inflateReset(
-    inflate_state* strm)
+    inflate_stream* strm)
 {
     auto state = strm;
 
@@ -128,7 +130,7 @@ int inflateReset(
 }
 
 int inflateReset2(
-    inflate_state* strm,
+    inflate_stream* strm,
     int windowBits)
 {
     auto state = strm;
@@ -148,7 +150,7 @@ int inflateReset2(
 }
 
 int inflateInit2_(
-    inflate_state* strm,
+    inflate_stream* strm,
     int windowBits,
     const char *version,
     int stream_size)
@@ -168,7 +170,7 @@ int inflateInit2_(
 }
 
 int inflateInit_(
-    inflate_state* strm,
+    inflate_stream* strm,
     const char *version,
     int stream_size)
 {
@@ -185,7 +187,7 @@ int inflateInit_(
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-local void fixedtables(inflate_state *state)
+local void fixedtables(inflate_stream *state)
 {
 #ifdef BUILDFIXED
     static int virgin = 1;
@@ -251,7 +253,7 @@ local void fixedtables(inflate_state *state)
 void makefixed()
 {
     unsigned low, size;
-    struct inflate_state state;
+    struct inflate_stream state;
 
     fixedtables(&state);
     puts("    /* inffixed.h -- table for decoding fixed codes");
@@ -303,7 +305,7 @@ void makefixed()
    The advantage may be dependent on the size of the processor's data caches.
  */
 local int updatewindow(
-    inflate_state* strm,
+    inflate_stream* strm,
     const Byte *end,
     unsigned copy)
 {
@@ -498,7 +500,7 @@ local int updatewindow(
  */
 
 int inflate(
-    inflate_state* strm,
+    inflate_stream* strm,
     int flush)
 {
     auto state = strm;
@@ -922,7 +924,7 @@ int inflate(
 }
 
 int inflateEnd(
-    inflate_state* strm)
+    inflate_stream* strm)
 {
     auto state = strm;
     std::free(state->window);
@@ -931,7 +933,7 @@ int inflateEnd(
 }
 
 int inflateGetDictionary(
-    inflate_state* strm,
+    inflate_stream* strm,
     Byte *dictionary,
     uInt *dictLength)
 {
@@ -950,7 +952,7 @@ int inflateGetDictionary(
 }
 
 int inflateSetDictionary(
-    inflate_state* strm,
+    inflate_stream* strm,
     const Byte *dictionary,
     uInt dictLength)
 {
@@ -977,7 +979,7 @@ int inflateSetDictionary(
    inflate is waiting for these length bytes.
  */
 int inflateSyncPoint(
-    inflate_state* strm)
+    inflate_stream* strm)
 {
     return strm->mode == STORED && strm->bits == 0;
 }
