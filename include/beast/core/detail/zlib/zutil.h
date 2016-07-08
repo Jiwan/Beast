@@ -36,37 +36,26 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
         /* common constants */
 
+/* default windowBits for decompression. MAX_WBITS is for compression only */
 #ifndef DEF_WBITS
 #  define DEF_WBITS MAX_WBITS
 #endif
-/* default windowBits for decompression. MAX_WBITS is for compression only */
 
+/* default memLevel */
 #if MAX_MEM_LEVEL >= 8
 #  define DEF_MEM_LEVEL 8
 #else
 #  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
 #endif
-/* default memLevel */
 
+/* The three kinds of block type */
 #define STORED_BLOCK 0
 #define STATIC_TREES 1
 #define DYN_TREES    2
-/* The three kinds of block type */
 
+/* The minimum and maximum match lengths */
 #define MIN_MATCH  3
 #define MAX_MATCH  258
-/* The minimum and maximum match lengths */
-
-        /* target dependencies */
-
-/* provide prototypes for these when building zlib without LFS */
-#if !defined(_WIN32) && \
-    (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-    extern uLong adler32_combine64 (uLong, uLong, z_off_t);
-    extern uLong crc32_combine64 (uLong, uLong, z_off_t);
-#endif
-
-         /* functions */
 
 /* Diagnostic functions */
 #ifdef DEBUG

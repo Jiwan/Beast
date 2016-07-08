@@ -87,7 +87,7 @@ local block_state deflate_huff   (deflate_state *s, int flush);
 local void lm_init        (deflate_state *s);
 local void putShortMSB    (deflate_state *s, uInt b);
 local void flush_pending  (z_stream* strm);
-local int read_buf        (z_stream* strm, Bytef *buf, unsigned size);
+local int read_buf        (z_stream* strm, Byte *buf, unsigned size);
 #ifdef ASMV
       void match_init (void); /* asm code initialization */
       uInt longest_match  (deflate_state *s, IPos cur_match);
@@ -198,7 +198,7 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
  */
 #define CLEAR_HASH(s) \
     s->head[s->hash_size-1] = NIL; \
-    std::memset((Bytef *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+    std::memset((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
 int deflateInit_(
@@ -268,7 +268,7 @@ int deflateInit2_(
     s->hash_mask = s->hash_size - 1;
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 
-    s->window = (Bytef *) std::malloc(s->w_size * 2*sizeof(Byte));
+    s->window = (Byte *) std::malloc(s->w_size * 2*sizeof(Byte));
     s->prev   = (Pos *)  std::malloc(s->w_size * sizeof(Pos));
     s->head   = (Pos *)  std::malloc(s->hash_size * sizeof(Pos));
 
@@ -300,7 +300,7 @@ int deflateInit2_(
 /* ========================================================================= */
 int deflateSetDictionary (
     z_stream* strm,
-    const Bytef *dictionary,
+    const Byte *dictionary,
     uInt  dictLength)
 {
     deflate_state *s;
@@ -328,7 +328,7 @@ int deflateSetDictionary (
     avail = strm->avail_in;
     next = strm->next_in;
     strm->avail_in = dictLength;
-    strm->next_in = (const Bytef *)dictionary;
+    strm->next_in = (const Byte *)dictionary;
     fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
@@ -418,7 +418,7 @@ int deflatePrime (
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     s = strm->state;
-    if ((Bytef *)(s->d_buf) < s->pending_out + ((Buf_size + 7) >> 3))
+    if ((Byte *)(s->d_buf) < s->pending_out + ((Buf_size + 7) >> 3))
         return Z_BUF_ERROR;
     do {
         put = Buf_size - s->bi_valid;
@@ -713,7 +713,7 @@ int deflateEnd (
  */
 local int read_buf(
     z_stream* strm,
-    Bytef *buf,
+    Byte *buf,
     unsigned size)
 {
     unsigned len = strm->avail_in;
@@ -780,8 +780,8 @@ local uInt longest_match(
     IPos cur_match)                             /* current match */
 {
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
-    Bytef *scan = s->window + s->strstart; /* current string */
-    Bytef *match;                       /* matched string */
+    Byte *scan = s->window + s->strstart; /* current string */
+    Byte *match;                       /* matched string */
     int len;                           /* length of current match */
     int best_len = s->prev_length;              /* best match length so far */
     int nice_match = s->nice_match;             /* stop if match long enough */
@@ -793,7 +793,7 @@ local uInt longest_match(
     Pos *prev = s->prev;
     uInt wmask = s->w_mask;
 
-    Bytef *strend = s->window + s->strstart + MAX_MATCH;
+    Byte *strend = s->window + s->strstart + MAX_MATCH;
     Byte scan_end1  = scan[best_len-1];
     Byte scan_end   = scan[best_len];
 
@@ -878,10 +878,10 @@ local uInt longest_match(
     deflate_state *s,
     IPos cur_match)                             /* current match */
 {
-    Bytef *scan = s->window + s->strstart; /* current string */
-    Bytef *match;                       /* matched string */
+    Byte *scan = s->window + s->strstart; /* current string */
+    Byte *match;                       /* matched string */
     int len;                           /* length of current match */
-    Bytef *strend = s->window + s->strstart + MAX_MATCH;
+    Byte *strend = s->window + s->strstart + MAX_MATCH;
 
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
@@ -1117,8 +1117,8 @@ local void fill_window(
  */
 #define FLUSH_BLOCK_ONLY(s, last) { \
    _tr_flush_block(s, (s->block_start >= 0L ? \
-                   (charf *)&s->window[(unsigned)s->block_start] : \
-                   (charf *)Z_NULL), \
+                   (char *)&s->window[(unsigned)s->block_start] : \
+                   (char *)Z_NULL), \
                 (std::uint32_t)((long)s->strstart - s->block_start), \
                 (last)); \
    s->block_start = s->strstart; \
@@ -1444,7 +1444,7 @@ local block_state deflate_rle(
 {
     int bflush;             /* set if current block must be flushed */
     uInt prev;              /* byte at distance one to match */
-    Bytef *scan, *strend;   /* scan goes up to strend for length of run */
+    Byte *scan, *strend;   /* scan goes up to strend for length of run */
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except

@@ -304,7 +304,7 @@ void makefixed()
  */
 local int updatewindow(
     inflate_state* strm,
-    const Bytef *end,
+    const Byte *end,
     unsigned copy)
 {
     auto state = strm;
@@ -932,7 +932,7 @@ int inflateEnd(
 
 int inflateGetDictionary(
     inflate_state* strm,
-    Bytef *dictionary,
+    Byte *dictionary,
     uInt *dictLength)
 {
     auto state = strm;
@@ -951,7 +951,7 @@ int inflateGetDictionary(
 
 int inflateSetDictionary(
     inflate_state* strm,
-    const Bytef *dictionary,
+    const Byte *dictionary,
     uInt dictLength)
 {
     auto state = strm;

@@ -96,9 +96,9 @@ struct deflate_state
 {
     z_stream* strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
-    Bytef *pending_buf;  /* output still pending */
+    Byte *pending_buf;  /* output still pending */
     std::uint32_t   pending_buf_size; /* size of pending_buf */
-    Bytef *pending_out;  /* next pending byte to output to the stream */
+    Byte *pending_out;  /* next pending byte to output to the stream */
     uInt   pending;      /* nb of bytes in the pending buffer */
     uInt   gzindex;      /* where in extra, name, or comment */
     Byte  method;        /* can only be DEFLATED */
@@ -110,7 +110,7 @@ struct deflate_state
     uInt  w_bits;        /* log2(w_size)  (8..16) */
     uInt  w_mask;        /* w_size - 1 */
 
-    Bytef *window;
+    Byte *window;
     /* Sliding window. Input bytes are read into the second half of the window,
      * and move to the first half later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of
@@ -291,11 +291,11 @@ struct deflate_state
         /* in trees.c */
 void _tr_init (deflate_state *s);
 int _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
-void _tr_flush_block (deflate_state *s, charf *buf,
+void _tr_flush_block (deflate_state *s, char *buf,
                         std::uint32_t stored_len, int last);
 void _tr_flush_bits (deflate_state *s);
 void _tr_align (deflate_state *s);
-void _tr_stored_block (deflate_state *s, charf *bu,
+void _tr_stored_block (deflate_state *s, char *bu,
                         std::uint32_t stored_len, int last);
 
 #define d_code(dist) \

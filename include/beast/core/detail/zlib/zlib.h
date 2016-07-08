@@ -34,6 +34,7 @@
 #include "zconf.h"
 
 #include <cstdint>
+#include <cstdlib>
 
 #define ZLIB_VERSION "1.2.8"
 #define ZLIB_VERNUM 0x1280
@@ -86,9 +87,6 @@ std::uint16_t constexpr ENOUGH_LENS = 852;
 std::uint16_t constexpr ENOUGH_DISTS = 592;
 std::uint16_t constexpr ENOUGH = ENOUGH_LENS + ENOUGH_DISTS;
 
-typedef voidpf (*alloc_func) (voidpf opaque, uInt items, uInt size);
-typedef void   (*free_func)  (voidpf opaque, voidpf address);
-
 struct deflate_state;
 
 /*
@@ -120,13 +118,13 @@ struct deflate_state;
 */
 struct z_stream
 {
-    const Bytef *next_in;     /* next input byte */
-    uInt     avail_in;  /* number of bytes available at next_in */
-    uLong    total_in;  /* total number of input bytes read so far */
+    Byte const*     next_in;   /* next input byte */
+    std::size_t     avail_in;  /* number of bytes available at next_in */
+    std::size_t     total_in;  /* total number of input bytes read so far */
 
-    Bytef    *next_out; /* next output byte should be put there */
-    uInt     avail_out; /* remaining free space at next_out */
-    uLong    total_out; /* total number of bytes output so far */
+    Byte*           next_out; /* next output byte should be put there */
+    std::size_t     avail_out; /* remaining free space at next_out */
+    std::size_t     total_out; /* total number of bytes output so far */
 
     const char *msg;  /* last error message, NULL if no error */
     struct deflate_state *state; /* not visible by applications */
@@ -662,7 +660,7 @@ extern int deflateInit2 (z_stream* strm,
 */
 
 extern int deflateSetDictionary (z_stream* strm,
-                                             const Bytef *dictionary,
+                                             const Byte *dictionary,
                                              uInt  dictLength);
 /*
      Initializes the compression dictionary from the given byte sequence
@@ -852,7 +850,7 @@ extern int inflateInit2 (z_stream* strm,
 */
 
 extern int inflateSetDictionary (inflate_state* strm,
-                                             const Bytef *dictionary,
+                                             const Byte *dictionary,
                                              uInt  dictLength);
 /*
      Initializes the decompression dictionary from the given uncompressed byte
@@ -875,7 +873,7 @@ extern int inflateSetDictionary (inflate_state* strm,
 */
 
 extern int inflateGetDictionary (inflate_state* strm,
-                                             Bytef *dictionary,
+                                             Byte *dictionary,
                                              uInt  *dictLength);
 /*
      Returns the sliding dictionary being maintained by inflate.  dictLength is

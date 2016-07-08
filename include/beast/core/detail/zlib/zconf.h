@@ -62,16 +62,6 @@ typedef unsigned char  Byte;  /* 8 bits */
 typedef unsigned int   uInt;  /* 16 bits or more */
 typedef unsigned long  uLong; /* 32 bits or more */
 
-typedef Byte  Bytef;
-typedef char  charf;
-typedef int   intf;
-typedef uInt  uIntf;
-typedef uLong uLongf;
-
-typedef void const *voidpc;
-typedef void   *voidpf;
-typedef void       *voidp;
-
 #if !defined(Z_U4)
 #  include <limits.h>
 #  if (UINT_MAX == 0xffffffffUL)
@@ -81,12 +71,6 @@ typedef void       *voidp;
 #  elif (USHRT_MAX == 0xffffffffUL)
 #    define Z_U4 unsigned short
 #  endif
-#endif
-
-#ifdef Z_U4
-   typedef Z_U4 z_crc_t;
-#else
-   typedef unsigned long z_crc_t;
 #endif
 
 #ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
@@ -122,58 +106,6 @@ typedef void       *voidp;
 #  ifdef VMS
 #    include <unixio.h>       /* for off_t */
 #  endif
-#  ifndef z_off_t
-#    define z_off_t off_t
-#  endif
-#endif
-
-#if defined(_LFS64_LARGEFILE) && _LFS64_LARGEFILE-0
-#  define Z_LFS64
-#endif
-
-#if defined(_LARGEFILE64_SOURCE) && defined(Z_LFS64)
-#  define Z_LARGE64
-#endif
-
-#if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS-0 == 64 && defined(Z_LFS64)
-#  define Z_WANT64
-#endif
-
-#if !defined(SEEK_SET)
-#  define SEEK_SET        0       /* Seek from beginning of file.  */
-#  define SEEK_CUR        1       /* Seek from current position.  */
-#  define SEEK_END        2       /* Set file pointer to EOF plus "offset" */
-#endif
-
-#ifndef z_off_t
-#  define z_off_t long
-#endif
-
-#if !defined(_WIN32) && defined(Z_LARGE64)
-#  define z_off64_t off64_t
-#else
-#  if defined(_WIN32) && !defined(__GNUC__)
-#    define z_off64_t __int64
-#  else
-#    define z_off64_t z_off_t
-#  endif
-#endif
-
-/* MVS linker does not support external names larger than 8 bytes */
-#if defined(__MVS__)
-  #pragma map(deflateInit_,"DEIN")
-  #pragma map(deflateInit2_,"DEIN2")
-  #pragma map(deflateEnd,"DEEND")
-  #pragma map(deflateBound,"DEBND")
-  #pragma map(inflateInit_,"ININ")
-  #pragma map(inflateInit2_,"ININ2")
-  #pragma map(inflateEnd,"INEND")
-  #pragma map(inflateSync,"INSY")
-  #pragma map(inflateSetDictionary,"INSEDI")
-  #pragma map(compressBound,"CMBND")
-  #pragma map(inflate_table,"INTABL")
-  #pragma map(inflate_fast,"INFA")
-  #pragma map(inflate_copyright,"INCOPY")
 #endif
 
 #endif /* ZCONF_H */

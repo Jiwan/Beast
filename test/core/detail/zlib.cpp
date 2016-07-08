@@ -152,12 +152,12 @@ public:
             zs.avail_out = output.capacity();
             if(i > 0)
             {
-                zs.next_in = (Bytef*)input.data();
+                zs.next_in = (Byte*)input.data();
                 zs.avail_in = i;
                 auto result = inflate(&zs, Z_FULL_FLUSH);
                 expect(result == Z_OK);
             }
-            zs.next_in = (Bytef*)input.data() + i;
+            zs.next_in = (Byte*)input.data() + i;
             zs.avail_in = input.size() - i;
             auto result = inflate(&zs, Z_FULL_FLUSH);
             output.resize(output.capacity() - zs.avail_out);
@@ -220,7 +220,7 @@ public:
                                 expect(deflateSetDictionary(&zs,
                                     dict.data(), dict.size()) == Z_OK);
                             buffer output(deflateBound(&zs, original.size()));
-                            zs.next_in = (Bytef*)original.data();
+                            zs.next_in = (Byte*)original.data();
                             zs.avail_in = original.size();
                             zs.next_out = output.data();
                             zs.avail_out = output.capacity();
