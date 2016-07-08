@@ -872,25 +872,6 @@ extern long inflateMark (z_streamp strm);
    library.
 */
 
-extern uLong adler32 (uLong adler, const Bytef *buf, uInt len);
-/*
-     Update a running Adler-32 checksum with the bytes buf[0..len-1] and
-   return the updated checksum.  If buf is Z_NULL, this function returns the
-   required initial value for the checksum.
-
-     An Adler-32 checksum is almost as reliable as a CRC32 but can be computed
-   much faster.
-
-   Usage example:
-
-     uLong adler = adler32(0L, Z_NULL, 0);
-
-     while (read_buffer(buffer, length) != EOF) {
-       adler = adler32(adler, buffer, length);
-     }
-     if (adler != original_adler) error();
-*/
-
                         /* various hacks, don't look :) */
 
 /* deflateInit and inflateInit are macros to allow checking the zlib version
