@@ -86,8 +86,8 @@ local block_state deflate_rle    (deflate_state *s, int flush);
 local block_state deflate_huff   (deflate_state *s, int flush);
 local void lm_init        (deflate_state *s);
 local void putShortMSB    (deflate_state *s, uInt b);
-local void flush_pending  (z_streamp strm);
-local int read_buf        (z_streamp strm, Bytef *buf, unsigned size);
+local void flush_pending  (z_stream* strm);
+local int read_buf        (z_stream* strm, Bytef *buf, unsigned size);
 #ifdef ASMV
       void match_init (void); /* asm code initialization */
       uInt longest_match  (deflate_state *s, IPos cur_match);
@@ -202,7 +202,7 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
 
 /* ========================================================================= */
 int deflateInit_(
-    z_streamp strm,
+    z_stream* strm,
     int level,
     const char *version,
     int stream_size)
@@ -214,7 +214,7 @@ int deflateInit_(
 
 /* ========================================================================= */
 int deflateInit2_(
-    z_streamp strm,
+    z_stream* strm,
     int  level,
     int  method,
     int  windowBits,
@@ -299,7 +299,7 @@ int deflateInit2_(
 
 /* ========================================================================= */
 int deflateSetDictionary (
-    z_streamp strm,
+    z_stream* strm,
     const Bytef *dictionary,
     uInt  dictLength)
 {
@@ -358,7 +358,7 @@ int deflateSetDictionary (
 
 /* ========================================================================= */
 int deflateResetKeep (
-    z_streamp strm)
+    z_stream* strm)
 {
     deflate_state *s;
 
@@ -383,7 +383,7 @@ int deflateResetKeep (
 
 /* ========================================================================= */
 int deflateReset (
-    z_streamp strm)
+    z_stream* strm)
 {
     int ret;
 
@@ -397,7 +397,7 @@ int deflateReset (
 int deflatePending (
     unsigned *pending,
     int *bits,
-    z_streamp strm)
+    z_stream* strm)
 {
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     if (pending != Z_NULL)
@@ -409,7 +409,7 @@ int deflatePending (
 
 /* ========================================================================= */
 int deflatePrime (
-    z_streamp strm,
+    z_stream* strm,
     int bits,
     int value)
 {
@@ -435,7 +435,7 @@ int deflatePrime (
 
 /* ========================================================================= */
 int deflateParams(
-    z_streamp strm,
+    z_stream* strm,
     int level,
     int strategy)
 {
@@ -476,7 +476,7 @@ int deflateParams(
 
 /* ========================================================================= */
 int deflateTune(
-    z_streamp strm,
+    z_stream* strm,
     int good_length,
     int max_lazy,
     int nice_length,
@@ -511,7 +511,7 @@ int deflateTune(
  * allocation.
  */
 uLong deflateBound(
-    z_streamp strm,
+    z_stream* strm,
     uLong sourceLen)
 {
     deflate_state *s;
@@ -545,7 +545,7 @@ uLong deflateBound(
  * (See also read_buf()).
  */
 local void flush_pending(
-    z_streamp strm)
+    z_stream* strm)
 {
     unsigned len;
     deflate_state *s = strm->state;
@@ -568,7 +568,7 @@ local void flush_pending(
 
 /* ========================================================================= */
 int deflate (
-    z_streamp strm,
+    z_stream* strm,
     int flush)
 {
     int old_flush; /* value of flush param for previous deflate call */
@@ -677,7 +677,7 @@ int deflate (
 
 /* ========================================================================= */
 int deflateEnd (
-    z_streamp strm)
+    z_stream* strm)
 {
     int status;
 
@@ -712,7 +712,7 @@ int deflateEnd (
  * (See also flush_pending()).
  */
 local int read_buf(
-    z_streamp strm,
+    z_stream* strm,
     Bytef *buf,
     unsigned size)
 {

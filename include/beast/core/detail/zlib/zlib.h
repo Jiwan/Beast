@@ -118,7 +118,8 @@ struct internal_state;
    uncompressed data and may be saved for use in the decompressor (particularly
    if the decompressor wants to decompress everything in a single step).
 */
-typedef struct z_stream_s {
+struct z_stream
+{
     const Bytef *next_in;     /* next input byte */
     uInt     avail_in;  /* number of bytes available at next_in */
     uLong    total_in;  /* total number of input bytes read so far */
@@ -132,9 +133,7 @@ typedef struct z_stream_s {
 
     int     data_type;  /* best guess about the data type: binary or text */
     uLong   reserved;   /* reserved for future use */
-} z_stream;
-
-typedef z_stream *z_streamp;
+};
 
 /* Possible inflate modes between inflate() calls */
 
@@ -298,7 +297,7 @@ struct inflate_state
  */
 
 /*
-extern int deflateInit (z_streamp strm, int level);
+extern int deflateInit (z_stream* strm, int level);
 
      Initializes the internal stream state for compression.  The fields
    zalloc, zfree and opaque must be initialized before by the caller.  If
@@ -320,7 +319,7 @@ extern int deflateInit (z_streamp strm, int level);
 */
 
 
-extern int deflate (z_streamp strm, int flush);
+extern int deflate (z_stream* strm, int flush);
 /*
     deflate compresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -427,7 +426,7 @@ extern int deflate (z_streamp strm, int flush);
 */
 
 
-extern int deflateEnd (z_streamp strm);
+extern int deflateEnd (z_stream* strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -442,7 +441,7 @@ extern int deflateEnd (z_streamp strm);
 
 
 /*
-extern int inflateInit (z_streamp strm);
+extern int inflateInit (z_stream* strm);
 
      Initializes the internal stream state for decompression.  The fields
    next_in, avail_in, zalloc, zfree and opaque must be initialized before by
@@ -466,7 +465,7 @@ extern int inflateInit (z_streamp strm);
 */
 
 
-extern int inflate (z_streamp strm, int flush);
+extern int inflate (z_stream* strm, int flush);
 /*
     inflate decompresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -582,7 +581,7 @@ extern int inflate (z_streamp strm, int flush);
 */
 
 
-extern int inflateEnd (z_streamp strm);
+extern int inflateEnd (z_stream* strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -601,7 +600,7 @@ extern int inflateEnd (z_streamp strm);
 */
 
 /*
-extern int deflateInit2 (z_streamp strm,
+extern int deflateInit2 (z_stream* strm,
                                      int  level,
                                      int  method,
                                      int  windowBits,
@@ -661,7 +660,7 @@ extern int deflateInit2 (z_streamp strm,
    compression: this will be done by deflate().
 */
 
-extern int deflateSetDictionary (z_streamp strm,
+extern int deflateSetDictionary (z_stream* strm,
                                              const Bytef *dictionary,
                                              uInt  dictLength);
 /*
@@ -705,7 +704,7 @@ extern int deflateSetDictionary (z_streamp strm,
    not perform any compression: this will be done by deflate().
 */
 
-extern int deflateReset (z_streamp strm);
+extern int deflateReset (z_stream* strm);
 /*
      This function is equivalent to deflateEnd followed by deflateInit,
    but does not free and reallocate all the internal compression state.  The
@@ -716,7 +715,7 @@ extern int deflateReset (z_streamp strm);
    stream state was inconsistent (such as zalloc or state being Z_NULL).
 */
 
-extern int deflateParams (z_streamp strm,
+extern int deflateParams (z_stream* strm,
                                       int level,
                                       int strategy);
 /*
@@ -737,7 +736,7 @@ extern int deflateParams (z_streamp strm,
    strm->avail_out was zero.
 */
 
-extern int deflateTune (z_streamp strm,
+extern int deflateTune (z_stream* strm,
                                     int good_length,
                                     int max_lazy,
                                     int nice_length,
@@ -754,7 +753,7 @@ extern int deflateTune (z_streamp strm,
    returns Z_OK on success, or Z_STREAM_ERROR for an invalid deflate stream.
  */
 
-extern uLong deflateBound (z_streamp strm,
+extern uLong deflateBound (z_stream* strm,
                                        uLong sourceLen);
 /*
      deflateBound() returns an upper bound on the compressed size after
@@ -769,7 +768,7 @@ extern uLong deflateBound (z_streamp strm,
    than Z_FINISH or Z_NO_FLUSH are used.
 */
 
-extern int deflatePending (z_streamp strm,
+extern int deflatePending (z_stream* strm,
                                        unsigned *pending,
                                        int *bits);
 /*
@@ -784,7 +783,7 @@ extern int deflatePending (z_streamp strm,
    stream state was inconsistent.
  */
 
-extern int deflatePrime (z_streamp strm,
+extern int deflatePrime (z_stream* strm,
                                      int bits,
                                      int value);
 /*
@@ -802,7 +801,7 @@ extern int deflatePrime (z_streamp strm,
 */
 
 /*
-extern int inflateInit2 (z_streamp strm,
+extern int inflateInit2 (z_stream* strm,
                                      int  windowBits);
 
      This is another version of inflateInit with an extra parameter.  The
@@ -851,7 +850,7 @@ extern int inflateInit2 (z_streamp strm,
    deferred until inflate() is called.
 */
 
-extern int inflateSetDictionary (z_streamp strm,
+extern int inflateSetDictionary (z_stream* strm,
                                              const Bytef *dictionary,
                                              uInt  dictLength);
 /*
@@ -874,7 +873,7 @@ extern int inflateSetDictionary (z_streamp strm,
    inflate().
 */
 
-extern int inflateGetDictionary (z_streamp strm,
+extern int inflateGetDictionary (z_stream* strm,
                                              Bytef *dictionary,
                                              uInt  *dictLength);
 /*
@@ -889,7 +888,7 @@ extern int inflateGetDictionary (z_streamp strm,
    stream state is inconsistent.
 */
 
-extern int inflateReset (z_streamp strm);
+extern int inflateReset (z_stream* strm);
 /*
      This function is equivalent to inflateEnd followed by inflateInit,
    but does not free and reallocate all the internal decompression state.  The
@@ -899,7 +898,7 @@ extern int inflateReset (z_streamp strm);
    stream state was inconsistent (such as zalloc or state being Z_NULL).
 */
 
-extern int inflateReset2 (z_streamp strm,
+extern int inflateReset2 (z_stream* strm,
                                       int windowBits);
 /*
      This function is the same as inflateReset, but it also permits changing
@@ -916,15 +915,15 @@ extern int inflateReset2 (z_streamp strm,
 /* deflateInit and inflateInit are macros to allow checking the zlib version
  * and the compiler's view of z_stream:
  */
-extern int deflateInit_ (z_streamp strm, int level,
+extern int deflateInit_ (z_stream* strm, int level,
                                      const char *version, int stream_size);
-extern int inflateInit_ (z_streamp strm,
+extern int inflateInit_ (z_stream* strm,
                                      const char *version, int stream_size);
-extern int deflateInit2_ (z_streamp strm, int  level, int  method,
+extern int deflateInit2_ (z_stream* strm, int  level, int  method,
                                       int windowBits, int memLevel,
                                       int strategy, const char *version,
                                       int stream_size);
-extern int inflateInit2_ (z_streamp strm, int  windowBits,
+extern int inflateInit2_ (z_stream* strm, int  windowBits,
                                       const char *version, int stream_size);
 #define deflateInit(strm, level) \
         deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))

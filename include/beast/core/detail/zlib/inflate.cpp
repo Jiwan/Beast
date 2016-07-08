@@ -93,14 +93,14 @@
 
 /* function prototypes */
 local void fixedtables (struct inflate_state *state);
-local int updatewindow (z_streamp strm, const unsigned char *end,
+local int updatewindow (z_stream* strm, const unsigned char *end,
                            unsigned copy);
 #ifdef BUILDFIXED
    void makefixed (void);
 #endif
 
 int inflateResetKeep(
-    z_streamp strm)
+    z_stream* strm)
 {
     struct inflate_state *state;
 
@@ -122,7 +122,7 @@ int inflateResetKeep(
 }
 
 int inflateReset(
-    z_streamp strm)
+    z_stream* strm)
 {
     struct inflate_state *state;
 
@@ -136,7 +136,7 @@ int inflateReset(
 }
 
 int inflateReset2(
-    z_streamp strm,
+    z_stream* strm,
     int windowBits)
 {
     struct inflate_state *state;
@@ -161,7 +161,7 @@ int inflateReset2(
 }
 
 int inflateInit2_(
-    z_streamp strm,
+    z_stream* strm,
     int windowBits,
     const char *version,
     int stream_size)
@@ -189,7 +189,7 @@ int inflateInit2_(
 }
 
 int inflateInit_(
-    z_streamp strm,
+    z_stream* strm,
     const char *version,
     int stream_size)
 {
@@ -325,7 +325,7 @@ void makefixed()
    The advantage may be dependent on the size of the processor's data caches.
  */
 local int updatewindow(
-    z_streamp strm,
+    z_stream* strm,
     const Bytef *end,
     unsigned copy)
 {
@@ -522,7 +522,7 @@ local int updatewindow(
  */
 
 int inflate(
-    z_streamp strm,
+    z_stream* strm,
     int flush)
 {
     struct inflate_state *state;
@@ -947,7 +947,7 @@ int inflate(
 }
 
 int inflateEnd(
-    z_streamp strm)
+    z_stream* strm)
 {
     struct inflate_state *state;
     if (strm == Z_NULL || strm->state == Z_NULL)
@@ -961,7 +961,7 @@ int inflateEnd(
 }
 
 int inflateGetDictionary(
-    z_streamp strm,
+    z_stream* strm,
     Bytef *dictionary,
     uInt *dictLength)
 {
@@ -984,7 +984,7 @@ int inflateGetDictionary(
 }
 
 int inflateSetDictionary(
-    z_streamp strm,
+    z_stream* strm,
     const Bytef *dictionary,
     uInt dictLength)
 {
@@ -1015,7 +1015,7 @@ int inflateSetDictionary(
    inflate is waiting for these length bytes.
  */
 int inflateSyncPoint(
-    z_streamp strm)
+    z_stream* strm)
 {
     struct inflate_state *state;
 

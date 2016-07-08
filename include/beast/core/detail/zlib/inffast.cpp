@@ -64,7 +64,7 @@
       output space.
  */
 void inflate_fast(
-z_streamp strm,
+z_stream* strm,
 unsigned start)         /* inflate()'s starting value for strm->avail_out */
 {
     struct inflate_state *state;
