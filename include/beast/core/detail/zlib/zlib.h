@@ -130,9 +130,6 @@ typedef struct z_stream_s {
     const char *msg;  /* last error message, NULL if no error */
     struct internal_state *state; /* not visible by applications */
 
-    alloc_func zalloc;  /* used to allocate the internal state */
-    voidpf     opaque;  /* private data object passed to zalloc and zfree */
-
     int     data_type;  /* best guess about the data type: binary or text */
     uLong   reserved;   /* reserved for future use */
 } z_stream;

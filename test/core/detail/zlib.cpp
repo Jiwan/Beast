@@ -142,8 +142,6 @@ public:
         {
             buffer output(original.size());
             z_stream zs;
-            zs.zalloc = Z_NULL;
-            zs.opaque = Z_NULL;
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
             expect(inflateInit2(&zs, 15) == Z_OK);
@@ -210,8 +208,6 @@ public:
                         for(int wbits = 15; wbits <= 15; ++wbits)
                         {
                             z_stream zs;
-                            zs.zalloc = Z_NULL;
-                            zs.opaque = Z_NULL;
                             zs.avail_in = 0;
                             zs.next_in = Z_NULL;
                             expect(deflateInit2(&zs, 

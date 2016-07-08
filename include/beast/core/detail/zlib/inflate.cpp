@@ -174,12 +174,8 @@ int inflateInit2_(
         return Z_VERSION_ERROR;
     if (strm == Z_NULL) return Z_STREAM_ERROR;
     strm->msg = Z_NULL;                 /* in case we return an error */
-    if (strm->zalloc == (alloc_func)0) {
-        strm->zalloc = zcalloc;
-        strm->opaque = (voidpf)0;
-    }
     state = (struct inflate_state *)
-            ZALLOC(strm, 1, sizeof(struct inflate_state));
+            std::malloc(sizeof(struct inflate_state));
     if (state == Z_NULL) return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
     strm->state = (struct internal_state *)state;
@@ -340,9 +336,7 @@ local int updatewindow(
 
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == Z_NULL) {
-        state->window = (unsigned char *)
-                        ZALLOC(strm, 1U << state->wbits,
-                               sizeof(unsigned char));
+        state->window = (unsigned char *) std::malloc(1U << state->wbits);
         if (state->window == Z_NULL) return 1;
     }
 

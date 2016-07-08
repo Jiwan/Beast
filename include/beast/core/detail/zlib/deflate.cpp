@@ -238,10 +238,6 @@ int deflateInit2_(
     if (strm == Z_NULL) return Z_STREAM_ERROR;
 
     strm->msg = Z_NULL;
-    if (strm->zalloc == (alloc_func)0) {
-        strm->zalloc = zcalloc;
-        strm->opaque = (voidpf)0;
-    }
 
 #ifdef FASTEST
     if (level != 0) level = 1;
@@ -258,7 +254,7 @@ int deflateInit2_(
         return Z_STREAM_ERROR;
     }
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
-    s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
+    s = (deflate_state *) std::malloc(sizeof(deflate_state));
     if (s == Z_NULL) return Z_MEM_ERROR;
     strm->state = (struct internal_state *)s;
     s->strm = strm;
@@ -272,15 +268,15 @@ int deflateInit2_(
     s->hash_mask = s->hash_size - 1;
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 
-    s->window = (Bytef *) ZALLOC(strm, s->w_size, 2*sizeof(Byte));
-    s->prev   = (Posf *)  ZALLOC(strm, s->w_size, sizeof(Pos));
-    s->head   = (Posf *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
+    s->window = (Bytef *) std::malloc(s->w_size * 2*sizeof(Byte));
+    s->prev   = (Posf *)  std::malloc(s->w_size * sizeof(Pos));
+    s->head   = (Posf *)  std::malloc(s->hash_size * sizeof(Pos));
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
     s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
 
-    overlay = (std::uint16_t *) ZALLOC(strm, s->lit_bufsize, sizeof(std::uint16_t)+2);
+    overlay = (std::uint16_t *) std::malloc(s->lit_bufsize * (sizeof(std::uint16_t)+2));
     s->pending_buf = (std::uint8_t *) overlay;
     s->pending_buf_size = (std::uint32_t)s->lit_bufsize * (sizeof(std::uint16_t)+2L);
 
@@ -366,10 +362,8 @@ int deflateResetKeep (
 {
     deflate_state *s;
 
-    if (strm == Z_NULL || strm->state == Z_NULL ||
-        strm->zalloc == (alloc_func)0) {
+    if (strm == Z_NULL || strm->state == Z_NULL)
         return Z_STREAM_ERROR;
-    }
 
     strm->total_in = strm->total_out = 0;
     strm->msg = Z_NULL;

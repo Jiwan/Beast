@@ -38,17 +38,3 @@ void z_error (m)
     exit(1);
 }
 #endif
-
-#ifndef MY_ZCALLOC /* Any system without a special alloc function */
-
-voidpf zcalloc (
-    voidpf opaque,
-    unsigned items,
-    unsigned size)
-{
-    if (opaque) items += size - size; /* make compiler happy */
-    return sizeof(uInt) > 2 ? (voidpf)malloc(items * size) :
-                              (voidpf)calloc(items, size);
-}
-
-#endif /* MY_ZCALLOC */
