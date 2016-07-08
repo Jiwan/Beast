@@ -292,10 +292,6 @@ extern int inflateReset (inflate_state* strm);
 extern int inflateReset2 (inflate_state* strm, int windowBits);
 extern int inflateInit_ (inflate_state* strm,
                                      const char *version, int stream_size);
-extern int deflateInit2_ (z_stream* strm, int  level, int  method,
-                                      int windowBits, int memLevel,
-                                      int strategy, const char *version,
-                                      int stream_size);
 extern int inflateInit2_ (inflate_state* strm, int  windowBits,
                                       const char *version, int stream_size);
 #define inflateInit(strm) \

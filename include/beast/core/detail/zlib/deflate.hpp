@@ -323,7 +323,6 @@ void _tr_stored_block (deflate_state *s, char *bu,
 
 #ifndef DEBUG
 /* Inline versions of _tr_tally for speed: */
-
 #if defined(GEN_TREES_H)
   extern std::uint8_t _length_code[];
   extern std::uint8_t _dist_code[];
@@ -331,28 +330,6 @@ void _tr_stored_block (deflate_state *s, char *bu,
   extern const std::uint8_t _length_code[];
   extern const std::uint8_t _dist_code[];
 #endif
-
-# define _tr_tally_lit(s, c, flush) \
-  { std::uint8_t cc = (c); \
-    s->d_buf[s->last_lit] = 0; \
-    s->l_buf[s->last_lit++] = cc; \
-    s->dyn_ltree[cc].fc.freq++; \
-    flush = (s->last_lit == s->lit_bufsize-1); \
-   }
-# define _tr_tally_dist(s, distance, length, flush) \
-  { std::uint8_t len = (length); \
-    std::uint16_t dist = (distance); \
-    s->d_buf[s->last_lit] = dist; \
-    s->l_buf[s->last_lit++] = len; \
-    dist--; \
-    s->dyn_ltree[_length_code[len]+LITERALS+1].fc.freq++; \
-    s->dyn_dtree[d_code(dist)].fc.freq++; \
-    flush = (s->last_lit == s->lit_bufsize-1); \
-  }
-#else
-# define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
-# define _tr_tally_dist(s, distance, length, flush) \
-              flush = _tr_tally(s, distance, length)
 #endif
 
 extern int deflate (z_stream* strm, int flush);
@@ -366,13 +343,8 @@ extern int deflateTune (z_stream* strm,
 extern uLong deflateBound (z_stream* strm, uLong sourceLen);
 extern int deflatePending (z_stream* strm, unsigned *pending, int *bits);
 extern int deflatePrime (z_stream* strm, int bits, int value);
-extern int deflateInit_ (z_stream* strm, int level,
-                                     const char *version, int stream_size);
-
-#define deflateInit(strm, level) \
-        deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
-#define deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
-        deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
-                      (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
+extern int deflateInit (z_stream* strm, int level);
+extern int deflateInit2 (z_stream* strm, int level, int  method,
+    int windowBits, int memLevel, int strategy);
 
 #endif /* DEFLATE_H */

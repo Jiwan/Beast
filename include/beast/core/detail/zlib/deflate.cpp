@@ -63,6 +63,30 @@ const char deflate_copyright[] =
   copyright string in the executable of your product.
  */
 
+#ifndef DEBUG
+# define _tr_tally_lit(s, c, flush) \
+  { std::uint8_t cc = (c); \
+    s->d_buf[s->last_lit] = 0; \
+    s->l_buf[s->last_lit++] = cc; \
+    s->dyn_ltree[cc].fc.freq++; \
+    flush = (s->last_lit == s->lit_bufsize-1); \
+   }
+# define _tr_tally_dist(s, distance, length, flush) \
+  { std::uint8_t len = (length); \
+    std::uint16_t dist = (distance); \
+    s->d_buf[s->last_lit] = dist; \
+    s->l_buf[s->last_lit++] = len; \
+    dist--; \
+    s->dyn_ltree[_length_code[len]+LITERALS+1].fc.freq++; \
+    s->dyn_dtree[d_code(dist)].fc.freq++; \
+    flush = (s->last_lit == s->lit_bufsize-1); \
+  }
+#else
+# define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
+# define _tr_tally_dist(s, distance, length, flush) \
+              flush = _tr_tally(s, distance, length)
+#endif
+
 /* ===========================================================================
  *  Function prototypes.
  */
@@ -201,41 +225,33 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
     std::memset((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
-int deflateInit_(
+int deflateInit(
     z_stream* strm,
-    int level,
-    const char *version,
-    int stream_size)
+    int level)
 {
-    return deflateInit2_(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
-                         Z_DEFAULT_STRATEGY, version, stream_size);
+    return deflateInit2(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
+                         Z_DEFAULT_STRATEGY);
     /* To do: ignore strm->next_in if we use it as window */
 }
 
 /* ========================================================================= */
-int deflateInit2_(
+int deflateInit2(
     z_stream* strm,
     int  level,
     int  method,
     int  windowBits,
     int  memLevel,
-    int  strategy,
-    const char *version,
-    int stream_size)
+    int  strategy)
 {
     deflate_state *s;
-    static const char my_version[] = ZLIB_VERSION;
 
     std::uint16_t *overlay;
     /* We overlay pending_buf and d_buf+l_buf. This works since the average
      * output size for (length,distance) codes is <= 24 bits.
      */
 
-    if (version == Z_NULL || version[0] != my_version[0] ||
-        stream_size != sizeof(z_stream)) {
-        return Z_VERSION_ERROR;
-    }
-    if (strm == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == Z_NULL)
+        return Z_STREAM_ERROR;
 
     strm->msg = Z_NULL;
 
