@@ -141,7 +141,7 @@ public:
         for(std::size_t i = 0; i < input.size(); ++i)
         {
             buffer output(original.size());
-            z_stream zs;
+            inflate_state zs;
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
             expect(inflateInit2(&zs, 15) == Z_OK);

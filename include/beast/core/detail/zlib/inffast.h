@@ -8,4 +8,4 @@
    subject to change. Applications should only use zlib.h.
  */
 
-void inflate_fast (z_stream* strm, unsigned start);
+void inflate_fast (inflate_state* strm, unsigned start);

@@ -64,10 +64,9 @@
       output space.
  */
 void inflate_fast(
-z_stream* strm,
+inflate_state* strm,
 unsigned start)         /* inflate()'s starting value for strm->avail_out */
 {
-    struct inflate_state *state;
     const unsigned char *in;      /* local strm->next_in */
     const unsigned char *last;    /* have enough input while in < last */
     unsigned char *out;     /* local strm->next_out */
@@ -94,7 +93,7 @@ unsigned start)         /* inflate()'s starting value for strm->avail_out */
     unsigned char *from;    /* where to copy match from */
 
     /* copy state to local variables */
-    state = (struct inflate_state *)strm->state;
+    auto state = strm;
     in = strm->next_in - OFF;
     last = in + (strm->avail_in - 5);
     out = strm->next_out - OFF;

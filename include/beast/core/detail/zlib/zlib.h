@@ -197,8 +197,9 @@ enum inflate_mode
  */
 
 /* state maintained between inflate() calls.  Approximately 10K bytes. */
-struct inflate_state
+class inflate_state : public z_stream
 {
+public:
     inflate_mode mode;          /* current inflate mode */
     int last;                   /* true if processing last block */
     int flags;                  /* gzip header method and flags (0 if zlib) */
@@ -465,7 +466,7 @@ extern int inflateInit (z_stream* strm);
 */
 
 
-extern int inflate (z_stream* strm, int flush);
+extern int inflate (inflate_state* strm, int flush);
 /*
     inflate decompresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -581,7 +582,7 @@ extern int inflate (z_stream* strm, int flush);
 */
 
 
-extern int inflateEnd (z_stream* strm);
+extern int inflateEnd (inflate_state* strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -850,7 +851,7 @@ extern int inflateInit2 (z_stream* strm,
    deferred until inflate() is called.
 */
 
-extern int inflateSetDictionary (z_stream* strm,
+extern int inflateSetDictionary (inflate_state* strm,
                                              const Bytef *dictionary,
                                              uInt  dictLength);
 /*
@@ -873,7 +874,7 @@ extern int inflateSetDictionary (z_stream* strm,
    inflate().
 */
 
-extern int inflateGetDictionary (z_stream* strm,
+extern int inflateGetDictionary (inflate_state* strm,
                                              Bytef *dictionary,
                                              uInt  *dictLength);
 /*
@@ -888,7 +889,7 @@ extern int inflateGetDictionary (z_stream* strm,
    stream state is inconsistent.
 */
 
-extern int inflateReset (z_stream* strm);
+extern int inflateReset (inflate_state* strm);
 /*
      This function is equivalent to inflateEnd followed by inflateInit,
    but does not free and reallocate all the internal decompression state.  The
@@ -898,7 +899,7 @@ extern int inflateReset (z_stream* strm);
    stream state was inconsistent (such as zalloc or state being Z_NULL).
 */
 
-extern int inflateReset2 (z_stream* strm,
+extern int inflateReset2 (inflate_state* strm,
                                       int windowBits);
 /*
      This function is the same as inflateReset, but it also permits changing
@@ -917,13 +918,13 @@ extern int inflateReset2 (z_stream* strm,
  */
 extern int deflateInit_ (z_stream* strm, int level,
                                      const char *version, int stream_size);
-extern int inflateInit_ (z_stream* strm,
+extern int inflateInit_ (inflate_state* strm,
                                      const char *version, int stream_size);
 extern int deflateInit2_ (z_stream* strm, int  level, int  method,
                                       int windowBits, int memLevel,
                                       int strategy, const char *version,
                                       int stream_size);
-extern int inflateInit2_ (z_stream* strm, int  windowBits,
+extern int inflateInit2_ (inflate_state* strm, int  windowBits,
                                       const char *version, int stream_size);
 #define deflateInit(strm, level) \
         deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))

@@ -92,21 +92,17 @@
 #endif
 
 /* function prototypes */
-local void fixedtables (struct inflate_state *state);
-local int updatewindow (z_stream* strm, const unsigned char *end,
+local void fixedtables (inflate_state *state);
+local int updatewindow (inflate_state* strm, const unsigned char *end,
                            unsigned copy);
 #ifdef BUILDFIXED
    void makefixed (void);
 #endif
 
 int inflateResetKeep(
-    z_stream* strm)
+    inflate_state* strm)
 {
-    struct inflate_state *state;
-
-    if (strm == Z_NULL || strm->state == Z_NULL)
-        return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
+    auto state = strm;
     strm->total_in = strm->total_out = state->total = 0;
     strm->msg = Z_NULL;
     state->mode = HEAD;
@@ -122,13 +118,10 @@ int inflateResetKeep(
 }
 
 int inflateReset(
-    z_stream* strm)
+    inflate_state* strm)
 {
-    struct inflate_state *state;
+    auto state = strm;
 
-    if (strm == Z_NULL || strm->state == Z_NULL)
-        return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
     state->wsize = 0;
     state->whave = 0;
     state->wnext = 0;
@@ -136,15 +129,10 @@ int inflateReset(
 }
 
 int inflateReset2(
-    z_stream* strm,
+    inflate_state* strm,
     int windowBits)
 {
-    struct inflate_state *state;
-
-    /* get the state */
-    if (strm == Z_NULL || strm->state == Z_NULL)
-        return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
+    auto state = strm;
 
     /* set number of window bits, free window if different */
     if (windowBits && (windowBits < 8 || windowBits > 15))
@@ -161,35 +149,27 @@ int inflateReset2(
 }
 
 int inflateInit2_(
-    z_stream* strm,
+    inflate_state* strm,
     int windowBits,
     const char *version,
     int stream_size)
 {
     int ret;
-    struct inflate_state *state;
+    auto state = strm;
 
     if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
         stream_size != (int)(sizeof(z_stream)))
         return Z_VERSION_ERROR;
     if (strm == Z_NULL) return Z_STREAM_ERROR;
     strm->msg = Z_NULL;                 /* in case we return an error */
-    state = (struct inflate_state *)
-            std::malloc(sizeof(struct inflate_state));
-    if (state == Z_NULL) return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
-    strm->state = (struct internal_state *)state;
     state->window = Z_NULL;
     ret = inflateReset2(strm, windowBits);
-    if (ret != Z_OK) {
-        std::free(state);
-        strm->state = Z_NULL;
-    }
     return ret;
 }
 
 int inflateInit_(
-    z_stream* strm,
+    inflate_state* strm,
     const char *version,
     int stream_size)
 {
@@ -206,8 +186,7 @@ int inflateInit_(
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-local void fixedtables(
-    struct inflate_state *state)
+local void fixedtables(inflate_state *state)
 {
 #ifdef BUILDFIXED
     static int virgin = 1;
@@ -325,14 +304,12 @@ void makefixed()
    The advantage may be dependent on the size of the processor's data caches.
  */
 local int updatewindow(
-    z_stream* strm,
+    inflate_state* strm,
     const Bytef *end,
     unsigned copy)
 {
-    struct inflate_state *state;
+    auto state = strm;
     unsigned dist;
-
-    state = (struct inflate_state *)strm->state;
 
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == Z_NULL) {
@@ -522,10 +499,10 @@ local int updatewindow(
  */
 
 int inflate(
-    z_stream* strm,
+    inflate_state* strm,
     int flush)
 {
-    struct inflate_state *state;
+    auto state = strm;
     const unsigned char *next;    /* next input */
     unsigned char *put;     /* next output */
     unsigned have, left;        /* available input and output */
@@ -541,11 +518,10 @@ int inflate(
     static const unsigned short order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-    if (strm == Z_NULL || strm->state == Z_NULL || strm->next_out == Z_NULL ||
-        (strm->next_in == Z_NULL && strm->avail_in != 0))
+    if (strm->next_out == Z_NULL ||
+            (strm->next_in == Z_NULL && strm->avail_in != 0))
         return Z_STREAM_ERROR;
 
-    state = (struct inflate_state *)strm->state;
     if (state->mode == TYPE) state->mode = TYPEDO;      /* skip check */
     LOAD();
     in = have;
@@ -947,29 +923,20 @@ int inflate(
 }
 
 int inflateEnd(
-    z_stream* strm)
+    inflate_state* strm)
 {
-    struct inflate_state *state;
-    if (strm == Z_NULL || strm->state == Z_NULL)
-        return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
+    auto state = strm;
     std::free(state->window);
-    std::free(strm->state);
-    strm->state = Z_NULL
     Tracev((stderr, "inflate: end\n"));
     return Z_OK;
 }
 
 int inflateGetDictionary(
-    z_stream* strm,
+    inflate_state* strm,
     Bytef *dictionary,
     uInt *dictLength)
 {
-    struct inflate_state *state;
-
-    /* check state */
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
+    auto state = strm;
 
     /* copy dictionary */
     if (state->whave && dictionary != Z_NULL) {
@@ -984,16 +951,12 @@ int inflateGetDictionary(
 }
 
 int inflateSetDictionary(
-    z_stream* strm,
+    inflate_state* strm,
     const Bytef *dictionary,
     uInt dictLength)
 {
-    struct inflate_state *state;
+    auto state = strm;
     int ret;
-
-    /* check state */
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
 
     /* copy dictionary to window using updatewindow(), which will amend the
        existing dictionary if appropriate */
@@ -1015,11 +978,7 @@ int inflateSetDictionary(
    inflate is waiting for these length bytes.
  */
 int inflateSyncPoint(
-    z_stream* strm)
+    inflate_state* strm)
 {
-    struct inflate_state *state;
-
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
-    return state->mode == STORED && state->bits == 0;
+    return strm->mode == STORED && strm->bits == 0;
 }
