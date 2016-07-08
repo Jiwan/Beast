@@ -205,27 +205,6 @@ int inflateInit_(
     return inflateInit2_(strm, DEF_WBITS, version, stream_size);
 }
 
-int inflatePrime(
-    z_streamp strm,
-    int bits,
-    int value)
-{
-    struct inflate_state *state;
-
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    state = (struct inflate_state *)strm->state;
-    if (bits < 0) {
-        state->hold = 0;
-        state->bits = 0;
-        return Z_OK;
-    }
-    if (bits > 16 || state->bits + bits > 32) return Z_STREAM_ERROR;
-    value &= (1L << bits) - 1;
-    state->hold += value << state->bits;
-    state->bits += bits;
-    return Z_OK;
-}
-
 /*
    Return state with length and distance decoding tables and index sizes set to
    fixed code decoding.  Normally this returns fixed tables from inffixed.h.

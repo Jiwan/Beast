@@ -837,27 +837,6 @@ extern int inflateReset2 (z_streamp strm,
    the windowBits parameter is invalid.
 */
 
-extern int inflatePrime (z_streamp strm,
-                                     int bits,
-                                     int value);
-/*
-     This function inserts bits in the inflate input stream.  The intent is
-   that this function is used to start inflating at a bit position in the
-   middle of a byte.  The provided bits will be used before any bytes are used
-   from next_in.  This function should only be used with raw inflate, and
-   should be used before the first inflate() call after inflateInit2() or
-   inflateReset().  bits must be less than or equal to 16, and that many of the
-   least significant bits of value will be inserted in the input.
-
-     If bits is negative, then the input stream bit buffer is emptied.  Then
-   inflatePrime() can be called again to put bits in the buffer.  This is used
-   to clear out bits leftover after feeding inflate a block description prior
-   to feeding inflate codes.
-
-     inflatePrime returns Z_OK if success, or Z_STREAM_ERROR if the source
-   stream state was inconsistent.
-*/
-
 extern long inflateMark (z_streamp strm);
 /*
      This function returns two values, one in the lower 16 bits of the return
