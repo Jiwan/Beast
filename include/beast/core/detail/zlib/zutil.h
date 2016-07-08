@@ -63,8 +63,6 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #define MAX_MATCH  258
 /* The minimum and maximum match lengths */
 
-#define PRESET_DICT 0x20 /* preset dictionary flag in zlib header */
-
         /* target dependencies */
 
 /* provide prototypes for these when building zlib without LFS */
@@ -72,12 +70,6 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
     extern uLong adler32_combine64 (uLong, uLong, z_off_t);
     extern uLong crc32_combine64 (uLong, uLong, z_off_t);
-#endif
-
-        /* common defaults */
-
-#ifndef F_OPEN
-#  define F_OPEN(name, mode) fopen((name), (mode))
 #endif
 
          /* functions */
@@ -104,7 +96,6 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 voidpf zcalloc (voidpf opaque, unsigned items,
                                 unsigned size);
-void zcfree  (voidpf opaque, voidpf ptr);
 
 #define ZALLOC(strm, items, size) \
            (*((strm)->zalloc))((strm)->opaque, (items), (size))
