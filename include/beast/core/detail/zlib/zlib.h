@@ -33,6 +33,8 @@
 
 #include "zconf.h"
 
+#include <cstdint>
+
 #define ZLIB_VERSION "1.2.8"
 #define ZLIB_VERNUM 0x1280
 #define ZLIB_VER_MAJOR 1
@@ -40,38 +42,49 @@
 #define ZLIB_VER_REVISION 8
 #define ZLIB_VER_SUBREVISION 0
 
-/*
-    The 'zlib' compression library provides in-memory compression and
-  decompression functions, including integrity checks of the uncompressed data.
-  This version of the library supports only one compression method (deflation)
-  but other algorithms will be added later and will have the same stream
-  interface.
+/* Structure for decoding tables.  Each entry provides either the
+   information needed to do the operation requested by the code that
+   indexed that table entry, or it provides a pointer to another
+   table that indexes more bits of the code.  op indicates whether
+   the entry is a pointer to another table, a literal, a length or
+   distance, an end-of-block, or an invalid code.  For a table
+   pointer, the low four bits of op is the number of index bits of
+   that table.  For a length or distance, the low four bits of op
+   is the number of extra bits to get after the code.  bits is
+   the number of bits in this code or part of the code to drop off
+   of the bit buffer.  val is the actual byte to output in the case
+   of a literal, the base length or distance, or the offset from
+   the current table to the next table.  Each entry is four bytes. */
+struct code
+{
+    unsigned char op;           /* operation, extra bits, table bits */
+    unsigned char bits;         /* bits in this part of the code */
+    unsigned short val;         /* offset in table or code value */
+};
 
-    Compression can be done in a single step if the buffers are large enough,
-  or can be done by repeated calls of the compression function.  In the latter
-  case, the application must provide more input and/or consume the output
-  (providing more output space) before each call.
+/* op values as set by inflate_table():
+    00000000 - literal
+    0000tttt - table link, tttt != 0 is the number of table index bits
+    0001eeee - length or distance, eeee is the number of extra bits
+    01100000 - end of block
+    01000000 - invalid code
+ */
 
-    The compressed data format used by default by the in-memory functions is
-  the zlib format, which is a zlib wrapper documented in RFC 1950, wrapped
-  around a deflate stream, which is itself documented in RFC 1951.
+/* Maximum size of the dynamic table.  The maximum number of code structures is
+   1444, which is the sum of 852 for literal/length codes and 592 for distance
+   codes.  These values were found by exhaustive searches using the program
+   examples/enough.c found in the zlib distribtution.  The arguments to that
+   program are the number of symbols, the initial root table size, and the
+   maximum bit length of a code.  "enough 286 9 15" for literal/length codes
+   returns returns 852, and "enough 30 6 15" for distance codes returns 592.
+   The initial root table size (9 or 6) is found in the fifth argument of the
+   inflate_table() calls in inflate.c and infback.c.  If the root table size is
+   changed, then these maximum sizes would be need to be recalculated and
+   updated. */
 
-    The library also supports reading and writing files in gzip (.gz) format
-  with an interface similar to that of stdio using the functions that start
-  with "gz".  The gzip format is different from the zlib format.  gzip is a
-  gzip wrapper, documented in RFC 1952, wrapped around a deflate stream.
-
-    This library can optionally read and write gzip streams in memory as well.
-
-    The zlib format was designed to be compact and fast for use in memory
-  and on communications channels.  The gzip format was designed for single-
-  file compression on file systems, has a larger header than zlib to maintain
-  directory information, and uses a different, slower check method than zlib.
-
-    The library does not install any signal handler.  The decoder checks
-  the consistency of the compressed data, so the library should never crash
-  even in case of corrupted input.
-*/
+std::uint16_t constexpr ENOUGH_LENS = 852;
+std::uint16_t constexpr ENOUGH_DISTS = 592;
+std::uint16_t constexpr ENOUGH = ENOUGH_LENS + ENOUGH_DISTS;
 
 typedef voidpf (*alloc_func) (voidpf opaque, uInt items, uInt size);
 typedef void   (*free_func)  (voidpf opaque, voidpf address);
@@ -126,6 +139,108 @@ typedef struct z_stream_s {
 } z_stream;
 
 typedef z_stream *z_streamp;
+
+/* Possible inflate modes between inflate() calls */
+
+enum inflate_mode
+{
+    HEAD,       /* i: waiting for magic header */
+    FLAGS,      /* i: waiting for method and flags (gzip) */
+    TIME,       /* i: waiting for modification time (gzip) */
+    OS,         /* i: waiting for extra flags and operating system (gzip) */
+    EXLEN,      /* i: waiting for extra length (gzip) */
+    EXTRA,      /* i: waiting for extra bytes (gzip) */
+    NAME,       /* i: waiting for end of file name (gzip) */
+    COMMENT,    /* i: waiting for end of comment (gzip) */
+    HCRC,       /* i: waiting for header crc (gzip) */
+    TYPE,       /* i: waiting for type bits, including last-flag bit */
+    TYPEDO,     /* i: same, but skip check to exit inflate on new block */
+    STORED,     /* i: waiting for stored size (length and complement) */
+    COPY_,      /* i/o: same as COPY below, but only first time in */
+    COPY,       /* i/o: waiting for input or output to copy stored block */
+    TABLE,      /* i: waiting for dynamic block table lengths */
+    LENLENS,    /* i: waiting for code length code lengths */
+    CODELENS,   /* i: waiting for length/lit and distance code lengths */
+        LEN_,   /* i: same as LEN below, but only first time in */
+        LEN,    /* i: waiting for length/lit/eob code */
+        LENEXT, /* i: waiting for length extra bits */
+        DIST,   /* i: waiting for distance code */
+        DISTEXT,/* i: waiting for distance extra bits */
+        MATCH,  /* o: waiting for output space to copy string */
+        LIT,    /* o: waiting for output space to write literal */
+    CHECK,      /* i: waiting for 32-bit check value */
+    LENGTH,     /* i: waiting for 32-bit length (gzip) */
+    DONE,       /* finished check, done -- remain here until reset */
+    BAD,        /* got a data error -- remain here until reset */
+    MEM,        /* got an inflate() memory error -- remain here until reset */
+    SYNC        /* looking for synchronization bytes to restart inflate() */
+};
+
+/*
+    State transitions between above modes -
+
+    (most modes can go to BAD or MEM on error -- not shown for clarity)
+
+    Process header:
+        HEAD -> (gzip) or (zlib) or (raw)
+        (gzip) -> FLAGS -> TIME -> OS -> EXLEN -> EXTRA -> NAME -> COMMENT ->
+                  HCRC -> TYPE
+        (zlib) -> DICTID or TYPE
+        DICTID -> DICT -> TYPE
+        (raw) -> TYPEDO
+    Read deflate blocks:
+            TYPE -> TYPEDO -> STORED or TABLE or LEN_ or CHECK
+            STORED -> COPY_ -> COPY -> TYPE
+            TABLE -> LENLENS -> CODELENS -> LEN_
+            LEN_ -> LEN
+    Read deflate codes in fixed or dynamic block:
+                LEN -> LENEXT or LIT or TYPE
+                LENEXT -> DIST -> DISTEXT -> MATCH -> LEN
+                LIT -> LEN
+    Process trailer:
+        CHECK -> LENGTH -> DONE
+ */
+
+/* state maintained between inflate() calls.  Approximately 10K bytes. */
+struct inflate_state
+{
+    inflate_mode mode;          /* current inflate mode */
+    int last;                   /* true if processing last block */
+    int flags;                  /* gzip header method and flags (0 if zlib) */
+    unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
+    unsigned long total;        /* protected copy of output count */
+        /* sliding window */
+    unsigned wbits;             /* log base 2 of requested window size */
+    unsigned wsize;             /* window size or zero if not using window */
+    unsigned whave;             /* valid bytes in the window */
+    unsigned wnext;             /* window write index */
+    unsigned char *window;  /* allocated sliding window, if needed */
+        /* bit accumulator */
+    unsigned long hold;         /* input bit accumulator */
+    unsigned bits;              /* number of bits in "in" */
+        /* for string and stored block copying */
+    unsigned length;            /* literal or length of data to copy */
+    unsigned offset;            /* distance back to copy string from */
+        /* for table and code decoding */
+    unsigned extra;             /* extra bits needed */
+        /* fixed and dynamic code tables */
+    code const *lencode;    /* starting table for length/literal codes */
+    code const *distcode;   /* starting table for distance codes */
+    unsigned lenbits;           /* index bits for lencode */
+    unsigned distbits;          /* index bits for distcode */
+        /* dynamic table building */
+    unsigned ncode;             /* number of code length code lengths */
+    unsigned nlen;              /* number of length code lengths */
+    unsigned ndist;             /* number of distance code lengths */
+    unsigned have;              /* number of code lengths in lens[] */
+    code *next;             /* next available space in codes[] */
+    unsigned short lens[320];   /* temporary storage for code lengths */
+    unsigned short work[288];   /* work area for code table building */
+    code codes[ENOUGH];         /* space for code tables */
+    int sane;                   /* if false, allow invalid distance too far */
+    int back;                   /* bits back of last unprocessed length/lit */
+    unsigned was;               /* initial length of match */
+};
 
                         /* constants */
 
@@ -825,5 +940,17 @@ extern int inflateInit2_ (z_streamp strm, int  windowBits,
 #define inflateInit2(strm, windowBits) \
         inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
                       (int)sizeof(z_stream))
+
+/* Type of code to build for inflate_table() */
+enum codetype
+{
+    CODES,
+    LENS,
+    DISTS
+};
+
+int inflate_table (codetype type, unsigned short *lens,
+                             unsigned codes, code * *table,
+                             unsigned *bits, unsigned short *work);
 
 #endif /* ZLIB_H */

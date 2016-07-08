@@ -208,7 +208,7 @@ public:
                 {
                     for(int strategy = 0; strategy <= 4; ++strategy)
                     {
-                        for(int wbits = 8; wbits <= 15; ++ wbits)
+                        for(int wbits = 15; wbits <= 15; ++wbits)
                         {
                             z_stream zs;
                             zs.zalloc = Z_NULL;

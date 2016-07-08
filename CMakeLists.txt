@@ -85,7 +85,6 @@ set (ZLIB_SOURCES
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inffast.h
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inffixed.h
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inflate.h
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inftrees.h
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/trees.h
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zconf.h
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zlib.h
