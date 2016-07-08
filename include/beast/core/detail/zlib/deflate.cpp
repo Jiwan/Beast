@@ -547,19 +547,6 @@ uLong deflateBound(
 }
 
 /* =========================================================================
- * Put a short in the pending buffer. The 16-bit value is put in MSB order.
- * IN assertion: the stream state is correct and there is enough room in
- * pending_buf.
- */
-local void putShortMSB (
-    deflate_state *s,
-    uInt b)
-{
-    put_byte(s, (Byte)(b >> 8));
-    put_byte(s, (Byte)(b & 0xff));
-}
-
-/* =========================================================================
  * Flush as much pending output as possible. All deflate() output goes
  * through this function so some applications may wish to modify it
  * to avoid allocating a large strm->next_out buffer and copying into it.
@@ -611,27 +598,6 @@ int deflate (
     s->strm = strm; /* just in case */
     old_flush = s->last_flush;
     s->last_flush = flush;
-
-    /* Write the header */
-    if (s->status == INIT_STATE) {
-        uInt header = (Z_DEFLATED + ((s->w_bits-8)<<4)) << 8;
-        uInt level_flags;
-
-        if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
-            level_flags = 0;
-        else if (s->level < 6)
-            level_flags = 1;
-        else if (s->level == 6)
-            level_flags = 2;
-        else
-            level_flags = 3;
-        header |= (level_flags << 6);
-        if (s->strstart != 0) header |= PRESET_DICT;
-        header += 31 - (header % 31);
-
-        s->status = BUSY_STATE;
-        putShortMSB(s, header);
-    }
 
     /* Flush as much pending output as possible */
     if (s->pending != 0) {
@@ -726,8 +692,7 @@ int deflateEnd (
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
 
     status = strm->state->status;
-    if (status != INIT_STATE &&
-        status != EXTRA_STATE &&
+    if (status != EXTRA_STATE &&
         status != NAME_STATE &&
         status != COMMENT_STATE &&
         status != HCRC_STATE &&

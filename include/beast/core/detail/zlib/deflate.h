@@ -43,7 +43,6 @@
 #define Buf_size 16
 /* size of bit buffer in bi_buf */
 
-#define INIT_STATE    42
 #define EXTRA_STATE   69
 #define NAME_STATE    73
 #define COMMENT_STATE 91
