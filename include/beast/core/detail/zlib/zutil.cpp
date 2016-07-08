@@ -8,7 +8,7 @@
 #include "zutil.h"
 
 #ifndef NO_DUMMY_DECL
-struct deflate_state      {int dummy;}; /* for buggy compilers */
+struct deflate_stream      {int dummy;}; /* for buggy compilers */
 #endif
 
 const char * const z_errmsg[10] = {

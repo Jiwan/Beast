@@ -6,7 +6,7 @@
 //
 
 // Test that header file is self-contained.
-#include <beast/core/detail/zlib/deflate.hpp>
+#include <beast/core/detail/zlib/deflate_stream.hpp>
 #include <beast/core/detail/zlib/inflate_stream.hpp>
 
 #include <beast/unit_test/suite.hpp>
@@ -208,7 +208,7 @@ public:
                     {
                         for(int wbits = 15; wbits <= 15; ++wbits)
                         {
-                            deflate_state zs;
+                            deflate_stream zs;
                             zs.avail_in = 0;
                             zs.next_in = Z_NULL;
                             expect(deflateInit2(&zs,

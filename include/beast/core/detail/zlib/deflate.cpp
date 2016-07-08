@@ -49,7 +49,7 @@
 
 /* @(#) $Id$ */
 
-#include <beast/core/detail/zlib/deflate.hpp>
+#include <beast/core/detail/zlib/deflate_stream.hpp>
 
 #include <cstring>
 #include <memory>
@@ -97,30 +97,30 @@ typedef enum {
     finish_done     /* finish done, accept no more input or output */
 } block_state;
 
-typedef block_state (*compress_func) (deflate_state *s, int flush);
+typedef block_state (*compress_func) (deflate_stream *s, int flush);
 /* Compression function. Returns the block state after the call. */
 
-local void fill_window    (deflate_state *s);
-local block_state deflate_stored (deflate_state *s, int flush);
-local block_state deflate_fast   (deflate_state *s, int flush);
+local void fill_window    (deflate_stream *s);
+local block_state deflate_stored (deflate_stream *s, int flush);
+local block_state deflate_fast   (deflate_stream *s, int flush);
 #ifndef FASTEST
-local block_state deflate_slow   (deflate_state *s, int flush);
+local block_state deflate_slow   (deflate_stream *s, int flush);
 #endif
-local block_state deflate_rle    (deflate_state *s, int flush);
-local block_state deflate_huff   (deflate_state *s, int flush);
-local void lm_init        (deflate_state *s);
-local void putShortMSB    (deflate_state *s, uInt b);
-local void flush_pending  (deflate_state* strm);
-local int read_buf        (deflate_state* strm, Byte *buf, unsigned size);
+local block_state deflate_rle    (deflate_stream *s, int flush);
+local block_state deflate_huff   (deflate_stream *s, int flush);
+local void lm_init        (deflate_stream *s);
+local void putShortMSB    (deflate_stream *s, uInt b);
+local void flush_pending  (deflate_stream* strm);
+local int read_buf        (deflate_stream* strm, Byte *buf, unsigned size);
 #ifdef ASMV
       void match_init (void); /* asm code initialization */
-      uInt longest_match  (deflate_state *s, IPos cur_match);
+      uInt longest_match  (deflate_stream *s, IPos cur_match);
 #else
-local uInt longest_match  (deflate_state *s, IPos cur_match);
+local uInt longest_match  (deflate_stream *s, IPos cur_match);
 #endif
 
 #ifdef DEBUG
-local  void check_match (deflate_state *s, IPos start, IPos match,
+local  void check_match (deflate_stream *s, IPos start, IPos match,
                             int length);
 #endif
 
@@ -226,7 +226,7 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
 
 /* ========================================================================= */
 int deflateInit(
-    deflate_state* strm,
+    deflate_stream* strm,
     int level)
 {
     return deflateInit2(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
@@ -236,7 +236,7 @@ int deflateInit(
 
 /* ========================================================================= */
 int deflateInit2(
-    deflate_state* strm,
+    deflate_stream* strm,
     int  level,
     int  method,
     int  windowBits,
@@ -310,7 +310,7 @@ int deflateInit2(
 
 /* ========================================================================= */
 int deflateSetDictionary (
-    deflate_state* strm,
+    deflate_stream* strm,
     const Byte *dictionary,
     uInt  dictLength)
 {
@@ -367,7 +367,7 @@ int deflateSetDictionary (
 
 /* ========================================================================= */
 int deflateResetKeep (
-    deflate_state* strm)
+    deflate_stream* strm)
 {
     strm->total_in = strm->total_out = 0;
     strm->msg = Z_NULL;
@@ -387,7 +387,7 @@ int deflateResetKeep (
 
 /* ========================================================================= */
 int deflateReset (
-    deflate_state* strm)
+    deflate_stream* strm)
 {
     int ret;
 
@@ -401,7 +401,7 @@ int deflateReset (
 int deflatePending (
     unsigned *pending,
     int *bits,
-    deflate_state* strm)
+    deflate_stream* strm)
 {
     if (pending != Z_NULL)
         *pending = strm->pending;
@@ -412,7 +412,7 @@ int deflatePending (
 
 /* ========================================================================= */
 int deflatePrime (
-    deflate_state* strm,
+    deflate_stream* strm,
     int bits,
     int value)
 {
@@ -436,7 +436,7 @@ int deflatePrime (
 
 /* ========================================================================= */
 int deflateParams(
-    deflate_state* strm,
+    deflate_stream* strm,
     int level,
     int strategy)
 {
@@ -476,7 +476,7 @@ int deflateParams(
 
 /* ========================================================================= */
 int deflateTune(
-    deflate_state* strm,
+    deflate_stream* strm,
     int good_length,
     int max_lazy,
     int nice_length,
@@ -508,7 +508,7 @@ int deflateTune(
  * allocation.
  */
 uLong deflateBound(
-    deflate_state* strm,
+    deflate_stream* strm,
     uLong sourceLen)
 {
     uLong complen, wraplen;
@@ -541,7 +541,7 @@ uLong deflateBound(
  * (See also read_buf()).
  */
 local void flush_pending(
-    deflate_state* strm)
+    deflate_stream* strm)
 {
     unsigned len;
     auto s = strm;
@@ -564,7 +564,7 @@ local void flush_pending(
 
 /* ========================================================================= */
 int deflate (
-    deflate_state* strm,
+    deflate_stream* strm,
     int flush)
 {
     int old_flush; /* value of flush param for previous deflate call */
@@ -671,7 +671,7 @@ int deflate (
 
 /* ========================================================================= */
 int deflateEnd (
-    deflate_state* strm)
+    deflate_stream* strm)
 {
     int status;
 
@@ -705,7 +705,7 @@ int deflateEnd (
  * (See also flush_pending()).
  */
 local int read_buf(
-    deflate_state* strm,
+    deflate_stream* strm,
     Byte *buf,
     unsigned size)
 {
@@ -727,7 +727,7 @@ local int read_buf(
  * Initialize the "longest match" routines for a new zlib stream
  */
 local void lm_init (
-    deflate_state *s)
+    deflate_stream *s)
 {
     s->window_size = (std::uint32_t)2L*s->w_size;
 
@@ -769,7 +769,7 @@ local void lm_init (
  * match.S. The code will be functionally equivalent.
  */
 local uInt longest_match(
-    deflate_state *s,
+    deflate_stream *s,
     IPos cur_match)                             /* current match */
 {
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
@@ -868,7 +868,7 @@ local uInt longest_match(
  * Optimized version for FASTEST only
  */
 local uInt longest_match(
-    deflate_state *s,
+    deflate_stream *s,
     IPos cur_match)                             /* current match */
 {
     Byte *scan = s->window + s->strstart; /* current string */
@@ -927,7 +927,7 @@ local uInt longest_match(
  * Check that the match at match_start is indeed a match.
  */
 local void check_match(
-    deflate_state *s,
+    deflate_stream *s,
     IPos start, match,
     int length)
 {
@@ -961,7 +961,7 @@ local void check_match(
  *    option -- not supported here).
  */
 local void fill_window(
-    deflate_state *s)
+    deflate_stream *s)
 {
     unsigned n, m;
     std::uint16_t *p;
@@ -1135,7 +1135,7 @@ local void fill_window(
  * window to pending_buf.
  */
 local block_state deflate_stored(
-    deflate_state *s,
+    deflate_stream *s,
     int flush)
 {
     /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
@@ -1199,7 +1199,7 @@ local block_state deflate_stored(
  * matches. It is used only for the fast compression options.
  */
 local block_state deflate_fast(
-    deflate_state *s,
+    deflate_stream *s,
     int flush)
 {
     IPos hash_head;       /* head of the hash chain */
@@ -1301,7 +1301,7 @@ local block_state deflate_fast(
  * no better match at the next window position.
  */
 local block_state deflate_slow(
-    deflate_state *s,
+    deflate_stream *s,
     int flush)
 {
     IPos hash_head;          /* head of hash chain */
@@ -1432,7 +1432,7 @@ local block_state deflate_slow(
  * deflate switches away from Z_RLE.)
  */
 local block_state deflate_rle(
-    deflate_state *s,
+    deflate_stream *s,
     int flush)
 {
     int bflush;             /* set if current block must be flushed */
@@ -1505,7 +1505,7 @@ local block_state deflate_rle(
  * (It will be regenerated if this run of deflate switches away from Huffman.)
  */
 local block_state deflate_huff(
-    deflate_state *s,
+    deflate_stream *s,
     int flush)
 {
     int bflush;             /* set if current block must be flushed */

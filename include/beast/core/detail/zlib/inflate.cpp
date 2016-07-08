@@ -82,7 +82,6 @@
 
 #include "zutil.h"
 #include "inftrees.h"
-#include "inffast.h"
 
 #include <beast/core/detail/zlib/inflate_stream.hpp>
 

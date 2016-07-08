@@ -32,8 +32,8 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef BEAST_CORE_DETAIL_DEFLATE_HPP
-#define BEAST_CORE_DETAIL_DEFLATE_HPP
+#ifndef BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
+#define BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
 
 #include "zutil.h"
 #include <cstdlib>
@@ -108,7 +108,7 @@ using IPos = unsigned;
  * save space in the various tables. IPos is used only for parameter passing.
  */
 
-class deflate_state : public z_stream
+class deflate_stream : public z_stream
 {
 public:
     int   status;        /* as the name implies */
@@ -305,13 +305,13 @@ public:
    memory checker errors from longest match routines */
 
         /* in trees.c */
-void _tr_init (deflate_state *s);
-int _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
-void _tr_flush_block (deflate_state *s, char *buf,
+void _tr_init (deflate_stream *s);
+int _tr_tally (deflate_stream *s, unsigned dist, unsigned lc);
+void _tr_flush_block (deflate_stream *s, char *buf,
                         std::uint32_t stored_len, int last);
-void _tr_flush_bits (deflate_state *s);
-void _tr_align (deflate_state *s);
-void _tr_stored_block (deflate_state *s, char *bu,
+void _tr_flush_bits (deflate_stream *s);
+void _tr_align (deflate_stream *s);
+void _tr_stored_block (deflate_stream *s, char *bu,
                         std::uint32_t stored_len, int last);
 
 #define d_code(dist) \
@@ -332,19 +332,19 @@ void _tr_stored_block (deflate_state *s, char *bu,
 #endif
 #endif
 
-extern int deflate (deflate_state* strm, int flush);
-extern int deflateEnd (deflate_state* strm);
-extern int deflateSetDictionary (deflate_state* strm,
+extern int deflate (deflate_stream* strm, int flush);
+extern int deflateEnd (deflate_stream* strm);
+extern int deflateSetDictionary (deflate_stream* strm,
     const Byte *dictionary, uInt  dictLength);
-extern int deflateReset (deflate_state* strm);
-extern int deflateParams (deflate_state* strm, int level, int strategy);
-extern int deflateTune (deflate_state* strm,
+extern int deflateReset (deflate_stream* strm);
+extern int deflateParams (deflate_stream* strm, int level, int strategy);
+extern int deflateTune (deflate_stream* strm,
     int good_length, int max_lazy, int nice_length, int max_chain);
-extern uLong deflateBound (deflate_state* strm, uLong sourceLen);
-extern int deflatePending (deflate_state* strm, unsigned *pending, int *bits);
-extern int deflatePrime (deflate_state* strm, int bits, int value);
-extern int deflateInit (deflate_state* strm, int level);
-extern int deflateInit2 (deflate_state* strm, int level, int  method,
+extern uLong deflateBound (deflate_stream* strm, uLong sourceLen);
+extern int deflatePending (deflate_stream* strm, unsigned *pending, int *bits);
+extern int deflatePrime (deflate_stream* strm, int bits, int value);
+extern int deflateInit (deflate_stream* strm, int level);
+extern int deflateInit2 (deflate_stream* strm, int level, int  method,
     int windowBits, int memLevel, int strategy);
 
 #endif /* DEFLATE_H */
