@@ -798,22 +798,6 @@ extern int inflateSync (z_streamp strm);
    input each time, until success or end of the input data.
 */
 
-extern int inflateCopy (z_streamp dest,
-                                    z_streamp source);
-/*
-     Sets the destination stream as a complete copy of the source stream.
-
-     This function can be useful when randomly accessing a large stream.  The
-   first pass through the stream can periodically record the inflate state,
-   allowing restarting inflate at those points when randomly accessing the
-   stream.
-
-     inflateCopy returns Z_OK if success, Z_MEM_ERROR if there was not
-   enough memory, Z_STREAM_ERROR if the source stream state was inconsistent
-   (such as zalloc being Z_NULL).  msg is left unchanged in both source and
-   destination.
-*/
-
 extern int inflateReset (z_streamp strm);
 /*
      This function is equivalent to inflateEnd followed by inflateInit,

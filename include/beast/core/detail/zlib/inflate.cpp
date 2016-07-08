@@ -1111,53 +1111,6 @@ int inflateSyncPoint(
     return state->mode == STORED && state->bits == 0;
 }
 
-int inflateCopy(
-    z_streamp dest,
-    z_streamp source)
-{
-    struct inflate_state *state;
-    struct inflate_state *copy;
-    unsigned char *window;
-    unsigned wsize;
-
-    /* check input */
-    if (dest == Z_NULL || source == Z_NULL || source->state == Z_NULL ||
-        source->zalloc == (alloc_func)0 || source->zfree == (free_func)0)
-        return Z_STREAM_ERROR;
-    state = (struct inflate_state *)source->state;
-
-    /* allocate space */
-    copy = (struct inflate_state *)
-           ZALLOC(source, 1, sizeof(struct inflate_state));
-    if (copy == Z_NULL) return Z_MEM_ERROR;
-    window = Z_NULL;
-    if (state->window != Z_NULL) {
-        window = (unsigned char *)
-                 ZALLOC(source, 1U << state->wbits, sizeof(unsigned char));
-        if (window == Z_NULL) {
-            ZFREE(source, copy);
-            return Z_MEM_ERROR;
-        }
-    }
-
-    /* copy state */
-    std::memcpy((voidpf)dest, (voidpf)source, sizeof(z_stream));
-    std::memcpy((voidpf)copy, (voidpf)state, sizeof(struct inflate_state));
-    if (state->lencode >= state->codes &&
-        state->lencode <= state->codes + ENOUGH - 1) {
-        copy->lencode = copy->codes + (state->lencode - state->codes);
-        copy->distcode = copy->codes + (state->distcode - state->codes);
-    }
-    copy->next = copy->codes + (state->next - state->codes);
-    if (window != Z_NULL) {
-        wsize = 1U << state->wbits;
-        std::memcpy(window, state->window, wsize);
-    }
-    copy->window = window;
-    dest->state = (struct internal_state *)copy;
-    return Z_OK;
-}
-
 int inflateUndermine(
     z_streamp strm,
     int subvert)
