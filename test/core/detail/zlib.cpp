@@ -87,7 +87,8 @@ public:
     }
 
     void
-    checkInflate(buffer const& input, buffer const& original)
+    checkInflate(buffer const& input,
+        buffer const& dict, buffer const& original)
     {
         for(std::size_t i = 0; i < input.size(); ++i)
         {
@@ -99,6 +100,8 @@ public:
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
             expect(inflateInit2(&zs, 15) == Z_OK);
+            expect(inflateSetDictionary(&zs,
+                dict.data(), dict.size()) == Z_OK);
             zs.next_out = output.data();
             zs.avail_out = output.capacity();
             if(i > 0)
@@ -124,32 +127,51 @@ public:
     {
         static std::size_t constexpr N = 2048;
         auto const original = make_source(N);
-        for(int level = 0; level <= 9; ++level)
+        for(int dictno = 0; dictno <= 1; ++dictno)
         {
-            for(int strategy = 0; strategy <= 4; ++strategy)
+            std::string const s{
+                "01234567890{}\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz{} "};
+            buffer dict(s.size());
+            switch(dictno)
             {
-                z_stream zs;
-                zs.zalloc = Z_NULL;
-                zs.zfree = Z_NULL;
-                zs.opaque = Z_NULL;
-                zs.avail_in = 0;
-                zs.next_in = Z_NULL;
-                expect(deflateInit2(&zs, 
-                    level,
-                    Z_DEFLATED,
-                    -15,
-                    4,
-                    strategy) == Z_OK);
-                buffer output(deflateBound(&zs, original.size()));
-                zs.next_in = (Bytef*)original.data();
-                zs.avail_in = original.size();
-                zs.next_out = output.data();
-                zs.avail_out = output.capacity();
-                auto result = deflate(&zs, Z_FULL_FLUSH);
-                deflateEnd(&zs);
-                expect(result == Z_OK);
-                output.resize(output.capacity() - zs.avail_out);
-                checkInflate(output, original);
+            case 0:
+                break;
+            case 1:
+            {
+                std::memcpy(dict.data(), s.data(), s.size());
+                dict.resize(s.size());
+                break;
+            }
+            }
+            for(int level = 0; level <= 9; ++level)
+            {
+                for(int strategy = 0; strategy <= 4; ++strategy)
+                {
+                    z_stream zs;
+                    zs.zalloc = Z_NULL;
+                    zs.zfree = Z_NULL;
+                    zs.opaque = Z_NULL;
+                    zs.avail_in = 0;
+                    zs.next_in = Z_NULL;
+                    expect(deflateInit2(&zs, 
+                        level,
+                        Z_DEFLATED,
+                        -15,
+                        4,
+                        strategy) == Z_OK);
+                    expect(deflateSetDictionary(&zs,
+                        dict.data(), dict.size()) == Z_OK);
+                    buffer output(deflateBound(&zs, original.size()));
+                    zs.next_in = (Bytef*)original.data();
+                    zs.avail_in = original.size();
+                    zs.next_out = output.data();
+                    zs.avail_out = output.capacity();
+                    auto result = deflate(&zs, Z_FULL_FLUSH);
+                    deflateEnd(&zs);
+                    expect(result == Z_OK);
+                    output.resize(output.capacity() - zs.avail_out);
+                    checkInflate(output, dict, original);
+                }
             }
         }
     }
