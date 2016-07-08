@@ -118,10 +118,10 @@ local  void check_match (deflate_state *s, IPos start, IPos match,
  * found for specific files.
  */
 typedef struct config_s {
-   ush good_length; /* reduce lazy search above this match length */
-   ush max_lazy;    /* do not perform lazy search above this match length */
-   ush nice_length; /* quit search above this match length */
-   ush max_chain;
+   std::uint16_t good_length; /* reduce lazy search above this match length */
+   std::uint16_t max_lazy;    /* do not perform lazy search above this match length */
+   std::uint16_t nice_length; /* quit search above this match length */
+   std::uint16_t max_chain;
    compress_func func;
 } config;
 
@@ -226,7 +226,7 @@ int deflateInit2_(
     deflate_state *s;
     static const char my_version[] = ZLIB_VERSION;
 
-    ushf *overlay;
+    std::uint16_t *overlay;
     /* We overlay pending_buf and d_buf+l_buf. This works since the average
      * output size for (length,distance) codes is <= 24 bits.
      */
@@ -280,9 +280,9 @@ int deflateInit2_(
 
     s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
 
-    overlay = (ushf *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
-    s->pending_buf = (uchf *) overlay;
-    s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(ush)+2L);
+    overlay = (std::uint16_t *) ZALLOC(strm, s->lit_bufsize, sizeof(std::uint16_t)+2);
+    s->pending_buf = (std::uint8_t *) overlay;
+    s->pending_buf_size = (std::uint32_t)s->lit_bufsize * (sizeof(std::uint16_t)+2L);
 
     if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
         s->pending_buf == Z_NULL) {
@@ -291,8 +291,8 @@ int deflateInit2_(
         deflateEnd (strm);
         return Z_MEM_ERROR;
     }
-    s->d_buf = overlay + s->lit_bufsize/sizeof(ush);
-    s->l_buf = s->pending_buf + (1+sizeof(ush))*s->lit_bufsize;
+    s->d_buf = overlay + s->lit_bufsize/sizeof(std::uint16_t);
+    s->l_buf = s->pending_buf + (1+sizeof(std::uint16_t))*s->lit_bufsize;
 
     s->level = level;
     s->strategy = strategy;
@@ -430,7 +430,7 @@ int deflatePrime (
         put = Buf_size - s->bi_valid;
         if (put > bits)
             put = bits;
-        s->bi_buf |= (ush)((value & ((1 << put) - 1)) << s->bi_valid);
+        s->bi_buf |= (std::uint16_t)((value & ((1 << put) - 1)) << s->bi_valid);
         s->bi_valid += put;
         _tr_flush_bits(s);
         value >>= put;
@@ -742,7 +742,7 @@ local int read_buf(
 local void lm_init (
     deflate_state *s)
 {
-    s->window_size = (ulg)2L*s->w_size;
+    s->window_size = (std::uint32_t)2L*s->w_size;
 
     CLEAR_HASH(s);
 
@@ -817,7 +817,7 @@ local uInt longest_match(
      */
     if ((uInt)nice_match > s->lookahead) nice_match = s->lookahead;
 
-    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+    Assert((std::uint32_t)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
 
     do {
         Assert(cur_match < s->strstart, "no future");
@@ -894,7 +894,7 @@ local uInt longest_match(
      */
     Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
 
-    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+    Assert((std::uint32_t)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
 
     Assert(cur_match < s->strstart, "no future");
 
@@ -984,7 +984,7 @@ local void fill_window(
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = (unsigned)(s->window_size -(ulg)s->lookahead -(ulg)s->strstart);
+        more = (unsigned)(s->window_size -(std::uint32_t)s->lookahead -(std::uint32_t)s->strstart);
 
         /* Deal with !@#$% 64K limit: */
         if (sizeof(int) <= 2) {
@@ -1087,8 +1087,8 @@ local void fill_window(
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        ulg curr = s->strstart + (ulg)(s->lookahead);
-        ulg init;
+        std::uint32_t curr = s->strstart + (std::uint32_t)(s->lookahead);
+        std::uint32_t init;
 
         if (s->high_water < curr) {
             /* Previous high water mark below current data -- zero WIN_INIT
@@ -1100,12 +1100,12 @@ local void fill_window(
             std::memset(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
         }
-        else if (s->high_water < (ulg)curr + WIN_INIT) {
+        else if (s->high_water < (std::uint32_t)curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
              */
-            init = (ulg)curr + WIN_INIT - s->high_water;
+            init = (std::uint32_t)curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
             std::memset(s->window + s->high_water, 0, (unsigned)init);
@@ -1113,7 +1113,7 @@ local void fill_window(
         }
     }
 
-    Assert((ulg)s->strstart <= s->window_size - MIN_LOOKAHEAD,
+    Assert((std::uint32_t)s->strstart <= s->window_size - MIN_LOOKAHEAD,
            "not enough room for search");
 }
 
@@ -1125,7 +1125,7 @@ local void fill_window(
    _tr_flush_block(s, (s->block_start >= 0L ? \
                    (charf *)&s->window[(unsigned)s->block_start] : \
                    (charf *)Z_NULL), \
-                (ulg)((long)s->strstart - s->block_start), \
+                (std::uint32_t)((long)s->strstart - s->block_start), \
                 (last)); \
    s->block_start = s->strstart; \
    flush_pending(s->strm); \
@@ -1154,8 +1154,8 @@ local block_state deflate_stored(
     /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
      * to pending_buf_size, and each stored block has a 5 byte header:
      */
-    ulg max_block_size = 0xffff;
-    ulg max_start;
+    std::uint32_t max_block_size = 0xffff;
+    std::uint32_t max_start;
 
     if (max_block_size > s->pending_buf_size - 5) {
         max_block_size = s->pending_buf_size - 5;
@@ -1181,7 +1181,7 @@ local block_state deflate_stored(
 
         /* Emit a stored block if pending_buf will be full: */
         max_start = s->block_start + max_block_size;
-        if (s->strstart == 0 || (ulg)s->strstart >= max_start) {
+        if (s->strstart == 0 || (std::uint32_t)s->strstart >= max_start) {
             /* strstart == 0 is possible when wraparound on 16-bit machine */
             s->lookahead = (uInt)(s->strstart - max_start);
             s->strstart = (uInt)max_start;

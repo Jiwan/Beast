@@ -54,12 +54,12 @@ enum StreamStatus
 /* Data structure describing a single value and its code string. */
 typedef struct ct_data_s {
     union {
-        ush  freq;       /* frequency count */
-        ush  code;       /* bit string */
+        std::uint16_t  freq;       /* frequency count */
+        std::uint16_t  code;       /* bit string */
     } fc;
     union {
-        ush  dad;        /* father node in Huffman tree */
-        ush  len;        /* length of bit string */
+        std::uint16_t  dad;        /* father node in Huffman tree */
+        std::uint16_t  len;        /* length of bit string */
     } dl;
 } ct_data;
 
@@ -76,7 +76,7 @@ typedef struct tree_desc_s {
     static_tree_desc *stat_desc; /* the corresponding static tree */
 } tree_desc;
 
-typedef ush Pos;
+typedef std::uint16_t Pos;
 typedef Pos Posf;
 typedef unsigned IPos;
 
@@ -89,7 +89,7 @@ struct internal_state
     z_streamp strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
     Bytef *pending_buf;  /* output still pending */
-    ulg   pending_buf_size; /* size of pending_buf */
+    std::uint32_t   pending_buf_size; /* size of pending_buf */
     Bytef *pending_out;  /* next pending byte to output to the stream */
     uInt   pending;      /* nb of bytes in the pending buffer */
     uInt   gzindex;      /* where in extra, name, or comment */
@@ -112,7 +112,7 @@ struct internal_state
      * To do: use the user input buffer as sliding window.
      */
 
-    ulg window_size;
+    std::uint32_t window_size;
     /* Actual size of window: 2*wSize, except when the user input buffer
      * is directly used as sliding window.
      */
@@ -189,7 +189,7 @@ struct internal_state
     struct tree_desc_s d_desc;               /* desc. for distance tree */
     struct tree_desc_s bl_desc;              /* desc. for bit length tree */
 
-    ush bl_count[MAX_BITS+1];
+    std::uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
 
     int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
@@ -199,11 +199,11 @@ struct internal_state
      * The same heap array is used to build all trees.
      */
 
-    uch depth[2*L_CODES+1];
+    std::uint8_t depth[2*L_CODES+1];
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
 
-    uchf *l_buf;          /* buffer for literals or lengths */
+    std::uint8_t *l_buf;          /* buffer for literals or lengths */
 
     uInt  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
@@ -227,23 +227,23 @@ struct internal_state
 
     uInt last_lit;      /* running index in l_buf */
 
-    ushf *d_buf;
+    std::uint16_t *d_buf;
     /* Buffer for distances. To simplify the code, d_buf and l_buf have
      * the same number of elements. To use different lengths, an extra flag
      * array would be necessary.
      */
 
-    ulg opt_len;        /* bit length of current block with optimal trees */
-    ulg static_len;     /* bit length of current block with static trees */
+    std::uint32_t opt_len;        /* bit length of current block with optimal trees */
+    std::uint32_t static_len;     /* bit length of current block with static trees */
     uInt matches;       /* number of string matches in current block */
     uInt insert;        /* bytes at end of window left to insert */
 
 #ifdef DEBUG
-    ulg compressed_len; /* total bit length of compressed file mod 2^32 */
-    ulg bits_sent;      /* bit length of compressed data sent mod 2^32 */
+    std::uint32_t compressed_len; /* total bit length of compressed file mod 2^32 */
+    std::uint32_t bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
 
-    ush bi_buf;
+    std::uint16_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */
@@ -252,7 +252,7 @@ struct internal_state
      * are always zero.
      */
 
-    ulg high_water;
+    std::uint32_t high_water;
     /* High water mark offset in window for initialized bytes -- bytes above
      * this are set to zero in order to avoid memory check warnings when
      * longest match routines access bytes past the input.  This is then
@@ -286,11 +286,11 @@ using deflate_state = internal_state;
 void _tr_init (deflate_state *s);
 int _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
 void _tr_flush_block (deflate_state *s, charf *buf,
-                        ulg stored_len, int last);
+                        std::uint32_t stored_len, int last);
 void _tr_flush_bits (deflate_state *s);
 void _tr_align (deflate_state *s);
 void _tr_stored_block (deflate_state *s, charf *bu,
-                        ulg stored_len, int last);
+                        std::uint32_t stored_len, int last);
 
 #define d_code(dist) \
    ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
@@ -303,23 +303,23 @@ void _tr_stored_block (deflate_state *s, charf *bu,
 /* Inline versions of _tr_tally for speed: */
 
 #if defined(GEN_TREES_H)
-  extern uch _length_code[];
-  extern uch _dist_code[];
+  extern std::uint8_t _length_code[];
+  extern std::uint8_t _dist_code[];
 #else
-  extern const uch _length_code[];
-  extern const uch _dist_code[];
+  extern const std::uint8_t _length_code[];
+  extern const std::uint8_t _dist_code[];
 #endif
 
 # define _tr_tally_lit(s, c, flush) \
-  { uch cc = (c); \
+  { std::uint8_t cc = (c); \
     s->d_buf[s->last_lit] = 0; \
     s->l_buf[s->last_lit++] = cc; \
     s->dyn_ltree[cc].Freq++; \
     flush = (s->last_lit == s->lit_bufsize-1); \
    }
 # define _tr_tally_dist(s, distance, length, flush) \
-  { uch len = (length); \
-    ush dist = (distance); \
+  { std::uint8_t len = (length); \
+    std::uint16_t dist = (distance); \
     s->d_buf[s->last_lit] = dist; \
     s->l_buf[s->last_lit++] = len; \
     dist--; \
