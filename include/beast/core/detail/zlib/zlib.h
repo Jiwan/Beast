@@ -801,42 +801,6 @@ extern int inflateReset2 (z_streamp strm,
    the windowBits parameter is invalid.
 */
 
-extern long inflateMark (z_streamp strm);
-/*
-     This function returns two values, one in the lower 16 bits of the return
-   value, and the other in the remaining upper bits, obtained by shifting the
-   return value down 16 bits.  If the upper value is -1 and the lower value is
-   zero, then inflate() is currently decoding information outside of a block.
-   If the upper value is -1 and the lower value is non-zero, then inflate is in
-   the middle of a stored block, with the lower value equaling the number of
-   bytes from the input remaining to copy.  If the upper value is not -1, then
-   it is the number of bits back from the current bit position in the input of
-   the code (literal or length/distance pair) currently being processed.  In
-   that case the lower value is the number of bytes already emitted for that
-   code.
-
-     A code is being processed if inflate is waiting for more input to complete
-   decoding of the code, or if it has completed decoding but is waiting for
-   more output space to write the literal or match data.
-
-     inflateMark() is used to mark locations in the input data for random
-   access, which may be at bit positions, and to note those cases where the
-   output of a code may span boundaries of random access blocks.  The current
-   location in the input stream can be determined from avail_in and data_type
-   as noted in the description for the Z_BLOCK flush parameter for inflate.
-
-     inflateMark returns the value noted above or -1 << 16 if the provided
-   source stream state was inconsistent.
-*/
-
-                        /* checksum functions */
-
-/*
-     These functions are not related to compression but are exported
-   anyway because they might be useful in applications using the compression
-   library.
-*/
-
                         /* various hacks, don't look :) */
 
 /* deflateInit and inflateInit are macros to allow checking the zlib version
