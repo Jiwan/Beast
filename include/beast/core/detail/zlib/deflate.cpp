@@ -155,7 +155,7 @@ local const config configuration_table[10] = {
 /* result of memcmp for equal strings */
 
 #ifndef NO_DUMMY_DECL
-struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
+struct static_tree_desc {int dummy;}; /* for buggy compilers */
 #endif
 
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
@@ -256,7 +256,7 @@ int deflateInit2_(
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
     s = (deflate_state *) std::malloc(sizeof(deflate_state));
     if (s == Z_NULL) return Z_MEM_ERROR;
-    strm->state = (struct internal_state *)s;
+    strm->state = (struct deflate_state *)s;
     s->strm = strm;
 
     s->w_bits = windowBits;
@@ -269,8 +269,8 @@ int deflateInit2_(
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 
     s->window = (Bytef *) std::malloc(s->w_size * 2*sizeof(Byte));
-    s->prev   = (Posf *)  std::malloc(s->w_size * sizeof(Pos));
-    s->head   = (Posf *)  std::malloc(s->hash_size * sizeof(Pos));
+    s->prev   = (Pos *)  std::malloc(s->w_size * sizeof(Pos));
+    s->head   = (Pos *)  std::malloc(s->hash_size * sizeof(Pos));
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
@@ -790,7 +790,7 @@ local uInt longest_match(
     /* Stop when cur_match becomes <= limit. To simplify the code,
      * we prevent matches with the string of window index 0.
      */
-    Posf *prev = s->prev;
+    Pos *prev = s->prev;
     uInt wmask = s->w_mask;
 
     Bytef *strend = s->window + s->strstart + MAX_MATCH;
@@ -971,7 +971,7 @@ local void fill_window(
     deflate_state *s)
 {
     unsigned n, m;
-    Posf *p;
+    Pos *p;
     unsigned more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
 

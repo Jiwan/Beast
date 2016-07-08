@@ -89,7 +89,7 @@ std::uint16_t constexpr ENOUGH = ENOUGH_LENS + ENOUGH_DISTS;
 typedef voidpf (*alloc_func) (voidpf opaque, uInt items, uInt size);
 typedef void   (*free_func)  (voidpf opaque, voidpf address);
 
-struct internal_state;
+struct deflate_state;
 
 /*
      The application must update next_in and avail_in when avail_in has dropped
@@ -129,7 +129,7 @@ struct z_stream
     uLong    total_out; /* total number of bytes output so far */
 
     const char *msg;  /* last error message, NULL if no error */
-    struct internal_state *state; /* not visible by applications */
+    struct deflate_state *state; /* not visible by applications */
 
     int     data_type;  /* best guess about the data type: binary or text */
     uLong   reserved;   /* reserved for future use */

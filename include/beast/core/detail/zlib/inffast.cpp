@@ -4,7 +4,6 @@
  */
 
 #include "zutil.h"
-#include "inflate.h"
 #include "inffast.h"
 
 #ifndef ASMINF

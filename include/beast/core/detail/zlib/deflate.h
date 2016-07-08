@@ -52,39 +52,47 @@ enum StreamStatus
 
 
 /* Data structure describing a single value and its code string. */
-typedef struct ct_data_s {
-    union {
+struct ct_data
+{
+    union fc_t
+    {
         std::uint16_t  freq;       /* frequency count */
         std::uint16_t  code;       /* bit string */
-    } fc;
-    union {
+    };
+    
+    fc_t fc;
+
+    union dl_t
+    {
         std::uint16_t  dad;        /* father node in Huffman tree */
         std::uint16_t  len;        /* length of bit string */
-    } dl;
-} ct_data;
+    };
+    
+    dl_t dl;
+};
 
 #define Freq fc.freq
 #define Code fc.code
 #define Dad  dl.dad
 #define Len  dl.len
 
-typedef struct static_tree_desc_s  static_tree_desc;
+struct static_tree_desc;
 
-typedef struct tree_desc_s {
+struct tree_desc
+{
     ct_data *dyn_tree;           /* the dynamic tree */
     int     max_code;            /* largest code with non zero frequency */
-    static_tree_desc *stat_desc; /* the corresponding static tree */
-} tree_desc;
+    static_tree_desc* stat_desc; /* the corresponding static tree */
+};
 
-typedef std::uint16_t Pos;
-typedef Pos Posf;
-typedef unsigned IPos;
+using Pos = std::uint16_t;
+using IPos = unsigned;
 
 /* A Pos is an index in the character window. We use short instead of int to
  * save space in the various tables. IPos is used only for parameter passing.
  */
 
-struct internal_state
+struct deflate_state
 {
     z_stream* strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
@@ -117,13 +125,13 @@ struct internal_state
      * is directly used as sliding window.
      */
 
-    Posf *prev;
+    Pos *prev;
     /* Link to older string with same hash index. To limit the size of this
      * array to 64K, this link is maintained only for the last 32K strings.
      * An index in this array is thus a window index modulo 32K.
      */
 
-    Posf *head; /* Heads of the hash chains or NIL. */
+    Pos *head; /* Heads of the hash chains or NIL. */
 
     uInt  ins_h;          /* hash index of string to be inserted */
     uInt  hash_size;      /* number of elements in hash table */
@@ -181,13 +189,13 @@ struct internal_state
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
-    struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
-    struct ct_data_s dyn_dtree[2*D_CODES+1]; /* distance tree */
-    struct ct_data_s bl_tree[2*BL_CODES+1];  /* Huffman tree for bit lengths */
+    ct_data dyn_ltree[HEAP_SIZE];   /* literal and length tree */
+    ct_data dyn_dtree[2*D_CODES+1]; /* distance tree */
+    ct_data bl_tree[2*BL_CODES+1];  /* Huffman tree for bit lengths */
 
-    struct tree_desc_s l_desc;               /* desc. for literal tree */
-    struct tree_desc_s d_desc;               /* desc. for distance tree */
-    struct tree_desc_s bl_desc;              /* desc. for bit length tree */
+    tree_desc l_desc;               /* desc. for literal tree */
+    tree_desc d_desc;               /* desc. for distance tree */
+    tree_desc bl_desc;              /* desc. for bit length tree */
 
     std::uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
@@ -258,9 +266,7 @@ struct internal_state
      * longest match routines access bytes past the input.  This is then
      * updated to the new high water mark.
      */
-
 };
-using deflate_state = internal_state;
 
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.

@@ -114,7 +114,8 @@ local int base_dist[D_CODES];
 #  include "trees.h"
 #endif /* GEN_TREES_H */
 
-struct static_tree_desc_s {
+struct static_tree_desc
+{
     const ct_data *static_tree;  /* static tree or NULL */
     const intf *extra_bits;      /* extra bits for each code or NULL */
     int     extra_base;          /* base index for extra_bits */
