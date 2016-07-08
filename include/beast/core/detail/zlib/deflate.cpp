@@ -382,8 +382,6 @@ int deflateResetKeep (
     s->pending_out = s->pending_buf;
 
     s->status = BUSY_STATE;
-    strm->adler =
-        adler32(0L, Z_NULL, 0);
     s->last_flush = Z_NO_FLUSH;
 
     _tr_init(s);
@@ -633,13 +631,6 @@ int deflate (
 
         s->status = BUSY_STATE;
         putShortMSB(s, header);
-
-        /* Save the adler32 of the preset dictionary: */
-        if (s->strstart != 0) {
-            putShortMSB(s, (uInt)(strm->adler >> 16));
-            putShortMSB(s, (uInt)(strm->adler & 0xffff));
-        }
-        strm->adler = adler32(0L, Z_NULL, 0);
     }
 
     /* Flush as much pending output as possible */
