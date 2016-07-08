@@ -779,25 +779,6 @@ extern int inflateGetDictionary (z_streamp strm,
    stream state is inconsistent.
 */
 
-extern int inflateSync (z_streamp strm);
-/*
-     Skips invalid compressed data until a possible full flush point (see above
-   for the description of deflate with Z_FULL_FLUSH) can be found, or until all
-   available input is skipped.  No output is provided.
-
-     inflateSync searches for a 00 00 FF FF pattern in the compressed data.
-   All full flush points have this pattern, but not all occurrences of this
-   pattern are full flush points.
-
-     inflateSync returns Z_OK if a possible full flush point has been found,
-   Z_BUF_ERROR if no more input was provided, Z_DATA_ERROR if no flush point
-   has been found, or Z_STREAM_ERROR if the stream structure was inconsistent.
-   In the success case, the application may save the current current value of
-   total_in which indicates where valid compressed data was found.  In the
-   error case, the application may repeatedly call inflateSync, providing more
-   input each time, until success or end of the input data.
-*/
-
 extern int inflateReset (z_streamp strm);
 /*
      This function is equivalent to inflateEnd followed by inflateInit,
