@@ -153,7 +153,7 @@ int inflateReset2(
         return Z_STREAM_ERROR;
     if (state->window != Z_NULL && state->wbits != (unsigned)windowBits)
     {
-        ZFREE(strm, state->window);
+        std::free(state->window);
         state->window = Z_NULL;
     }
 
@@ -180,8 +180,6 @@ int inflateInit2_(
         strm->zalloc = zcalloc;
         strm->opaque = (voidpf)0;
     }
-    if (strm->zfree == (free_func)0)
-        strm->zfree = zcfree;
     state = (struct inflate_state *)
             ZALLOC(strm, 1, sizeof(struct inflate_state));
     if (state == Z_NULL) return Z_MEM_ERROR;
@@ -190,7 +188,7 @@ int inflateInit2_(
     state->window = Z_NULL;
     ret = inflateReset2(strm, windowBits);
     if (ret != Z_OK) {
-        ZFREE(strm, state);
+        std::free(state);
         strm->state = Z_NULL;
     }
     return ret;
@@ -960,12 +958,12 @@ int inflateEnd(
     z_streamp strm)
 {
     struct inflate_state *state;
-    if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
+    if (strm == Z_NULL || strm->state == Z_NULL)
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-    if (state->window != Z_NULL) ZFREE(strm, state->window);
-    ZFREE(strm, strm->state);
-    strm->state = Z_NULL;
+    std::free(state->window);
+    std::free(strm->state);
+    strm->state = Z_NULL
     Tracev((stderr, "inflate: end\n"));
     return Z_OK;
 }

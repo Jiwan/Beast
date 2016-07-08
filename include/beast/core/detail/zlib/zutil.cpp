@@ -51,12 +51,4 @@ voidpf zcalloc (
                               (voidpf)calloc(items, size);
 }
 
-void zcfree (
-    voidpf opaque,
-    voidpf ptr)
-{
-    free(ptr);
-    if (opaque) return; /* make compiler happy */
-}
-
 #endif /* MY_ZCALLOC */

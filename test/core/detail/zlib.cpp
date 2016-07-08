@@ -143,7 +143,6 @@ public:
             buffer output(original.size());
             z_stream zs;
             zs.zalloc = Z_NULL;
-            zs.zfree = Z_NULL;
             zs.opaque = Z_NULL;
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
@@ -212,7 +211,6 @@ public:
                         {
                             z_stream zs;
                             zs.zalloc = Z_NULL;
-                            zs.zfree = Z_NULL;
                             zs.opaque = Z_NULL;
                             zs.avail_in = 0;
                             zs.next_in = Z_NULL;

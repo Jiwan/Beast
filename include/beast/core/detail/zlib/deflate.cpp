@@ -242,8 +242,6 @@ int deflateInit2_(
         strm->zalloc = zcalloc;
         strm->opaque = (voidpf)0;
     }
-    if (strm->zfree == (free_func)0)
-        strm->zfree = zcfree;
 
 #ifdef FASTEST
     if (level != 0) level = 1;
@@ -369,12 +367,12 @@ int deflateResetKeep (
     deflate_state *s;
 
     if (strm == Z_NULL || strm->state == Z_NULL ||
-        strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0) {
+        strm->zalloc == (alloc_func)0) {
         return Z_STREAM_ERROR;
     }
 
     strm->total_in = strm->total_out = 0;
-    strm->msg = Z_NULL; /* use zfree if we ever allocate msg dynamically */
+    strm->msg = Z_NULL;
     strm->data_type = Z_UNKNOWN;
 
     s = (deflate_state *)strm->state;
@@ -702,12 +700,11 @@ int deflateEnd (
     }
 
     /* Deallocate in reverse order of allocations: */
-    TRY_FREE(strm, strm->state->pending_buf);
-    TRY_FREE(strm, strm->state->head);
-    TRY_FREE(strm, strm->state->prev);
-    TRY_FREE(strm, strm->state->window);
-
-    ZFREE(strm, strm->state);
+    std::free(strm->state->pending_buf);
+    std::free(strm->state->head);
+    std::free(strm->state->prev);
+    std::free(strm->state->window);
+    std::free(strm->state);
     strm->state = Z_NULL;
 
     return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
