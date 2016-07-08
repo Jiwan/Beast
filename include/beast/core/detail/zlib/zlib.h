@@ -78,28 +78,6 @@ typedef void   (*free_func)  (voidpf opaque, voidpf address);
 
 struct internal_state;
 
-typedef struct z_stream_s {
-    const Bytef *next_in;     /* next input byte */
-    uInt     avail_in;  /* number of bytes available at next_in */
-    uLong    total_in;  /* total number of input bytes read so far */
-
-    Bytef    *next_out; /* next output byte should be put there */
-    uInt     avail_out; /* remaining free space at next_out */
-    uLong    total_out; /* total number of bytes output so far */
-
-    const char *msg;  /* last error message, NULL if no error */
-    struct internal_state *state; /* not visible by applications */
-
-    alloc_func zalloc;  /* used to allocate the internal state */
-    free_func  zfree;   /* used to free the internal state */
-    voidpf     opaque;  /* private data object passed to zalloc and zfree */
-
-    int     data_type;  /* best guess about the data type: binary or text */
-    uLong   reserved;   /* reserved for future use */
-} z_stream;
-
-typedef z_stream *z_streamp;
-
 /*
      The application must update next_in and avail_in when avail_in has dropped
    to zero.  It must update next_out and avail_out when avail_out has dropped
@@ -127,6 +105,27 @@ typedef z_stream *z_streamp;
    uncompressed data and may be saved for use in the decompressor (particularly
    if the decompressor wants to decompress everything in a single step).
 */
+typedef struct z_stream_s {
+    const Bytef *next_in;     /* next input byte */
+    uInt     avail_in;  /* number of bytes available at next_in */
+    uLong    total_in;  /* total number of input bytes read so far */
+
+    Bytef    *next_out; /* next output byte should be put there */
+    uInt     avail_out; /* remaining free space at next_out */
+    uLong    total_out; /* total number of bytes output so far */
+
+    const char *msg;  /* last error message, NULL if no error */
+    struct internal_state *state; /* not visible by applications */
+
+    alloc_func zalloc;  /* used to allocate the internal state */
+    free_func  zfree;   /* used to free the internal state */
+    voidpf     opaque;  /* private data object passed to zalloc and zfree */
+
+    int     data_type;  /* best guess about the data type: binary or text */
+    uLong   reserved;   /* reserved for future use */
+} z_stream;
+
+typedef z_stream *z_streamp;
 
                         /* constants */
 
@@ -826,11 +825,5 @@ extern int inflateInit2_ (z_streamp strm, int  windowBits,
 #define inflateInit2(strm, windowBits) \
         inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
                       (int)sizeof(z_stream))
-
-/* undocumented functions */
-extern const z_crc_t * get_crc_table    (void);
-extern int            inflateUndermine (z_streamp, int);
-extern int            inflateResetKeep (z_streamp);
-extern int            deflateResetKeep (z_streamp);
 
 #endif /* ZLIB_H */
