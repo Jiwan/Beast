@@ -1,22 +1,42 @@
-/* inftrees.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-2013 Mark Adler
- * For conditions of distribution and use, see copyright notice in zlib.h
- */
+//
+// Copyright (c) 2013-2016 Vinnie Falco (vinnie dot falco at gmail dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+// This is a derivative work based on Zlib, copyright below:
+/*
+    Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
-#include "zlib.h"
-#include "zutil.h"
+    This software is provided 'as-is', without any express or implied
+    warranty.  In no event will the authors be held liable for any damages
+    arising from the use of this software.
+
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it
+    freely, subject to the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not
+       claim that you wrote the original software. If you use this software
+       in a product, an acknowledgment in the product documentation would be
+       appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
+
+    Jean-loup Gailly        Mark Adler
+    jloup@gzip.org          madler@alumni.caltech.edu
+
+    The data format used by the zlib library is described by RFCs (Request for
+    Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+    (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
+*/
+
 #include <beast/core/detail/zlib/inflate_stream.hpp>
+#include "zlib.hpp"
+#include "zutil.hpp"
 
 #define MAXBITS 15
-
-const char inflate_copyright[] =
-   " inflate 1.2.8 Copyright 1995-2013 Mark Adler ";
-/*
-  If you use the zlib library in a product, an acknowledgment is welcome
-  in the documentation of your product. If for some reason you cannot
-  include such an acknowledgment, I would appreciate that you keep this
-  copyright string in the executable of your product.
- */
 
 /*
    Build a set of tables to decode the provided canonical Huffman code.
@@ -169,7 +189,7 @@ int inflate_table(
        used keeps track of how many table entries have been allocated from the
        provided *table space.  It is checked for LENS and DIST tables against
        the constants ENOUGH_LENS and ENOUGH_DISTS to guard against changes in
-       the initial root table size constants.  See the comments in inftrees.h
+       the initial root table size constants.  See the comments in inftrees.hpp
        for more information.
 
        sym increments through all symbols, and the loop terminates when

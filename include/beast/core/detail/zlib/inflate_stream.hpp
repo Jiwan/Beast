@@ -35,8 +35,8 @@
 #ifndef BEAST_CORE_DETAIL_INFLATE_STREAM_HPP
 #define BEAST_CORE_DETAIL_INFLATE_STREAM_HPP
 
-#include "zconf.h"
-#include "zlib.h"
+#include "zconf.hpp"
+#include "zlib.hpp"
 #include <cstdint>
 #include <cstdlib>
 

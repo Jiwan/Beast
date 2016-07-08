@@ -35,7 +35,7 @@
 #ifndef BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
 #define BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
 
-#include "zutil.h"
+#include "zutil.hpp"
 #include <cstdlib>
 
 // number of length codes, not counting the special END_BLOCK code

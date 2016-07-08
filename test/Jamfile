@@ -20,12 +20,12 @@ zlib_sources =
     ../include/beast/core/detail/zlib/trees.cpp
     ../include/beast/core/detail/zlib/zutil.cpp
     ../include/beast/core/detail/zlib/deflate_stream.hpp
-    ../include/beast/core/detail/zlib/inffixed.h
+    ../include/beast/core/detail/zlib/inffixed.hpp
     ../include/beast/core/detail/zlib/inflate_stream.hpp
-    ../include/beast/core/detail/zlib/trees.h
-    ../include/beast/core/detail/zlib/zconf.h
-    ../include/beast/core/detail/zlib/zlib.h
-    ../include/beast/core/detail/zlib/zutil.h
+    ../include/beast/core/detail/zlib/trees.hpp
+    ../include/beast/core/detail/zlib/zconf.hpp
+    ../include/beast/core/detail/zlib/zlib.hpp
+    ../include/beast/core/detail/zlib/zutil.hpp
     ;
 
 unit-test core-tests :

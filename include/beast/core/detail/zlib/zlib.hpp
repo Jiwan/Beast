@@ -1,37 +1,41 @@
-/* zlib.h -- interface of the 'zlib' general purpose compression library
-  version 1.2.8, April 28th, 2013
+//
+// Copyright (c) 2013-2016 Vinnie Falco (vinnie dot falco at gmail dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+// This is a derivative work based on Zlib, copyright below:
+/*
+    Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
-  Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+    This software is provided 'as-is', without any express or implied
+    warranty.  In no event will the authors be held liable for any damages
+    arising from the use of this software.
 
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it
+    freely, subject to the following restrictions:
 
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
+    1. The origin of this software must not be misrepresented; you must not
+       claim that you wrote the original software. If you use this software
+       in a product, an acknowledgment in the product documentation would be
+       appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
 
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
+    Jean-loup Gailly        Mark Adler
+    jloup@gzip.org          madler@alumni.caltech.edu
 
-  Jean-loup Gailly        Mark Adler
-  jloup@gzip.org          madler@alumni.caltech.edu
-
-
-  The data format used by the zlib library is described by RFCs (Request for
-  Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
-  (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
+    The data format used by the zlib library is described by RFCs (Request for
+    Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+    (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
 #ifndef ZLIB_H
 #define ZLIB_H
 
-#include "zconf.h"
+#include "zconf.hpp"
 
 #include <cstdint>
 #include <cstdlib>
@@ -61,9 +65,9 @@
 
      On 16-bit systems, the functions zalloc and zfree must be able to allocate
    exactly 65536 bytes, but will not be required to allocate more than this if
-   the symbol MAXSEG_64K is defined (see zconf.h).  To reduce memory requirements
+   the symbol MAXSEG_64K is defined (see zconf.hpp).  To reduce memory requirements
    and avoid any allocation of 64K objects, at the expense of compression ratio,
-   compile the library with -DMAX_WBITS=14 (see zconf.h).
+   compile the library with -DMAX_WBITS=14 (see zconf.hpp).
 
      The fields total_in and total_out can be used for statistics or progress
    reports.  After compression, total_in holds the total size of the

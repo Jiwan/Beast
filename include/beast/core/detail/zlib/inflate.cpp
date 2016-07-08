@@ -1,6 +1,6 @@
 /* inflate.c -- zlib decompression
  * Copyright (C) 1995-2012 Mark Adler
- * For conditions of distribution and use, see copyright notice in zlib.h
+ * For conditions of distribution and use, see copyright notice in zlib.hpp
  */
 
 /*
@@ -28,7 +28,7 @@
  *
  * 1.2.beta3    22 Dec 2002
  * - Add comments on state->bits assertion in inffast.c
- * - Add comments on op field in inftrees.h
+ * - Add comments on op field in inftrees.hpp
  * - Fix bug in reuse of allocated window after inflateReset()
  * - Remove bit fields--back to byte structure for speed
  * - Remove distance extra == 0 check in inflate_fast()--only helps for lengths
@@ -80,8 +80,7 @@
  * The history for versions after 1.2.0 are in ChangeLog in zlib distribution.
  */
 
-#include "zutil.h"
-#include "inftrees.h"
+#include "zutil.hpp"
 
 #include <beast/core/detail/zlib/inflate_stream.hpp>
 
@@ -220,7 +219,7 @@ local void fixedtables(inflate_stream *state)
         virgin = 0;
     }
 #else /* !BUILDFIXED */
-#   include "inffixed.h"
+#   include "inffixed.hpp"
 #endif /* BUILDFIXED */
     state->lencode = lenfix;
     state->lenbits = 9;
@@ -261,7 +260,7 @@ void makefixed()
     puts("");
     puts("    /* WARNING: this file should *not* be used by applications.");
     puts("       It is part of the implementation of this library and is");
-    puts("       subject to change. Applications should only use zlib.h.");
+    puts("       subject to change. Applications should only use zlib.hpp.");
     puts("     */");
     puts("");
     size = 1U << 9;
@@ -488,11 +487,11 @@ local int updatewindow(
    output to the window for the next call of inflate().
 
    In this implementation, the flush parameter of inflate() only affects the
-   return code (per zlib.h).  inflate() always writes as much as possible to
+   return code (per zlib.hpp).  inflate() always writes as much as possible to
    strm->next_out, given the space available and the provided input--the effect
-   documented in zlib.h of Z_SYNC_FLUSH.  Furthermore, inflate() always defers
+   documented in zlib.hpp of Z_SYNC_FLUSH.  Furthermore, inflate() always defers
    the allocation of and copying into a sliding window until necessary, which
-   provides the effect documented in zlib.h for Z_FINISH when the entire input
+   provides the effect documented in zlib.hpp for Z_FINISH when the entire input
    stream available.  So the only thing the flush parameter actually does is:
    when flush is set to Z_FINISH, inflate() cannot return Z_OK.  Instead it
    will return Z_BUF_ERROR if it has not reached the end of the stream.
@@ -701,7 +700,7 @@ int inflate(
             }
 
             /* build code tables -- note: do not change the lenbits or distbits
-               values here (9 and 6) without reading the comments in inftrees.h
+               values here (9 and 6) without reading the comments in inftrees.hpp
                concerning the ENOUGH constants, which depend on those values */
             state->next = state->codes;
             state->lencode = (const code *)(state->next);
