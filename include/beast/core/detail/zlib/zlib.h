@@ -828,7 +828,6 @@ extern int inflateInit2_ (z_streamp strm, int  windowBits,
                       (int)sizeof(z_stream))
 
 /* undocumented functions */
-extern int            inflateSyncPoint (z_streamp);
 extern const z_crc_t * get_crc_table    (void);
 extern int            inflateUndermine (z_streamp, int);
 extern int            inflateResetKeep (z_streamp);
