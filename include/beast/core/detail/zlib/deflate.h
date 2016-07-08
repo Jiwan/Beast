@@ -14,42 +14,41 @@
 #define DEFLATE_H
 
 #include "zutil.h"
+#include <cstdlib>
 
-/* ===========================================================================
- * Internal compression state.
- */
+// number of length codes, not counting the special END_BLOCK code
+std::uint16_t constexpr LENGTH_CODES = 29;
 
-#define LENGTH_CODES 29
-/* number of length codes, not counting the special END_BLOCK code */
+// number of literal bytes 0..255
+std::uint16_t constexpr LITERALS = 256;
 
-#define LITERALS  256
-/* number of literal bytes 0..255 */
+// number of Literal or Length codes, including the END_BLOCK code
+std::uint16_t constexpr L_CODES = LITERALS + 1 + LENGTH_CODES;
 
-#define L_CODES (LITERALS+1+LENGTH_CODES)
-/* number of Literal or Length codes, including the END_BLOCK code */
+// number of distance codes
+std::uint16_t constexpr D_CODES = 30;
 
-#define D_CODES   30
-/* number of distance codes */
+// number of codes used to transfer the bit lengths
+std::uint16_t constexpr BL_CODES = 19;
 
-#define BL_CODES  19
-/* number of codes used to transfer the bit lengths */
+// maximum heap size
+std::uint16_t constexpr HEAP_SIZE = 2 * L_CODES + 1;
 
-#define HEAP_SIZE (2*L_CODES+1)
-/* maximum heap size */
+// All codes must not exceed MAX_BITS bits
+std::uint8_t constexpr MAX_BITS = 15;
 
-#define MAX_BITS 15
-/* All codes must not exceed MAX_BITS bits */
+// size of bit buffer in bi_buf
+std::uint8_t constexpr Buf_size = 16;
 
-#define Buf_size 16
-/* size of bit buffer in bi_buf */
-
-#define EXTRA_STATE   69
-#define NAME_STATE    73
-#define COMMENT_STATE 91
-#define HCRC_STATE   103
-#define BUSY_STATE   113
-#define FINISH_STATE 666
-/* Stream status */
+enum StreamStatus
+{
+    EXTRA_STATE = 69,
+    NAME_STATE = 73,
+    COMMENT_STATE = 91,
+    HCRC_STATE = 103,
+    BUSY_STATE = 113,
+    FINISH_STATE = 666
+};
 
 
 /* Data structure describing a single value and its code string. */
@@ -85,7 +84,8 @@ typedef unsigned IPos;
  * save space in the various tables. IPos is used only for parameter passing.
  */
 
-typedef struct internal_state {
+struct internal_state
+{
     z_streamp strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
     Bytef *pending_buf;  /* output still pending */
@@ -259,7 +259,8 @@ typedef struct internal_state {
      * updated to the new high water mark.
      */
 
-} deflate_state;
+};
+using deflate_state = internal_state;
 
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
