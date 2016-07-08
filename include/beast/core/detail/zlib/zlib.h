@@ -865,17 +865,6 @@ extern long inflateMark (z_streamp strm);
    source stream state was inconsistent.
 */
 
-                        /* gzip file access functions */
-
-/*
-     This library supports reading and writing files in gzip (.gz) format with
-   an interface similar to that of stdio, using the functions that start with
-   "gz".  The gzip format is different from the zlib format.  gzip is a gzip
-   wrapper, documented in RFC 1952, wrapped around a deflate stream.
-*/
-
-typedef struct gzFile_s *gzFile;    /* semi-opaque gzip file descriptor */
-
                         /* checksum functions */
 
 /*
@@ -928,77 +917,6 @@ extern int inflateInit2_ (z_streamp strm, int  windowBits,
 #define inflateInit2(strm, windowBits) \
         inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
                       (int)sizeof(z_stream))
-
-/* gzgetc() macro and its supporting function and exposed data structure.  Note
- * that the real internal state is much larger than the exposed structure.
- * This abbreviated structure exposes just enough for the gzgetc() macro.  The
- * user should not mess with these exposed elements, since their names or
- * behavior could change in the future, perhaps even capriciously.  They can
- * only be used by the gzgetc() macro.  You have been warned.
- */
-struct gzFile_s {
-    unsigned have;
-    unsigned char *next;
-    z_off64_t pos;
-};
-extern int gzgetc_ (gzFile file);  /* backward compatibility */
-#ifdef Z_PREFIX_SET
-#  undef z_gzgetc
-#  define z_gzgetc(g) \
-          ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : gzgetc(g))
-#else
-#  define gzgetc(g) \
-          ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : gzgetc(g))
-#endif
-
-/* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
- * change the regular functions to 64 bits if _FILE_OFFSET_BITS is 64 (if
- * both are true, the application gets the *64 functions, and the regular
- * functions are changed to 64 bits) -- in case these are set on systems
- * without large file support, _LFS64_LARGEFILE must also be true
- */
-#ifdef Z_LARGE64
-   extern gzFile gzopen64 (const char *, const char *);
-   extern z_off64_t gzseek64 (gzFile, z_off64_t, int);
-   extern z_off64_t gztell64 (gzFile);
-   extern z_off64_t gzoffset64 (gzFile);
-   extern uLong adler32_combine64 (uLong, uLong, z_off64_t);
-   extern uLong crc32_combine64 (uLong, uLong, z_off64_t);
-#endif
-
-#if defined(Z_WANT64)
-#  ifdef Z_PREFIX_SET
-#    define z_gzopen z_gzopen64
-#    define z_gzseek z_gzseek64
-#    define z_gztell z_gztell64
-#    define z_gzoffset z_gzoffset64
-#    define z_adler32_combine z_adler32_combine64
-#    define z_crc32_combine z_crc32_combine64
-#  else
-#    define gzopen gzopen64
-#    define gzseek gzseek64
-#    define gztell gztell64
-#    define gzoffset gzoffset64
-#    define adler32_combine adler32_combine64
-#    define crc32_combine crc32_combine64
-#  endif
-#  ifndef Z_LARGE64
-     extern gzFile gzopen64 (const char *, const char *);
-     extern z_off_t gzseek64 (gzFile, z_off_t, int);
-     extern z_off_t gztell64 (gzFile);
-     extern z_off_t gzoffset64 (gzFile);
-     extern uLong adler32_combine64 (uLong, uLong, z_off_t);
-     extern uLong crc32_combine64 (uLong, uLong, z_off_t);
-#  endif
-#else
-   extern uLong adler32_combine (uLong, uLong, z_off_t);
-   extern uLong crc32_combine (uLong, uLong, z_off_t);
-#endif
-
-/* hack for buggy compilers */
-#if !defined(ZUTIL_H) && !defined(NO_DUMMY_DECL)
-    struct internal_state {int dummy;};
-#endif
 
 /* undocumented functions */
 extern int            inflateSyncPoint (z_streamp);

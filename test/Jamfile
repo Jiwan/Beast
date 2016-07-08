@@ -21,7 +21,6 @@ zlib_sources =
     ../include/beast/core/detail/zlib/trees.cpp
     ../include/beast/core/detail/zlib/zutil.cpp
     ../include/beast/core/detail/zlib/deflate.h
-    ../include/beast/core/detail/zlib/gzguts.h
     ../include/beast/core/detail/zlib/inffast.h
     ../include/beast/core/detail/zlib/inffixed.h
     ../include/beast/core/detail/zlib/inflate.h
