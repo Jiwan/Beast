@@ -49,7 +49,7 @@
 
 /* @(#) $Id$ */
 
-#include "deflate.h"
+#include "deflate.hpp"
 
 #include <cstring>
 #include <memory>
@@ -283,7 +283,7 @@ int deflateInit2_(
     if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
         s->pending_buf == Z_NULL) {
         s->status = FINISH_STATE;
-        strm->msg = ERR_MSG(Z_MEM_ERROR);
+        strm->msg = z_errmsg[Z_NEED_DICT-Z_MEM_ERROR];
         deflateEnd (strm);
         return Z_MEM_ERROR;
     }

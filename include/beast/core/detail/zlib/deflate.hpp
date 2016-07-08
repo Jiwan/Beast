@@ -1,17 +1,39 @@
-/* deflate.h -- internal compression state
- * Copyright (C) 1995-2012 Jean-loup Gailly
- * For conditions of distribution and use, see copyright notice in zlib.h
- */
+//
+// Copyright (c) 2013-2016 Vinnie Falco (vinnie dot falco at gmail dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+// This is a derivative work based on Zlib, copyright below:
+/*
+    Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
-/* WARNING: this file should *not* be used by applications. It is
-   part of the implementation of the compression library and is
-   subject to change. Applications should only use zlib.h.
- */
+    This software is provided 'as-is', without any express or implied
+    warranty.  In no event will the authors be held liable for any damages
+    arising from the use of this software.
 
-/* @(#) $Id$ */
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it
+    freely, subject to the following restrictions:
 
-#ifndef DEFLATE_H
-#define DEFLATE_H
+    1. The origin of this software must not be misrepresented; you must not
+       claim that you wrote the original software. If you use this software
+       in a product, an acknowledgment in the product documentation would be
+       appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
+
+    Jean-loup Gailly        Mark Adler
+    jloup@gzip.org          madler@alumni.caltech.edu
+
+    The data format used by the zlib library is described by RFCs (Request for
+    Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+    (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
+*/
+
+#ifndef BEAST_CORE_DETAIL_DEFLATE_HPP
+#define BEAST_CORE_DETAIL_DEFLATE_HPP
 
 #include "zutil.h"
 #include <cstdlib>
@@ -332,5 +354,25 @@ void _tr_stored_block (deflate_state *s, char *bu,
 # define _tr_tally_dist(s, distance, length, flush) \
               flush = _tr_tally(s, distance, length)
 #endif
+
+extern int deflate (z_stream* strm, int flush);
+extern int deflateEnd (z_stream* strm);
+extern int deflateSetDictionary (z_stream* strm,
+    const Byte *dictionary, uInt  dictLength);
+extern int deflateReset (z_stream* strm);
+extern int deflateParams (z_stream* strm, int level, int strategy);
+extern int deflateTune (z_stream* strm,
+    int good_length, int max_lazy, int nice_length, int max_chain);
+extern uLong deflateBound (z_stream* strm, uLong sourceLen);
+extern int deflatePending (z_stream* strm, unsigned *pending, int *bits);
+extern int deflatePrime (z_stream* strm, int bits, int value);
+extern int deflateInit_ (z_stream* strm, int level,
+                                     const char *version, int stream_size);
+
+#define deflateInit(strm, level) \
+        deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
+#define deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
+        deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
+                      (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
 
 #endif /* DEFLATE_H */
