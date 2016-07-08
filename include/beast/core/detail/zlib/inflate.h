@@ -21,23 +21,21 @@ enum inflate_mode
     NAME,       /* i: waiting for end of file name (gzip) */
     COMMENT,    /* i: waiting for end of comment (gzip) */
     HCRC,       /* i: waiting for header crc (gzip) */
-    DICTID,     /* i: waiting for dictionary check value */
-    DICT,       /* waiting for inflateSetDictionary() call */
-        TYPE,       /* i: waiting for type bits, including last-flag bit */
-        TYPEDO,     /* i: same, but skip check to exit inflate on new block */
-        STORED,     /* i: waiting for stored size (length and complement) */
-        COPY_,      /* i/o: same as COPY below, but only first time in */
-        COPY,       /* i/o: waiting for input or output to copy stored block */
-        TABLE,      /* i: waiting for dynamic block table lengths */
-        LENLENS,    /* i: waiting for code length code lengths */
-        CODELENS,   /* i: waiting for length/lit and distance code lengths */
-            LEN_,       /* i: same as LEN below, but only first time in */
-            LEN,        /* i: waiting for length/lit/eob code */
-            LENEXT,     /* i: waiting for length extra bits */
-            DIST,       /* i: waiting for distance code */
-            DISTEXT,    /* i: waiting for distance extra bits */
-            MATCH,      /* o: waiting for output space to copy string */
-            LIT,        /* o: waiting for output space to write literal */
+    TYPE,       /* i: waiting for type bits, including last-flag bit */
+    TYPEDO,     /* i: same, but skip check to exit inflate on new block */
+    STORED,     /* i: waiting for stored size (length and complement) */
+    COPY_,      /* i/o: same as COPY below, but only first time in */
+    COPY,       /* i/o: waiting for input or output to copy stored block */
+    TABLE,      /* i: waiting for dynamic block table lengths */
+    LENLENS,    /* i: waiting for code length code lengths */
+    CODELENS,   /* i: waiting for length/lit and distance code lengths */
+        LEN_,   /* i: same as LEN below, but only first time in */
+        LEN,    /* i: waiting for length/lit/eob code */
+        LENEXT, /* i: waiting for length extra bits */
+        DIST,   /* i: waiting for distance code */
+        DISTEXT,/* i: waiting for distance extra bits */
+        MATCH,  /* o: waiting for output space to copy string */
+        LIT,    /* o: waiting for output space to write literal */
     CHECK,      /* i: waiting for 32-bit check value */
     LENGTH,     /* i: waiting for 32-bit length (gzip) */
     DONE,       /* finished check, done -- remain here until reset */
@@ -76,10 +74,8 @@ struct inflate_state
 {
     inflate_mode mode;          /* current inflate mode */
     int last;                   /* true if processing last block */
-    int havedict;               /* true if dictionary provided */
     int flags;                  /* gzip header method and flags (0 if zlib) */
     unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
-    unsigned long check;        /* protected copy of check value */
     unsigned long total;        /* protected copy of output count */
         /* sliding window */
     unsigned wbits;             /* log base 2 of requested window size */

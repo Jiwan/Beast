@@ -113,7 +113,6 @@ int inflateResetKeep(
     strm->msg = Z_NULL;
     state->mode = HEAD;
     state->last = 0;
-    state->havedict = 0;
     state->dmax = 32768U;
     state->hold = 0;
     state->bits = 0;
@@ -385,9 +384,6 @@ local int updatewindow(
 
 /* Macros for inflate(): */
 
-/* check function to use: adler32() for zlib */
-#define UPDATE(check, buf, len) adler32(check, buf, len)
-
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
@@ -570,18 +566,6 @@ int inflate(
         case HEAD:
             state->mode = TYPEDO;
             break;
-        case DICTID:
-            NEEDBITS(32);
-            strm->adler = state->check = ZSWAP32(hold);
-            INITBITS();
-            state->mode = DICT;
-        case DICT:
-            if (state->havedict == 0) {
-                RESTORE();
-                return Z_NEED_DICT;
-            }
-            strm->adler = state->check = adler32(0L, Z_NULL, 0);
-            state->mode = TYPE;
         case TYPE:
             if (flush == Z_BLOCK || flush == Z_TREES) goto inf_leave;
         case TYPEDO:
@@ -1015,20 +999,11 @@ int inflateSetDictionary(
     uInt dictLength)
 {
     struct inflate_state *state;
-    unsigned long dictid;
     int ret;
 
     /* check state */
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-
-    /* check for correct dictionary identifier */
-    if (state->mode == DICT) {
-        dictid = adler32(0L, Z_NULL, 0);
-        dictid = adler32(dictid, dictionary, dictLength);
-        if (dictid != state->check)
-            return Z_DATA_ERROR;
-    }
 
     /* copy dictionary to window using updatewindow(), which will amend the
        existing dictionary if appropriate */
@@ -1037,7 +1012,6 @@ int inflateSetDictionary(
         state->mode = MEM;
         return Z_MEM_ERROR;
     }
-    state->havedict = 1;
     Tracev((stderr, "inflate:   dictionary set\n"));
     return Z_OK;
 }
