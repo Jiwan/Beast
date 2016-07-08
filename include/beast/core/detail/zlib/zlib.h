@@ -87,8 +87,6 @@ std::uint16_t constexpr ENOUGH_LENS = 852;
 std::uint16_t constexpr ENOUGH_DISTS = 592;
 std::uint16_t constexpr ENOUGH = ENOUGH_LENS + ENOUGH_DISTS;
 
-struct deflate_state;
-
 /*
      The application must update next_in and avail_in when avail_in has dropped
    to zero.  It must update next_out and avail_out when avail_out has dropped
@@ -127,7 +125,6 @@ struct z_stream
     std::size_t     total_out; /* total number of bytes output so far */
 
     const char *msg;  /* last error message, NULL if no error */
-    struct deflate_state *state; /* not visible by applications */
 
     int     data_type;  /* best guess about the data type: binary or text */
     uLong   reserved;   /* reserved for future use */

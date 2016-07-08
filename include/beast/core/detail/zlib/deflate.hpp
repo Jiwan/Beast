@@ -108,9 +108,9 @@ using IPos = unsigned;
  * save space in the various tables. IPos is used only for parameter passing.
  */
 
-struct deflate_state
+class deflate_state : public z_stream
 {
-    z_stream* strm;      /* pointer back to this zlib stream */
+public:
     int   status;        /* as the name implies */
     Byte *pending_buf;  /* output still pending */
     std::uint32_t   pending_buf_size; /* size of pending_buf */
@@ -332,19 +332,19 @@ void _tr_stored_block (deflate_state *s, char *bu,
 #endif
 #endif
 
-extern int deflate (z_stream* strm, int flush);
-extern int deflateEnd (z_stream* strm);
-extern int deflateSetDictionary (z_stream* strm,
+extern int deflate (deflate_state* strm, int flush);
+extern int deflateEnd (deflate_state* strm);
+extern int deflateSetDictionary (deflate_state* strm,
     const Byte *dictionary, uInt  dictLength);
-extern int deflateReset (z_stream* strm);
-extern int deflateParams (z_stream* strm, int level, int strategy);
-extern int deflateTune (z_stream* strm,
+extern int deflateReset (deflate_state* strm);
+extern int deflateParams (deflate_state* strm, int level, int strategy);
+extern int deflateTune (deflate_state* strm,
     int good_length, int max_lazy, int nice_length, int max_chain);
-extern uLong deflateBound (z_stream* strm, uLong sourceLen);
-extern int deflatePending (z_stream* strm, unsigned *pending, int *bits);
-extern int deflatePrime (z_stream* strm, int bits, int value);
-extern int deflateInit (z_stream* strm, int level);
-extern int deflateInit2 (z_stream* strm, int level, int  method,
+extern uLong deflateBound (deflate_state* strm, uLong sourceLen);
+extern int deflatePending (deflate_state* strm, unsigned *pending, int *bits);
+extern int deflatePrime (deflate_state* strm, int bits, int value);
+extern int deflateInit (deflate_state* strm, int level);
+extern int deflateInit2 (deflate_state* strm, int level, int  method,
     int windowBits, int memLevel, int strategy);
 
 #endif /* DEFLATE_H */

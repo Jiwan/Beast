@@ -110,8 +110,8 @@ local block_state deflate_rle    (deflate_state *s, int flush);
 local block_state deflate_huff   (deflate_state *s, int flush);
 local void lm_init        (deflate_state *s);
 local void putShortMSB    (deflate_state *s, uInt b);
-local void flush_pending  (z_stream* strm);
-local int read_buf        (z_stream* strm, Byte *buf, unsigned size);
+local void flush_pending  (deflate_state* strm);
+local int read_buf        (deflate_state* strm, Byte *buf, unsigned size);
 #ifdef ASMV
       void match_init (void); /* asm code initialization */
       uInt longest_match  (deflate_state *s, IPos cur_match);
@@ -226,7 +226,7 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
 
 /* ========================================================================= */
 int deflateInit(
-    z_stream* strm,
+    deflate_state* strm,
     int level)
 {
     return deflateInit2(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
@@ -236,15 +236,13 @@ int deflateInit(
 
 /* ========================================================================= */
 int deflateInit2(
-    z_stream* strm,
+    deflate_state* strm,
     int  level,
     int  method,
     int  windowBits,
     int  memLevel,
     int  strategy)
 {
-    deflate_state *s;
-
     std::uint16_t *overlay;
     /* We overlay pending_buf and d_buf+l_buf. This works since the average
      * output size for (length,distance) codes is <= 24 bits.
@@ -270,10 +268,7 @@ int deflateInit2(
         return Z_STREAM_ERROR;
     }
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
-    s = (deflate_state *) std::malloc(sizeof(deflate_state));
-    if (s == Z_NULL) return Z_MEM_ERROR;
-    strm->state = (struct deflate_state *)s;
-    s->strm = strm;
+    auto s = strm;
 
     s->w_bits = windowBits;
     s->w_size = 1 << s->w_bits;
@@ -315,18 +310,16 @@ int deflateInit2(
 
 /* ========================================================================= */
 int deflateSetDictionary (
-    z_stream* strm,
+    deflate_state* strm,
     const Byte *dictionary,
     uInt  dictLength)
 {
-    deflate_state *s;
     uInt str, n;
     unsigned avail;
     const unsigned char *next;
 
-    if (strm == Z_NULL || strm->state == Z_NULL || dictionary == Z_NULL)
-        return Z_STREAM_ERROR;
-    s = strm->state;
+    auto s = strm;
+
     if (s->lookahead)
         return Z_STREAM_ERROR;
 
@@ -374,18 +367,13 @@ int deflateSetDictionary (
 
 /* ========================================================================= */
 int deflateResetKeep (
-    z_stream* strm)
+    deflate_state* strm)
 {
-    deflate_state *s;
-
-    if (strm == Z_NULL || strm->state == Z_NULL)
-        return Z_STREAM_ERROR;
-
     strm->total_in = strm->total_out = 0;
     strm->msg = Z_NULL;
     strm->data_type = Z_UNKNOWN;
 
-    s = (deflate_state *)strm->state;
+    auto s = strm;
     s->pending = 0;
     s->pending_out = s->pending_buf;
 
@@ -399,13 +387,13 @@ int deflateResetKeep (
 
 /* ========================================================================= */
 int deflateReset (
-    z_stream* strm)
+    deflate_state* strm)
 {
     int ret;
 
     ret = deflateResetKeep(strm);
     if (ret == Z_OK)
-        lm_init(strm->state);
+        lm_init(strm);
     return ret;
 }
 
@@ -413,27 +401,24 @@ int deflateReset (
 int deflatePending (
     unsigned *pending,
     int *bits,
-    z_stream* strm)
+    deflate_state* strm)
 {
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     if (pending != Z_NULL)
-        *pending = strm->state->pending;
+        *pending = strm->pending;
     if (bits != Z_NULL)
-        *bits = strm->state->bi_valid;
+        *bits = strm->bi_valid;
     return Z_OK;
 }
 
 /* ========================================================================= */
 int deflatePrime (
-    z_stream* strm,
+    deflate_state* strm,
     int bits,
     int value)
 {
-    deflate_state *s;
     int put;
 
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    s = strm->state;
+    auto s = strm;
     if ((Byte *)(s->d_buf) < s->pending_out + ((Buf_size + 7) >> 3))
         return Z_BUF_ERROR;
     do {
@@ -451,16 +436,15 @@ int deflatePrime (
 
 /* ========================================================================= */
 int deflateParams(
-    z_stream* strm,
+    deflate_state* strm,
     int level,
     int strategy)
 {
-    deflate_state *s;
     compress_func func;
     int err = Z_OK;
 
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    s = strm->state;
+    if (strm == Z_NULL || strm == Z_NULL) return Z_STREAM_ERROR;
+    auto s = strm;
 
 #ifdef FASTEST
     if (level != 0) level = 1;
@@ -492,16 +476,13 @@ int deflateParams(
 
 /* ========================================================================= */
 int deflateTune(
-    z_stream* strm,
+    deflate_state* strm,
     int good_length,
     int max_lazy,
     int nice_length,
     int max_chain)
 {
-    deflate_state *s;
-
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
-    s = strm->state;
+    auto s = strm;
     s->good_match = good_length;
     s->max_lazy_match = max_lazy;
     s->nice_match = nice_length;
@@ -527,10 +508,9 @@ int deflateTune(
  * allocation.
  */
 uLong deflateBound(
-    z_stream* strm,
+    deflate_state* strm,
     uLong sourceLen)
 {
-    deflate_state *s;
     uLong complen, wraplen;
 
     /* conservative upper bound for compressed data */
@@ -538,11 +518,11 @@ uLong deflateBound(
               ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 5;
 
     /* if can't get parameters, return conservative bound plus zlib wrapper */
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == Z_NULL || strm == Z_NULL)
         return complen + 6;
 
     /* compute wrapper length */
-    s = strm->state;
+    auto s = strm;
     wraplen = 0;
 
     /* if not default parameters, return conservative bound */
@@ -561,10 +541,10 @@ uLong deflateBound(
  * (See also read_buf()).
  */
 local void flush_pending(
-    z_stream* strm)
+    deflate_state* strm)
 {
     unsigned len;
-    deflate_state *s = strm->state;
+    auto s = strm;
 
     _tr_flush_bits(s);
     len = s->pending;
@@ -584,17 +564,16 @@ local void flush_pending(
 
 /* ========================================================================= */
 int deflate (
-    z_stream* strm,
+    deflate_state* strm,
     int flush)
 {
     int old_flush; /* value of flush param for previous deflate call */
-    deflate_state *s;
 
-    if (strm == Z_NULL || strm->state == Z_NULL ||
+    if (strm == Z_NULL || strm == Z_NULL ||
         flush > Z_BLOCK || flush < 0) {
         return Z_STREAM_ERROR;
     }
-    s = strm->state;
+    auto s = strm;
 
     if (strm->next_out == Z_NULL ||
         (strm->next_in == Z_NULL && strm->avail_in != 0) ||
@@ -603,7 +582,6 @@ int deflate (
     }
     if (strm->avail_out == 0) ERR_RETURN(strm, Z_BUF_ERROR);
 
-    s->strm = strm; /* just in case */
     old_flush = s->last_flush;
     s->last_flush = flush;
 
@@ -693,13 +671,13 @@ int deflate (
 
 /* ========================================================================= */
 int deflateEnd (
-    z_stream* strm)
+    deflate_state* strm)
 {
     int status;
 
-    if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == Z_NULL || strm == Z_NULL) return Z_STREAM_ERROR;
 
-    status = strm->state->status;
+    status = strm->status;
     if (status != EXTRA_STATE &&
         status != NAME_STATE &&
         status != COMMENT_STATE &&
@@ -710,12 +688,11 @@ int deflateEnd (
     }
 
     /* Deallocate in reverse order of allocations: */
-    std::free(strm->state->pending_buf);
-    std::free(strm->state->head);
-    std::free(strm->state->prev);
-    std::free(strm->state->window);
-    std::free(strm->state);
-    strm->state = Z_NULL;
+    std::free(strm->pending_buf);
+    std::free(strm->head);
+    std::free(strm->prev);
+    std::free(strm->window);
+    strm = Z_NULL;
 
     return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
 }
@@ -728,7 +705,7 @@ int deflateEnd (
  * (See also flush_pending()).
  */
 local int read_buf(
-    z_stream* strm,
+    deflate_state* strm,
     Byte *buf,
     unsigned size)
 {
@@ -1045,7 +1022,7 @@ local void fill_window(
 #endif
             more += wsize;
         }
-        if (s->strm->avail_in == 0) break;
+        if (s->avail_in == 0) break;
 
         /* If there was no sliding:
          *    strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
@@ -1060,7 +1037,7 @@ local void fill_window(
          */
         Assert(more >= 2, "more < 2");
 
-        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        n = read_buf(s, s->window + s->strstart + s->lookahead, more);
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */
@@ -1087,7 +1064,7 @@ local void fill_window(
          * but this is not important since only literal bytes will be emitted.
          */
 
-    } while (s->lookahead < MIN_LOOKAHEAD && s->strm->avail_in != 0);
+    } while (s->lookahead < MIN_LOOKAHEAD && s->avail_in != 0);
 
     /* If the WIN_INIT bytes after the end of the current data have never been
      * written, then zero those bytes in order to avoid memory check reports of
@@ -1138,14 +1115,14 @@ local void fill_window(
                 (std::uint32_t)((long)s->strstart - s->block_start), \
                 (last)); \
    s->block_start = s->strstart; \
-   flush_pending(s->strm); \
+   flush_pending(s); \
    Tracev((stderr,"[FLUSH]")); \
 }
 
 /* Same but force premature exit if necessary. */
 #define FLUSH_BLOCK(s, last) { \
    FLUSH_BLOCK_ONLY(s, last); \
-   if (s->strm->avail_out == 0) return (last) ? finish_started : need_more; \
+   if (s->avail_out == 0) return (last) ? finish_started : need_more; \
 }
 
 /* ===========================================================================
@@ -1422,7 +1399,7 @@ local block_state deflate_slow(
             }
             s->strstart++;
             s->lookahead--;
-            if (s->strm->avail_out == 0) return need_more;
+            if (s->avail_out == 0) return need_more;
         } else {
             /* There is no previous match to compare with, wait for
              * the next step to decide.

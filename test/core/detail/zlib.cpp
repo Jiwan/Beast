@@ -208,7 +208,7 @@ public:
                     {
                         for(int wbits = 15; wbits <= 15; ++wbits)
                         {
-                            z_stream zs;
+                            deflate_state zs;
                             zs.avail_in = 0;
                             zs.next_in = Z_NULL;
                             expect(deflateInit2(&zs,

@@ -920,8 +920,8 @@ void _tr_flush_block(
     if (s->level > 0) {
 
         /* Check if the file is binary or text */
-        if (s->strm->data_type == Z_UNKNOWN)
-            s->strm->data_type = detect_data_type(s);
+        if (s->data_type == Z_UNKNOWN)
+            s->data_type = detect_data_type(s);
 
         /* Construct the literal and distance trees */
         build_tree(s, (tree_desc *)(&(s->l_desc)));
