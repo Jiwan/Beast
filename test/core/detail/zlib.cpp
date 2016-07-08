@@ -9,6 +9,7 @@
 #include <beast/core/detail/zlib/zlib.h>
 
 #include <beast/unit_test/suite.hpp>
+#include <array>
 #include <cassert>
 #include <memory>
 #include <random>
@@ -108,13 +109,26 @@ public:
     make_source2(std::size_t size)
     {
         std::mt19937 rng;
+        std::array<double, 2> const i{0, 65535};
+        std::array<double, 2> const w{0, 1};
+        std::piecewise_linear_distribution<double> d(
+            i.begin(), i.end(), w.begin());
         buffer b(size);
         auto p = b.data();
         std::size_t n = 0;
         while(n < size)
         {
-            *p++ = rng()%256;
-            ++n;
+            if(n == 1)
+            {
+                *p++ = rng()%256;
+                ++n;
+                continue;
+            }
+            auto const v = static_cast<std::uint16_t>(d(rng));
+            *p++ = v>>8;
+            *p++ = v&0xff;
+            n += 2;
+
         }
         b.resize(n);
         return b;
