@@ -35,6 +35,7 @@
 #include "zutil.hpp"
 
 #include <beast/core/detail/zlib/inflate_stream.hpp>
+#include <cassert>
 
 namespace beast {
 
@@ -179,6 +180,18 @@ local void fixedtables(inflate_stream *state)
     state->lenbits = 9;
     state->distcode = distfix;
     state->distbits = 5;
+
+    auto const fc = get_fixed_tables();
+#ifndef NDEBUG
+    assert(fc.lenbits == state->lenbits);
+    assert(fc.distbits == state->distbits);
+    for(std::size_t i = 0; i < 512; ++i)
+        assert(fc.lencode[i] == state->lencode[i]);
+    for(std::size_t i = 0; i < 32; ++i)
+        assert(fc.distcode[i] == state->distcode[i]);
+    assert(std::memcmp(fc.lencode, state->lencode, (1U<<fc.lenbits) * sizeof(fc.lencode[0])) == 0);
+    assert(std::memcmp(fc.distcode, state->distcode, (1U<<fc.distbits) * sizeof(fc.distcode[0])) == 0);
+#endif
 }
 
 #ifdef MAKEFIXED

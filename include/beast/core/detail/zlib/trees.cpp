@@ -58,7 +58,7 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-/* #define GEN_TREES_H */
+//#define GEN_TREES_H
 
 #include "deflate_stream.hpp"
 

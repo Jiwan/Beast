@@ -78,16 +78,8 @@ set (ZLIB_SOURCES
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/deflate.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inffast.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inflate.cpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inftrees.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/trees.cpp
     ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zutil.cpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/deflate.hpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inffixed.h
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/inflate_stream.hpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/trees.hpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zconf.hpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zlib.hpp
-    ${PROJECT_SOURCE_DIR}/include/beast/core/detail/zlib/zutil.hpp
     )
 
 #add_subdirectory (examples)

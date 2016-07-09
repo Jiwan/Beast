@@ -35,56 +35,14 @@
 #ifndef BEAST_CORE_DETAIL_INFLATE_STREAM_HPP
 #define BEAST_CORE_DETAIL_INFLATE_STREAM_HPP
 
+#include <beast/core/detail/zlib/detail/inflate_tables.hpp>
+
 #include "zconf.hpp"
 #include "zlib.hpp"
 #include <cstdint>
 #include <cstdlib>
 
 namespace beast {
-
-/* Structure for decoding tables.  Each entry provides either the
-   information needed to do the operation requested by the code that
-   indexed that table entry, or it provides a pointer to another
-   table that indexes more bits of the code.  op indicates whether
-   the entry is a pointer to another table, a literal, a length or
-   distance, an end-of-block, or an invalid code.  For a table
-   pointer, the low four bits of op is the number of index bits of
-   that table.  For a length or distance, the low four bits of op
-   is the number of extra bits to get after the code.  bits is
-   the number of bits in this code or part of the code to drop off
-   of the bit buffer.  val is the actual byte to output in the case
-   of a literal, the base length or distance, or the offset from
-   the current table to the next table.  Each entry is four bytes. */
-struct code
-{
-    std::uint8_t op;           /* operation, extra bits, table bits */
-    std::uint8_t bits;         /* bits in this part of the code */
-    std::uint16_t val;         /* offset in table or code value */
-};
-
-/* op values as set by inflate_table():
-    00000000 - literal
-    0000tttt - table link, tttt != 0 is the number of table index bits
-    0001eeee - length or distance, eeee is the number of extra bits
-    01100000 - end of block
-    01000000 - invalid code
- */
-
-/* Maximum size of the dynamic table.  The maximum number of code structures is
-   1444, which is the sum of 852 for literal/length codes and 592 for distance
-   codes.  These values were found by exhaustive searches using the program
-   examples/enough.c found in the zlib distribtution.  The arguments to that
-   program are the number of symbols, the initial root table size, and the
-   maximum bit length of a code.  "enough 286 9 15" for literal/length codes
-   returns returns 852, and "enough 30 6 15" for distance codes returns 592.
-   The initial root table size (9 or 6) is found in the fifth argument of the
-   inflate_table() calls in inflate.c and infback.c.  If the root table size is
-   changed, then these maximum sizes would be need to be recalculated and
-   updated. */
-
-std::uint16_t constexpr ENOUGH_LENS = 852;
-std::uint16_t constexpr ENOUGH_DISTS = 592;
-std::uint16_t constexpr ENOUGH = ENOUGH_LENS + ENOUGH_DISTS;
 
 /* Possible inflate modes between inflate() calls */
 
@@ -189,17 +147,6 @@ public:
     unsigned was;               /* initial length of match */
 };
 
-/* Type of code to build for inflate_table() */
-enum codetype
-{
-    CODES,
-    LENS,
-    DISTS
-};
-
-extern int inflate_table (codetype type, unsigned short *lens,
-                             unsigned codes, code * *table,
-                             unsigned *bits, unsigned short *work);
 extern void inflate_fast (inflate_stream* strm, unsigned start);
 
 extern int inflate (inflate_stream* strm, int flush);
