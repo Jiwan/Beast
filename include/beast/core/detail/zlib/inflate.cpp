@@ -1,88 +1,42 @@
-/* inflate.c -- zlib decompression
- * Copyright (C) 1995-2012 Mark Adler
- * For conditions of distribution and use, see copyright notice in zlib.hpp
- */
-
+//
+// Copyright (c) 2013-2016 Vinnie Falco (vinnie dot falco at gmail dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+// This is a derivative work based on Zlib, copyright below:
 /*
- * Change history:
- *
- * 1.2.beta0    24 Nov 2002
- * - First version -- complete rewrite of inflate to simplify code, avoid
- *   creation of window when not needed, minimize use of window when it is
- *   needed, make inffast.c even faster, implement gzip decoding, and to
- *   improve code readability and style over the previous zlib inflate code
- *
- * 1.2.beta1    25 Nov 2002
- * - Use pointers for available input and output checking in inffast.c
- * - Remove input and output counters in inffast.c
- * - Change inffast.c entry and loop from avail_in >= 7 to >= 6
- * - Remove unnecessary second byte pull from length extra in inffast.c
- * - Unroll direct copy to three copies per loop in inffast.c
- *
- * 1.2.beta2    4 Dec 2002
- * - Change external routine names to reduce potential conflicts
- * - Correct filename to inffixed.h for fixed tables in inflate.c
- * - Make hbuf[] unsigned char to match parameter type in inflate.c
- * - Change strm->next_out[-state->offset] to *(strm->next_out - state->offset)
- *   to avoid negation problem on Alphas (64 bit) in inflate.c
- *
- * 1.2.beta3    22 Dec 2002
- * - Add comments on state->bits assertion in inffast.c
- * - Add comments on op field in inftrees.hpp
- * - Fix bug in reuse of allocated window after inflateReset()
- * - Remove bit fields--back to byte structure for speed
- * - Remove distance extra == 0 check in inflate_fast()--only helps for lengths
- * - Change post-increments to pre-increments in inflate_fast(), PPC biased?
- * - Add compile time option, POSTINC, to use post-increments instead (Intel?)
- * - Make MATCH copy in inflate() much faster for when inflate_fast() not used
- * - Use local copies of stream next and avail values, as well as local bit
- *   buffer and bit count in inflate()--for speed when inflate_fast() not used
- *
- * 1.2.beta4    1 Jan 2003
- * - Split ptr - 257 statements in inflate_table() to avoid compiler warnings
- * - Move a comment on output buffer sizes from inffast.c to inflate.c
- * - Add comments in inffast.c to introduce the inflate_fast() routine
- * - Rearrange window copies in inflate_fast() for speed and simplification
- * - Unroll last copy for window match in inflate_fast()
- * - Use local copies of window variables in inflate_fast() for speed
- * - Pull out common wnext == 0 case for speed in inflate_fast()
- * - Make op and len in inflate_fast() unsigned for consistency
- * - Add to lcode and dcode declarations in inflate_fast()
- * - Simplified bad distance check in inflate_fast()
- * - Added inflateBackInit(), inflateBack(), and inflateBackEnd() in new
- *   source file infback.c to provide a call-back interface to inflate for
- *   programs like gzip and unzip -- uses window as output buffer to avoid
- *   window copying
- *
- * 1.2.beta5    1 Jan 2003
- * - Improved inflateBack() interface to allow the caller to provide initial
- *   input in strm.
- * - Fixed stored blocks bug in inflateBack()
- *
- * 1.2.beta6    4 Jan 2003
- * - Added comments in inffast.c on effectiveness of POSTINC
- * - Typecasting all around to reduce compiler warnings
- * - Changed loops from while (1) or do {} while (1) to for (;;), again to
- *   make compilers happy
- * - Changed type of window in inflateBackInit() to unsigned char *
- *
- * 1.2.beta7    27 Jan 2003
- * - Changed many types to unsigned or unsigned short to avoid warnings
- * - Added inflateCopy() function
- *
- * 1.2.0        9 Mar 2003
- * - Changed inflateBack() interface to provide separate opaque descriptors
- *   for the in() and out() functions
- * - Changed inflateBack() argument and in_func typedef to swap the length
- *   and buffer address return values for the input function
- * - Check next_in and next_out for Z_NULL on entry to inflate()
- *
- * The history for versions after 1.2.0 are in ChangeLog in zlib distribution.
- */
+    Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+
+    This software is provided 'as-is', without any express or implied
+    warranty.  In no event will the authors be held liable for any damages
+    arising from the use of this software.
+
+    Permission is granted to anyone to use this software for any purpose,
+    including commercial applications, and to alter it and redistribute it
+    freely, subject to the following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not
+       claim that you wrote the original software. If you use this software
+       in a product, an acknowledgment in the product documentation would be
+       appreciated but is not required.
+    2. Altered source versions must be plainly marked as such, and must not be
+       misrepresented as being the original software.
+    3. This notice may not be removed or altered from any source distribution.
+
+    Jean-loup Gailly        Mark Adler
+    jloup@gzip.org          madler@alumni.caltech.edu
+
+    The data format used by the zlib library is described by RFCs (Request for
+    Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+    (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
+*/
 
 #include "zutil.hpp"
 
 #include <beast/core/detail/zlib/inflate_stream.hpp>
+
+namespace beast {
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -981,3 +935,5 @@ int inflateSyncPoint(
 {
     return strm->mode == STORED && strm->bits == 0;
 }
+
+} // beast

@@ -42,6 +42,8 @@
 #include <cstdlib>
 #include <memory>
 
+namespace beast {
+
 #ifndef local
 #  define local static
 #endif
@@ -100,5 +102,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* Reverse the bytes in a 32-bit value */
 #define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
+
+} // beast
 
 #endif /* ZUTIL_H */

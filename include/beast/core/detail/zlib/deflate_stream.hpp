@@ -38,6 +38,8 @@
 #include "zutil.hpp"
 #include <cstdlib>
 
+namespace beast {
+
 // number of length codes, not counting the special END_BLOCK code
 std::uint16_t constexpr LENGTH_CODES = 29;
 
@@ -347,4 +349,6 @@ extern int deflateInit (deflate_stream* strm, int level);
 extern int deflateInit2 (deflate_stream* strm, int level, int  method,
     int windowBits, int memLevel, int strategy);
 
-#endif /* DEFLATE_H */
+} // beast
+
+#endif

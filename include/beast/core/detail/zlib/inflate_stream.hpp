@@ -40,6 +40,8 @@
 #include <cstdint>
 #include <cstdlib>
 
+namespace beast {
+
 /* Structure for decoding tables.  Each entry provides either the
    information needed to do the operation requested by the code that
    indexed that table entry, or it provides a pointer to another
@@ -215,5 +217,7 @@ extern int inflateInit2_ (inflate_stream* strm, int  windowBits,
 #define inflateInit2(strm, windowBits) \
         inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
                       (int)sizeof(z_stream))
+
+} // beast
 
 #endif

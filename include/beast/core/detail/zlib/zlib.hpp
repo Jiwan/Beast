@@ -40,6 +40,8 @@
 #include <cstdint>
 #include <cstdlib>
 
+namespace beast {
+
 #define ZLIB_VERSION "1.2.8"
 #define ZLIB_VERNUM 0x1280
 #define ZLIB_VER_MAJOR 1
@@ -138,5 +140,7 @@ struct z_stream
 #define Z_DEFLATED   8 // VFALCO Useless, remove
 
 #define Z_NULL  0  /* for initializing zalloc, zfree, opaque */
+
+} // beast
 
 #endif /* ZLIB_H */

@@ -36,6 +36,8 @@
 #include "zlib.hpp"
 #include "zutil.hpp"
 
+namespace beast {
+
 #define MAXBITS 15
 
 /*
@@ -325,3 +327,5 @@ int inflate_table(
     *bits = root;
     return 0;
 }
+
+} // beast

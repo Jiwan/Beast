@@ -80,6 +80,8 @@
 #include <cstring>
 #include <memory>
 
+namespace beast {
+
 #ifndef DEBUG
 # define _tr_tally_lit(s, c, flush) \
   { std::uint8_t cc = (c); \
@@ -1555,3 +1557,5 @@ local block_state deflate_huff(
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
+
+} // beast

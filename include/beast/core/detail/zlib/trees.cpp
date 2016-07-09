@@ -66,9 +66,7 @@
 #  include <ctype.h>
 #endif
 
-/* ===========================================================================
- * Constants
- */
+namespace beast {
 
 #define MAX_BL_BITS 7
 /* Bit length codes must not exceed MAX_BL_BITS bits */
@@ -1253,3 +1251,5 @@ local void copy_block(
         put_byte(s, *buf++);
     }
 }
+
+} // beast

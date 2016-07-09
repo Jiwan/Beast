@@ -35,6 +35,8 @@
 #include "zutil.hpp"
 #include <beast/core/detail/zlib/inflate_stream.hpp>
 
+namespace beast {
+
 #ifndef ASMINF
 
 /* Allow machine dependent optimization for post-increment or pre-increment.
@@ -364,3 +366,5 @@ unsigned start)         /* inflate()'s starting value for strm->avail_out */
  */
 
 #endif /* !ASMINF */
+
+} // beast

@@ -34,6 +34,8 @@
 
 #include "zutil.hpp"
 
+namespace beast {
+
 #ifndef NO_DUMMY_DECL
 struct deflate_stream      {int dummy;}; /* for buggy compilers */
 #endif
@@ -65,3 +67,5 @@ void z_error (m)
     exit(1);
 }
 #endif
+
+} // beast
