@@ -121,43 +121,47 @@ template<class = void>
 int
 inflate_table(
     codetype type,
-    unsigned short *lens,
+    std::uint16_t *lens,
     unsigned codes,
     code * *table,
     unsigned *bits,
-    unsigned short *work)
+    std::uint16_t *work)
 {
-    unsigned len;                   /* a code's length in bits */
-    unsigned sym;                   /* index of code symbols */
-    unsigned min, max;              /* minimum and maximum code lengths */
-    unsigned root;                  /* number of index bits for root table */
-    unsigned curr;                  /* number of index bits for current table */
-    unsigned drop;                  /* code bits to drop for sub-table */
-    int left;                       /* number of prefix codes available */
-    unsigned used;                  /* code entries in table used */
-    unsigned huff;                  /* Huffman code */
-    unsigned incr;                  /* for incrementing code, index */
-    unsigned fill;                  /* index for replicating entries */
-    unsigned low;                   /* low bits for current root entry */
-    unsigned mask;                  /* mask for low root bits */
-    code here;                      /* table entry for duplication */
-    code *next;                     /* next available space in table */
-    unsigned short const* base;     /* base value table to use */
-    unsigned short const* extra;    /* extra bits table to use */
-    int end;                        /* use base and extra for symbol > end */
-    unsigned short count[15+1];     /* number of codes of each length */
-    unsigned short offs[15+1];      /* offsets in table for each length */
-    static unsigned short constexpr lbase[31] = { /* Length codes 257..285 base */
+    unsigned len;                   // a code's length in bits
+    unsigned sym;                   // index of code symbols
+    unsigned min, max;              // minimum and maximum code lengths
+    unsigned root;                  // number of index bits for root table
+    unsigned curr;                  // number of index bits for current table
+    unsigned drop;                  // code bits to drop for sub-table
+    int left;                       // number of prefix codes available
+    unsigned used;                  // code entries in table used
+    unsigned huff;                  // Huffman code
+    unsigned incr;                  // for incrementing code, index
+    unsigned fill;                  // index for replicating entries
+    unsigned low;                   // low bits for current root entry
+    unsigned mask;                  // mask for low root bits
+    code here;                      // table entry for duplication
+    code *next;                     // next available space in table
+    std::uint16_t const* base;      // base value table to use
+    std::uint16_t const* extra;     // extra bits table to use
+    int end;                        // use base and extra for symbol > end
+    std::uint16_t count[15+1];      // number of codes of each length
+    std::uint16_t offs[15+1];       // offsets in table for each length
+    // Length codes 257..285 base
+    static std::uint16_t constexpr lbase[31] = { 
         3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
-    static unsigned short constexpr lext[31] = { /* Length codes 257..285 extra */
+    // Length codes 257..285 extra
+    static std::uint16_t constexpr lext[31] = {
         16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18,
         19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 72, 78};
-    static unsigned short constexpr dbase[32] = { /* Distance codes 0..29 base */
+    // Distance codes 0..29 base
+    static std::uint16_t constexpr dbase[32] = {
         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
         257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
         8193, 12289, 16385, 24577, 0, 0};
-    static unsigned short constexpr dext[32] = { /* Distance codes 0..29 extra */
+    // Distance codes 0..29 extra
+    static std::uint16_t constexpr dext[32] = {
         16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22,
         23, 23, 24, 24, 25, 25, 26, 26, 27, 27,
         28, 28, 29, 29, 64, 64};
@@ -202,27 +206,34 @@ inflate_table(
     /* bound code lengths, force root to be within code lengths */
     root = *bits;
     for (max = 15; max >= 1; max--)
-        if (count[max] != 0) break;
-    if (root > max) root = max;
-    if (max == 0) {                     /* no symbols to code at all */
-        here.op = (unsigned char)64;    /* invalid code marker */
-        here.bits = (unsigned char)1;
-        here.val = (unsigned short)0;
+        if (count[max] != 0)
+            break;
+    if (root > max)
+        root = max;
+    if (max == 0)
+    {                     /* no symbols to code at all */
+        here.op = (std::uint8_t)64;    /* invalid code marker */
+        here.bits = (std::uint8_t)1;
+        here.val = (std::uint16_t)0;
         *(*table)++ = here;             /* make a table to force an error */
         *(*table)++ = here;
         *bits = 1;
         return 0;     /* no symbols, but wait for decoding to report error */
     }
     for (min = 1; min < max; min++)
-        if (count[min] != 0) break;
-    if (root < min) root = min;
+        if (count[min] != 0)
+            break;
+    if (root < min)
+        root = min;
 
     /* check for an over-subscribed or incomplete set of lengths */
     left = 1;
-    for (len = 1; len <= 15; len++) {
+    for (len = 1; len <= 15; len++)
+    {
         left <<= 1;
         left -= count[len];
-        if (left < 0) return -1;        /* over-subscribed */
+        if (left < 0)
+            return -1;        /* over-subscribed */
     }
     if (left > 0 && (type == CODES || max != 1))
         return -1;                      /* incomplete set */
@@ -234,7 +245,8 @@ inflate_table(
 
     /* sort symbols by length, by symbol order within each length */
     for (sym = 0; sym < codes; sym++)
-        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
+        if (lens[sym] != 0)
+            work[offs[lens[sym]]++] = (std::uint16_t)sym;
 
     /*
        Create and fill in decoding tables.  In this loop, the table being
@@ -268,7 +280,8 @@ inflate_table(
      */
 
     /* set up for code type */
-    switch (type) {
+    switch (type)
+    {
     case CODES:
         base = extra = work;    /* dummy value--not used */
         end = 19;
@@ -299,23 +312,27 @@ inflate_table(
 
     /* check available table space */
     if ((type == LENS && used > ENOUGH_LENS) ||
-        (type == DISTS && used > ENOUGH_DISTS))
+            (type == DISTS && used > ENOUGH_DISTS))
         return 1;
 
     /* process all codes and make table entries */
-    for (;;) {
+    for (;;)
+    {
         /* create table entry */
-        here.bits = (unsigned char)(len - drop);
-        if ((int)(work[sym]) < end) {
-            here.op = (unsigned char)0;
+        here.bits = (std::uint8_t)(len - drop);
+        if ((int)(work[sym]) < end)
+        {
+            here.op = (std::uint8_t)0;
             here.val = work[sym];
         }
-        else if ((int)(work[sym]) > end) {
-            here.op = (unsigned char)(extra[work[sym]]);
+        else if ((int)(work[sym]) > end)
+        {
+            here.op = (std::uint8_t)(extra[work[sym]]);
             here.val = base[work[sym]];
         }
-        else {
-            here.op = (unsigned char)(32 + 64);         /* end of block */
+        else
+        {
+            here.op = (std::uint8_t)(32 + 64);         /* end of block */
             here.val = 0;
         }
 
@@ -323,7 +340,8 @@ inflate_table(
         incr = 1U << (len - drop);
         fill = 1U << curr;
         min = fill;                 /* save offset to next table */
-        do {
+        do
+        {
             fill -= incr;
             next[(huff >> drop) + fill] = here;
         } while (fill != 0);
@@ -332,7 +350,8 @@ inflate_table(
         incr = 1U << (len - 1);
         while (huff & incr)
             incr >>= 1;
-        if (incr != 0) {
+        if (incr != 0)
+        {
             huff &= incr - 1;
             huff += incr;
         }
@@ -341,13 +360,15 @@ inflate_table(
 
         /* go to next symbol, update count, len */
         sym++;
-        if (--(count[len]) == 0) {
+        if (--(count[len]) == 0)
+        {
             if (len == max) break;
             len = lens[work[sym]];
         }
 
         /* create new sub-table if needed */
-        if (len > root && (huff & mask) != low) {
+        if (len > root && (huff & mask) != low)
+        {
             /* if first time, transition to sub-tables */
             if (drop == 0)
                 drop = root;
@@ -358,7 +379,8 @@ inflate_table(
             /* determine length of next table */
             curr = len - drop;
             left = (int)(1 << curr);
-            while (curr + drop < max) {
+            while (curr + drop < max)
+            {
                 left -= count[curr + drop];
                 if (left <= 0) break;
                 curr++;
@@ -373,19 +395,20 @@ inflate_table(
 
             /* point entry in root table to sub-table */
             low = huff & mask;
-            (*table)[low].op = (unsigned char)curr;
-            (*table)[low].bits = (unsigned char)root;
-            (*table)[low].val = (unsigned short)(next - *table);
+            (*table)[low].op = (std::uint8_t)curr;
+            (*table)[low].bits = (std::uint8_t)root;
+            (*table)[low].val = (std::uint16_t)(next - *table);
         }
     }
 
     /* fill in remaining table entry if code is incomplete (guaranteed to have
        at most one remaining entry, since if the code is incomplete, the
        maximum code length that was allowed to get this far is one bit) */
-    if (huff != 0) {
-        here.op = (unsigned char)64;            /* invalid code marker */
-        here.bits = (unsigned char)(len - drop);
-        here.val = (unsigned short)0;
+    if (huff != 0)
+    {
+        here.op = (std::uint8_t)64;            /* invalid code marker */
+        here.bits = (std::uint8_t)(len - drop);
+        here.val = (std::uint16_t)0;
         next[huff] = here;
     }
 
