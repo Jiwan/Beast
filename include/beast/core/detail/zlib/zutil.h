@@ -36,9 +36,9 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
         /* common constants */
 
-/* default windowBits for decompression. MAX_WBITS is for compression only */
+/* default windowBits for decompression.  */
 #ifndef DEF_WBITS
-#  define DEF_WBITS MAX_WBITS
+#  define DEF_WBITS 15
 #endif
 
 /* default memLevel */

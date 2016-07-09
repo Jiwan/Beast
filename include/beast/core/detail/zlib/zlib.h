@@ -58,9 +58,9 @@
    the current table to the next table.  Each entry is four bytes. */
 struct code
 {
-    unsigned char op;           /* operation, extra bits, table bits */
-    unsigned char bits;         /* bits in this part of the code */
-    unsigned short val;         /* offset in table or code value */
+    std::uint8_t op;           /* operation, extra bits, table bits */
+    std::uint8_t bits;         /* bits in this part of the code */
+    std::uint16_t val;         /* offset in table or code value */
 };
 
 /* op values as set by inflate_table():

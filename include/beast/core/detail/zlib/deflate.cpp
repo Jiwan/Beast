@@ -184,12 +184,12 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
 #define INSERT_STRING(s, str, match_head) \
    (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
     match_head = s->head[s->ins_h], \
-    s->head[s->ins_h] = (Pos)(str))
+    s->head[s->ins_h] = (std::uint16_t)(str))
 #else
 #define INSERT_STRING(s, str, match_head) \
    (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
     match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
-    s->head[s->ins_h] = (Pos)(str))
+    s->head[s->ins_h] = (std::uint16_t)(str))
 #endif
 
 /* ===========================================================================
@@ -207,7 +207,7 @@ int deflateInit_(
     const char *version,
     int stream_size)
 {
-    return deflateInit2_(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL,
+    return deflateInit2_(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
                          Z_DEFAULT_STRATEGY, version, stream_size);
     /* To do: ignore strm->next_in if we use it as window */
 }
@@ -269,8 +269,8 @@ int deflateInit2_(
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 
     s->window = (Byte *) std::malloc(s->w_size * 2*sizeof(Byte));
-    s->prev   = (Pos *)  std::malloc(s->w_size * sizeof(Pos));
-    s->head   = (Pos *)  std::malloc(s->hash_size * sizeof(Pos));
+    s->prev   = (std::uint16_t *)  std::malloc(s->w_size * sizeof(std::uint16_t));
+    s->head   = (std::uint16_t *)  std::malloc(s->hash_size * sizeof(std::uint16_t));
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
@@ -338,7 +338,7 @@ int deflateSetDictionary (
 #ifndef FASTEST
             s->prev[str & s->w_mask] = s->head[s->ins_h];
 #endif
-            s->head[s->ins_h] = (Pos)str;
+            s->head[s->ins_h] = (std::uint16_t)str;
             str++;
         } while (--n);
         s->strstart = str;
@@ -790,7 +790,7 @@ local uInt longest_match(
     /* Stop when cur_match becomes <= limit. To simplify the code,
      * we prevent matches with the string of window index 0.
      */
-    Pos *prev = s->prev;
+    std::uint16_t *prev = s->prev;
     uInt wmask = s->w_mask;
 
     Byte *strend = s->window + s->strstart + MAX_MATCH;
@@ -800,7 +800,7 @@ local uInt longest_match(
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
      */
-    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "fc.code too clever");
 
     /* Do not waste too much time if we already have a good match: */
     if (s->prev_length >= s->good_match) {
@@ -886,7 +886,7 @@ local uInt longest_match(
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
      */
-    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "fc.code too clever");
 
     Assert((std::uint32_t)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
 
@@ -971,7 +971,7 @@ local void fill_window(
     deflate_state *s)
 {
     unsigned n, m;
-    Pos *p;
+    std::uint16_t *p;
     unsigned more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
 
@@ -1013,7 +1013,7 @@ local void fill_window(
             p = &s->head[n];
             do {
                 m = *--p;
-                *p = (Pos)(m >= wsize ? m-wsize : NIL);
+                *p = (std::uint16_t)(m >= wsize ? m-wsize : NIL);
             } while (--n);
 
             n = wsize;
@@ -1021,7 +1021,7 @@ local void fill_window(
             p = &s->prev[n];
             do {
                 m = *--p;
-                *p = (Pos)(m >= wsize ? m-wsize : NIL);
+                *p = (std::uint16_t)(m >= wsize ? m-wsize : NIL);
                 /* If n is not on any hash chain, prev[n] is garbage but
                  * its value will never be used.
                  */
@@ -1060,7 +1060,7 @@ local void fill_window(
 #ifndef FASTEST
                 s->prev[str & s->w_mask] = s->head[s->ins_h];
 #endif
-                s->head[s->ins_h] = (Pos)str;
+                s->head[s->ins_h] = (std::uint16_t)str;
                 str++;
                 s->insert--;
                 if (s->lookahead + s->insert < MIN_MATCH)

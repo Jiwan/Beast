@@ -71,11 +71,6 @@ struct ct_data
     dl_t dl;
 };
 
-#define Freq fc.freq
-#define Code fc.code
-#define Dad  dl.dad
-#define Len  dl.len
-
 struct static_tree_desc;
 
 struct tree_desc
@@ -85,10 +80,9 @@ struct tree_desc
     static_tree_desc* stat_desc; /* the corresponding static tree */
 };
 
-using Pos = std::uint16_t;
 using IPos = unsigned;
 
-/* A Pos is an index in the character window. We use short instead of int to
+/* A std::uint16_t is an index in the character window. We use short instead of int to
  * save space in the various tables. IPos is used only for parameter passing.
  */
 
@@ -125,13 +119,13 @@ struct deflate_state
      * is directly used as sliding window.
      */
 
-    Pos *prev;
+    std::uint16_t *prev;
     /* Link to older string with same hash index. To limit the size of this
      * array to 64K, this link is maintained only for the last 32K strings.
      * An index in this array is thus a window index modulo 32K.
      */
 
-    Pos *head; /* Heads of the hash chains or NIL. */
+    std::uint16_t *head; /* Heads of the hash chains or NIL. */
 
     uInt  ins_h;          /* hash index of string to be inserted */
     uInt  hash_size;      /* number of elements in hash table */
@@ -320,7 +314,7 @@ void _tr_stored_block (deflate_state *s, char *bu,
   { std::uint8_t cc = (c); \
     s->d_buf[s->last_lit] = 0; \
     s->l_buf[s->last_lit++] = cc; \
-    s->dyn_ltree[cc].Freq++; \
+    s->dyn_ltree[cc].fc.freq++; \
     flush = (s->last_lit == s->lit_bufsize-1); \
    }
 # define _tr_tally_dist(s, distance, length, flush) \
@@ -329,8 +323,8 @@ void _tr_stored_block (deflate_state *s, char *bu,
     s->d_buf[s->last_lit] = dist; \
     s->l_buf[s->last_lit++] = len; \
     dist--; \
-    s->dyn_ltree[_length_code[len]+LITERALS+1].Freq++; \
-    s->dyn_dtree[d_code(dist)].Freq++; \
+    s->dyn_ltree[_length_code[len]+LITERALS+1].fc.freq++; \
+    s->dyn_dtree[d_code(dist)].fc.freq++; \
     flush = (s->last_lit == s->lit_bufsize-1); \
   }
 #else
