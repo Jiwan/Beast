@@ -35,6 +35,7 @@
 #ifndef BEAST_CORE_DETAIL_INFLATE_STREAM_HPP
 #define BEAST_CORE_DETAIL_INFLATE_STREAM_HPP
 
+#include <beast/core/error.hpp>
 #include <beast/core/detail/zlib/detail/inflate_tables.hpp>
 
 #include "zconf.hpp"
@@ -80,83 +81,100 @@ enum inflate_mode
     SYNC        /* looking for synchronization bytes to restart inflate() */
 };
 
-/*
-    State transitions between above modes -
+/** Raw deflate decompressor.
 
-    (most modes can go to BAD or MEM on error -- not shown for clarity)
-
-    Process header:
-        HEAD -> (gzip) or (zlib) or (raw)
-        (gzip) -> FLAGS -> TIME -> OS -> EXLEN -> EXTRA -> NAME -> COMMENT ->
-                  HCRC -> TYPE
-        (zlib) -> DICTID or TYPE
-        DICTID -> DICT -> TYPE
-        (raw) -> TYPEDO
-    Read deflate blocks:
-            TYPE -> TYPEDO -> STORED or TABLE or LEN_ or CHECK
-            STORED -> COPY_ -> COPY -> TYPE
-            TABLE -> LENLENS -> CODELENS -> LEN_
-            LEN_ -> LEN
-    Read deflate codes in fixed or dynamic block:
-                LEN -> LENEXT or LIT or TYPE
-                LENEXT -> DIST -> DISTEXT -> MATCH -> LEN
-                LIT -> LEN
-    Process trailer:
-        CHECK -> LENGTH -> DONE
- */
-
-/* state maintained between inflate() calls.  Approximately 10K bytes. */
+    This is a port of zlib's "inflate" functionality to C++.
+*/
 class inflate_stream : public z_stream
 {
 public:
-    inflate_mode mode;          /* current inflate mode */
-    int last;                   /* true if processing last block */
-    int flags;                  /* gzip header method and flags (0 if zlib) */
-    unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
-    unsigned long total;        /* protected copy of output count */
-        /* sliding window */
-    unsigned wbits;             /* log base 2 of requested window size */
-    unsigned wsize;             /* window size or zero if not using window */
-    unsigned whave;             /* valid bytes in the window */
-    unsigned wnext;             /* window write index */
-    unsigned char *window;  /* allocated sliding window, if needed */
-        /* bit accumulator */
-    unsigned long hold;         /* input bit accumulator */
-    unsigned bits;              /* number of bits in "in" */
-        /* for string and stored block copying */
-    unsigned length;            /* literal or length of data to copy */
-    unsigned offset;            /* distance back to copy string from */
-        /* for table and code decoding */
-    unsigned extra;             /* extra bits needed */
-        /* fixed and dynamic code tables */
-    code const *lencode;    /* starting table for length/literal codes */
-    code const *distcode;   /* starting table for distance codes */
-    unsigned lenbits;           /* index bits for lencode */
-    unsigned distbits;          /* index bits for distcode */
-        /* dynamic table building */
-    unsigned ncode;             /* number of code length code lengths */
-    unsigned nlen;              /* number of length code lengths */
-    unsigned ndist;             /* number of distance code lengths */
-    unsigned have;              /* number of code lengths in lens[] */
-    code *next;             /* next available space in codes[] */
-    unsigned short lens[320];   /* temporary storage for code lengths */
-    unsigned short work[288];   /* work area for code table building */
-    code codes[ENOUGH];         /* space for code tables */
-    int sane;                   /* if false, allow invalid distance too far */
-    int back;                   /* bits back of last unprocessed length/lit */
-    unsigned was;               /* initial length of match */
+    struct params
+    {
+        void const* next_in;        // next input byte
+        std::size_t avail_in;       // number of bytes available at next_in
+        std::size_t total_in = 0;   // total number of input bytes read so far
+
+        void*       next_out;       // next output byte should be put there
+        std::size_t avail_out;      // remaining free space at next_out
+        std::size_t total_out = 0;  // total number of bytes output so far
+    };
+
+    /** Construct a raw deflate decompression stream.
+
+        The window size is set to the default of 15 bits.
+    */
+    inflate_stream();
+
+    /// Destructor.
+    ~inflate_stream();
+
+    /** Reset the stream.
+
+        This puts the stream in a newly constructed state with the
+        specified window size, but without de-allocating any dynamically
+        created structures.
+    */
+    void
+    reset(std::uint8_t windowBits);
+
+    /** Write compressed data to the stream.
+
+        @return `true` if the end of stream is reached.
+    */
+    bool
+    write(params& ps, error_code& ec);
+
+//private:
+    inflate_mode mode;          // current inflate mode
+    int last;                   // true if processing last block
+    unsigned dmax;              // zlib header max distance (INFLATE_STRICT)
+    unsigned long total;        // protected copy of output count
+
+    // sliding window
+    unsigned wbits;             // log base 2 of requested window size
+    unsigned wsize;             // window size or zero if not using window
+    unsigned whave;             // valid bytes in the window
+    unsigned wnext;             // window write index
+    unsigned char *window =
+        nullptr;                // allocated sliding window, if needed
+
+    // bit accumulator
+    unsigned long hold;         // input bit accumulator
+    unsigned bits;              // number of bits in "in"
+
+    // for string and stored block copying
+    unsigned length;            // literal or length of data to copy
+    unsigned offset;            // distance back to copy string from
+
+    // for table and code decoding
+    unsigned extra;             // extra bits needed
+    
+    // fixed and dynamic code tables
+    code const *lencode;        // starting table for length/literal codes
+    code const *distcode;       // starting table for distance codes
+    unsigned lenbits;           // index bits for lencode
+    unsigned distbits;          // index bits for distcode
+
+    // dynamic table building
+    unsigned ncode;             // number of code length code lengths
+    unsigned nlen;              // number of length code lengths
+    unsigned ndist;             // number of distance code lengths
+    unsigned have;              // number of code lengths in lens[]
+    code *next;                 // next available space in codes[]
+    unsigned short lens[320];   // temporary storage for code lengths
+    unsigned short work[288];   // work area for code table building
+    code codes[ENOUGH];         // space for code tables
+    int sane;                   // if false, allow invalid distance too far
+    int back;                   // bits back of last unprocessed length/lit
+    unsigned was;               // initial length of match
 };
 
 extern void inflate_fast (inflate_stream* strm, unsigned start);
 
 extern int inflate              (inflate_stream* strm, int flush);
 extern int inflateEnd           (inflate_stream* strm);
-extern int inflateSetDictionary (inflate_stream* strm, const Byte *dictionary, uInt  dictLength);
-extern int inflateGetDictionary (inflate_stream* strm, Byte *dictionary, uInt  *dictLength);
-extern int inflateReset         (inflate_stream* strm);
-extern int inflateReset2        (inflate_stream* strm, int windowBits);
-extern int inflateInit          (inflate_stream* strm);
-extern int inflateInit2         (inflate_stream* strm, int  windowBits);
+extern int inflateReset         (inflate_stream* strm, int windowBits);
+extern int inflateInit          (inflate_stream* strm, int  windowBits);
 
 } // beast
 

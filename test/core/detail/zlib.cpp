@@ -136,8 +136,7 @@ public:
     }
 
     void
-    checkInflate(buffer const& input,
-        buffer const& dict, buffer const& original)
+    checkInflate(buffer const& input, buffer const& original)
     {
         for(std::size_t i = 0; i < input.size(); ++i)
         {
@@ -145,10 +144,6 @@ public:
             inflate_stream zs;
             zs.avail_in = 0;
             zs.next_in = Z_NULL;
-            expect(inflateInit2(&zs, 15) == Z_OK);
-            if(! dict.empty())
-                expect(inflateSetDictionary(&zs,
-                    dict.data(), dict.size()) == Z_OK);
             zs.next_out = output.data();
             zs.avail_out = output.capacity();
             if(i > 0)
@@ -166,7 +161,6 @@ public:
             expect(output.size() == original.size());
             expect(std::memcmp(
                 output.data(), original.data(), original.size()) == 0);
-            inflateEnd(&zs);
         }
     }
 
@@ -185,52 +179,31 @@ public:
                 original = make_source2(N);
                 break;
             }
-            for(int dictno = 0; dictno <= 1; ++dictno)
+            for(int level = 0; level <= 9; ++level)
             {
-                std::string const s{
-                    "01234567890{}\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz{} "};
-                buffer dict;
-                switch(dictno)
+                for(int strategy = 0; strategy <= 4; ++strategy)
                 {
-                case 0:
-                    break;
-                case 1:
-                {
-                    dict.reserve(s.size());
-                    std::memcpy(dict.data(), s.data(), s.size());
-                    dict.resize(s.size());
-                    break;
-                }
-                }
-                for(int level = 0; level <= 9; ++level)
-                {
-                    for(int strategy = 0; strategy <= 4; ++strategy)
+                    for(int wbits = 15; wbits <= 15; ++wbits)
                     {
-                        for(int wbits = 15; wbits <= 15; ++wbits)
-                        {
-                            deflate_stream zs;
-                            zs.avail_in = 0;
-                            zs.next_in = Z_NULL;
-                            expect(deflateInit2(&zs,
-                                level,
-                                Z_DEFLATED,
-                                -wbits,
-                                4,
-                                strategy) == Z_OK);
-                            if(! dict.empty())
-                                expect(deflateSetDictionary(&zs,
-                                    dict.data(), dict.size()) == Z_OK);
-                            buffer output(deflateBound(&zs, original.size()));
-                            zs.next_in = (Byte*)original.data();
-                            zs.avail_in = original.size();
-                            zs.next_out = output.data();
-                            zs.avail_out = output.capacity();
-                            auto result = deflate(&zs, Z_FULL_FLUSH);
-                            deflateEnd(&zs);
-                            expect(result == Z_OK);
-                            output.resize(output.capacity() - zs.avail_out);
-                            checkInflate(output, dict, original);
-                        }
+                        deflate_stream zs;
+                        zs.avail_in = 0;
+                        zs.next_in = Z_NULL;
+                        expect(deflateInit2(&zs,
+                            level,
+                            Z_DEFLATED,
+                            -wbits,
+                            4,
+                            strategy) == Z_OK);
+                        buffer output(deflateBound(&zs, original.size()));
+                        zs.next_in = (Byte*)original.data();
+                        zs.avail_in = original.size();
+                        zs.next_out = output.data();
+                        zs.avail_out = output.capacity();
+                        auto result = deflate(&zs, Z_FULL_FLUSH);
+                        deflateEnd(&zs);
+                        expect(result == Z_OK);
+                        output.resize(output.capacity() - zs.avail_out);
+                        checkInflate(output, original);
                     }
                 }
             }
