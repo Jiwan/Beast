@@ -78,18 +78,17 @@ namespace beast {
 */
 struct z_stream
 {
-    Byte const*     next_in;   /* next input byte */
-    std::size_t     avail_in;  /* number of bytes available at next_in */
-    std::size_t     total_in;  /* total number of input bytes read so far */
+    Byte const*     next_in;    // next input byte
+    std::size_t     avail_in;   // number of bytes available at next_in
+    std::size_t     total_in;   // total number of input bytes read so far
 
-    Byte*           next_out; /* next output byte should be put there */
-    std::size_t     avail_out; /* remaining free space at next_out */
-    std::size_t     total_out; /* total number of bytes output so far */
+    Byte*           next_out;   // next output byte should be put there
+    std::size_t     avail_out;  // remaining free space at next_out
+    std::size_t     total_out;  // total number of bytes output so far
 
-    const char *msg;  /* last error message, NULL if no error */
+    const char *msg = nullptr;  // last error message, NULL if no error
 
-    int     data_type;  /* best guess about the data type: binary or text */
-    uLong   reserved;   /* reserved for future use */
+    int     data_type;          // best guess about the data type: binary or text
 };
 
 

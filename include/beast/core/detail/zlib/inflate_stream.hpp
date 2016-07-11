@@ -149,21 +149,14 @@ public:
 
 extern void inflate_fast (inflate_stream* strm, unsigned start);
 
-extern int inflate (inflate_stream* strm, int flush);
-extern int inflateEnd (inflate_stream* strm);
+extern int inflate              (inflate_stream* strm, int flush);
+extern int inflateEnd           (inflate_stream* strm);
 extern int inflateSetDictionary (inflate_stream* strm, const Byte *dictionary, uInt  dictLength);
 extern int inflateGetDictionary (inflate_stream* strm, Byte *dictionary, uInt  *dictLength);
-extern int inflateReset (inflate_stream* strm);
-extern int inflateReset2 (inflate_stream* strm, int windowBits);
-extern int inflateInit_ (inflate_stream* strm,
-                                     const char *version, int stream_size);
-extern int inflateInit2_ (inflate_stream* strm, int  windowBits,
-                                      const char *version, int stream_size);
-#define inflateInit(strm) \
-        inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
-#define inflateInit2(strm, windowBits) \
-        inflateInit2_((strm), (windowBits), ZLIB_VERSION, \
-                      (int)sizeof(z_stream))
+extern int inflateReset         (inflate_stream* strm);
+extern int inflateReset2        (inflate_stream* strm, int windowBits);
+extern int inflateInit          (inflate_stream* strm);
+extern int inflateInit2         (inflate_stream* strm, int  windowBits);
 
 } // beast
 

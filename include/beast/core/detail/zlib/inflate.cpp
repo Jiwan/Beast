@@ -93,19 +93,13 @@ int inflateReset2(
     return inflateReset(strm);
 }
 
-int inflateInit2_(
+int inflateInit2(
     inflate_stream* strm,
-    int windowBits,
-    const char *version,
-    int stream_size)
+    int windowBits)
 {
     int ret;
     auto state = strm;
 
-    if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
-        stream_size != (int)(sizeof(z_stream)))
-        return Z_VERSION_ERROR;
-    if (strm == Z_NULL) return Z_STREAM_ERROR;
     strm->msg = Z_NULL;                 /* in case we return an error */
     Tracev((stderr, "inflate: allocated\n"));
     state->window = Z_NULL;
@@ -113,12 +107,9 @@ int inflateInit2_(
     return ret;
 }
 
-int inflateInit_(
-    inflate_stream* strm,
-    const char *version,
-    int stream_size)
+int inflateInit(inflate_stream* strm)
 {
-    return inflateInit2_(strm, DEF_WBITS, version, stream_size);
+    return inflateInit2(strm, 15);
 }
 
 void fixedtables(inflate_stream *state)
