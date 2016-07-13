@@ -183,7 +183,6 @@ local int updatewindow(
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        left = strm->avail_out; \
         next = strm->next_in; \
         have = strm->avail_in; \
         hold = strm->hold; \
@@ -193,7 +192,6 @@ local int updatewindow(
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        strm->avail_out = left; \
         strm->next_in = next; \
         strm->avail_in = have; \
         strm->hold = hold; \
@@ -354,7 +352,7 @@ int inflate(
 {
     auto state = strm;
     std::uint8_t const* next;   /* next input */
-    unsigned have, left;        /* available input and output */
+    unsigned have;              /* available input and output */
     unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned in, out;           /* save starting available input and output */
@@ -374,7 +372,7 @@ int inflate(
     if (strm->mode == TYPE) strm->mode = TYPEDO;      /* skip check */
     LOAD();
     in = have;
-    out = left;
+    out = strm->avail_out;
     ret = Z_OK;
     for (;;)
         switch (strm->mode) {
@@ -439,12 +437,12 @@ int inflate(
             copy = strm->length;
             if (copy) {
                 if (copy > have) copy = have;
-                if (copy > left) copy = left;
+                if (copy > strm->avail_out) copy = strm->avail_out;
                 if (copy == 0) goto inf_leave;
                 std::memcpy(strm->next_out, next, copy);
                 have -= copy;
                 next += copy;
-                left -= copy;
+                strm->avail_out -= copy;
                 strm->next_out += copy;
                 strm->length -= copy;
                 break;
@@ -577,7 +575,7 @@ int inflate(
         case LEN_:
             strm->mode = LEN;
         case LEN:
-            if (have >= 6 && left >= 258) {
+            if (have >= 6 && strm->avail_out >= 258) {
                 RESTORE();
                 inflate_fast(strm, out);
                 LOAD();
@@ -679,8 +677,8 @@ int inflate(
             Tracevv((stderr, "inflate:         distance %u\n", strm->offset));
             strm->mode = MATCH;
         case MATCH:
-            if (left == 0) goto inf_leave;
-            copy = out - left;
+            if (strm->avail_out == 0) goto inf_leave;
+            copy = out - strm->avail_out;
             if (strm->offset > copy) {         /* copy from window */
                 copy = strm->offset - copy;
                 if (copy > strm->whave) {
@@ -693,8 +691,8 @@ int inflate(
                     Trace((stderr, "inflate.c too far\n"));
                     copy -= strm->whave;
                     if (copy > strm->length) copy = strm->length;
-                    if (copy > left) copy = left;
-                    left -= copy;
+                    if (copy > strm->avail_out) copy = strm->avail_out;
+                    strm->avail_out -= copy;
                     strm->length -= copy;
                     do {
                         *strm->next_out++ = 0;
@@ -715,8 +713,8 @@ int inflate(
                 from = strm->next_out - strm->offset;
                 copy = strm->length;
             }
-            if (copy > left) copy = left;
-            left -= copy;
+            if (copy > strm->avail_out) copy = strm->avail_out;
+            strm->avail_out -= copy;
             strm->length -= copy;
             do {
                 *strm->next_out++ = *from++;
@@ -724,9 +722,9 @@ int inflate(
             if (strm->length == 0) strm->mode = LEN;
             break;
         case LIT:
-            if (left == 0) goto inf_leave;
+            if (strm->avail_out == 0) goto inf_leave;
             *strm->next_out++ = (unsigned char)(strm->length);
-            left--;
+            strm->avail_out--;
             strm->mode = LEN;
             break;
         case CHECK:
