@@ -183,7 +183,6 @@ local int updatewindow(
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        put = strm->next_out; \
         left = strm->avail_out; \
         next = strm->next_in; \
         have = strm->avail_in; \
@@ -194,7 +193,6 @@ local int updatewindow(
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        strm->next_out = put; \
         strm->avail_out = left; \
         strm->next_in = next; \
         strm->avail_in = have; \
@@ -355,8 +353,7 @@ int inflate(
     int flush)
 {
     auto state = strm;
-    const unsigned char *next;    /* next input */
-    unsigned char *put;     /* next output */
+    std::uint8_t const* next;   /* next input */
     unsigned have, left;        /* available input and output */
     unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
@@ -444,11 +441,11 @@ int inflate(
                 if (copy > have) copy = have;
                 if (copy > left) copy = left;
                 if (copy == 0) goto inf_leave;
-                std::memcpy(put, next, copy);
+                std::memcpy(strm->next_out, next, copy);
                 have -= copy;
                 next += copy;
                 left -= copy;
-                put += copy;
+                strm->next_out += copy;
                 strm->length -= copy;
                 break;
             }
@@ -700,7 +697,7 @@ int inflate(
                     left -= copy;
                     strm->length -= copy;
                     do {
-                        *put++ = 0;
+                        *strm->next_out++ = 0;
                     } while (--copy);
                     if (strm->length == 0) strm->mode = LEN;
                     break;
@@ -715,20 +712,20 @@ int inflate(
                 if (copy > strm->length) copy = strm->length;
             }
             else {                              /* copy from output */
-                from = put - strm->offset;
+                from = strm->next_out - strm->offset;
                 copy = strm->length;
             }
             if (copy > left) copy = left;
             left -= copy;
             strm->length -= copy;
             do {
-                *put++ = *from++;
+                *strm->next_out++ = *from++;
             } while (--copy);
             if (strm->length == 0) strm->mode = LEN;
             break;
         case LIT:
             if (left == 0) goto inf_leave;
-            *put++ = (unsigned char)(strm->length);
+            *strm->next_out++ = (unsigned char)(strm->length);
             left--;
             strm->mode = LEN;
             break;
