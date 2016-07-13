@@ -183,7 +183,6 @@ local int updatewindow(
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        next = strm->next_in; \
         have = strm->avail_in; \
         hold = strm->hold; \
         bits = strm->bits; \
@@ -192,7 +191,6 @@ local int updatewindow(
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        strm->next_in = next; \
         strm->avail_in = have; \
         strm->hold = hold; \
         strm->bits = bits; \
@@ -211,7 +209,9 @@ local int updatewindow(
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
+        auto next = reinterpret_cast<std::uint8_t const*>(strm->next_in); \
         hold += (unsigned long)(*next++) << bits; \
+        strm->next_in = next; \
         bits += 8; \
     } while (0)
 
@@ -351,7 +351,6 @@ int inflate(
     int flush)
 {
     auto state = strm;
-    std::uint8_t const* next;   /* next input */
     unsigned have;              /* available input and output */
     unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
@@ -439,9 +438,9 @@ int inflate(
                 if (copy > have) copy = have;
                 if (copy > strm->avail_out) copy = strm->avail_out;
                 if (copy == 0) goto inf_leave;
-                std::memcpy(strm->next_out, next, copy);
+                std::memcpy(strm->next_out, strm->next_in, copy);
                 have -= copy;
-                next += copy;
+                strm->next_in += copy;
                 strm->avail_out -= copy;
                 strm->next_out += copy;
                 strm->length -= copy;
