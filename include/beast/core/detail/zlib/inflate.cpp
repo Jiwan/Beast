@@ -183,21 +183,19 @@ local int updatewindow(
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        hold = strm->hold; \
         bits = strm->bits; \
     } while (0)
 
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        strm->hold = hold; \
         strm->bits = bits; \
     } while (0)
 
 /* Clear the input bit accumulator */
 #define INITBITS() \
     do { \
-        hold = 0; \
+        strm->hold = 0; \
         bits = 0; \
     } while (0)
 
@@ -208,7 +206,7 @@ local int updatewindow(
         if (strm->avail_in == 0) goto inf_leave; \
         strm->avail_in--; \
         auto next = reinterpret_cast<std::uint8_t const*>(strm->next_in); \
-        hold += (unsigned long)(*next++) << bits; \
+        strm->hold += (unsigned long)(*next++) << bits; \
         strm->next_in = next; \
         bits += 8; \
     } while (0)
@@ -223,19 +221,19 @@ local int updatewindow(
 
 /* Return the low n bits of the bit accumulator (n < 16) */
 #define BITS(n) \
-    ((unsigned)hold & ((1U << (n)) - 1))
+    ((unsigned)strm->hold & ((1U << (n)) - 1))
 
 /* Remove n bits from the bit accumulator */
 #define DROPBITS(n) \
     do { \
-        hold >>= (n); \
+        strm->hold >>= (n); \
         bits -= (unsigned)(n); \
     } while (0)
 
 /* Remove zero to seven bits as needed to go to a byte boundary */
 #define BYTEBITS() \
     do { \
-        hold >>= bits & 7; \
+        strm->hold >>= bits & 7; \
         bits -= bits & 7; \
     } while (0)
 
@@ -349,7 +347,6 @@ int inflate(
     int flush)
 {
     auto state = strm;
-    unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
@@ -416,12 +413,12 @@ int inflate(
         case STORED:
             BYTEBITS();                         /* go to byte boundary */
             NEEDBITS(32);
-            if ((hold & 0xffff) != ((hold >> 16) ^ 0xffff)) {
+            if ((strm->hold & 0xffff) != ((strm->hold >> 16) ^ 0xffff)) {
                 strm->msg = (char *)"invalid stored block lengths";
                 strm->mode = BAD;
                 break;
             }
-            strm->length = (unsigned)hold & 0xffff;
+            strm->length = (unsigned)strm->hold & 0xffff;
             Tracev((stderr, "inflate:       stored length %u\n",
                     strm->length));
             INITBITS();
