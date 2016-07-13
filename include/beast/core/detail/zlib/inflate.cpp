@@ -183,7 +183,6 @@ local int updatewindow(
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        have = strm->avail_in; \
         hold = strm->hold; \
         bits = strm->bits; \
     } while (0)
@@ -191,7 +190,6 @@ local int updatewindow(
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        strm->avail_in = have; \
         strm->hold = hold; \
         strm->bits = bits; \
     } while (0)
@@ -207,8 +205,8 @@ local int updatewindow(
    if there is no input available. */
 #define PULLBYTE() \
     do { \
-        if (have == 0) goto inf_leave; \
-        have--; \
+        if (strm->avail_in == 0) goto inf_leave; \
+        strm->avail_in--; \
         auto next = reinterpret_cast<std::uint8_t const*>(strm->next_in); \
         hold += (unsigned long)(*next++) << bits; \
         strm->next_in = next; \
@@ -351,7 +349,6 @@ int inflate(
     int flush)
 {
     auto state = strm;
-    unsigned have;              /* available input and output */
     unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned in, out;           /* save starting available input and output */
@@ -370,7 +367,7 @@ int inflate(
 
     if (strm->mode == TYPE) strm->mode = TYPEDO;      /* skip check */
     LOAD();
-    in = have;
+    in = strm->avail_in;
     out = strm->avail_out;
     ret = Z_OK;
     for (;;)
@@ -435,11 +432,11 @@ int inflate(
         case COPY:
             copy = strm->length;
             if (copy) {
-                if (copy > have) copy = have;
+                if (copy > strm->avail_in) copy = strm->avail_in;
                 if (copy > strm->avail_out) copy = strm->avail_out;
                 if (copy == 0) goto inf_leave;
                 std::memcpy(strm->next_out, strm->next_in, copy);
-                have -= copy;
+                strm->avail_in -= copy;
                 strm->next_in += copy;
                 strm->avail_out -= copy;
                 strm->next_out += copy;
@@ -574,7 +571,7 @@ int inflate(
         case LEN_:
             strm->mode = LEN;
         case LEN:
-            if (have >= 6 && strm->avail_out >= 258) {
+            if (strm->avail_in >= 6 && strm->avail_out >= 258) {
                 RESTORE();
                 inflate_fast(strm, out);
                 LOAD();
