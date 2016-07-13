@@ -172,7 +172,6 @@ public:
 extern void inflate_fast (inflate_stream* strm, unsigned start);
 
 extern int inflate              (inflate_stream* strm, int flush);
-extern int inflateEnd           (inflate_stream* strm);
 extern int inflateReset         (inflate_stream* strm, int windowBits);
 extern int inflateInit          (inflate_stream* strm, int  windowBits);
 
