@@ -93,9 +93,10 @@ namespace beast {
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void inflate_fast(
-inflate_stream* strm,
-unsigned start)         /* inflate()'s starting value for strm->avail_out */
+void
+inflate_stream::inflate_fast(
+    inflate_stream* strm,
+    unsigned start)         /* inflate()'s starting value for strm->avail_out */
 {
     const unsigned char *in;      /* local strm->next_in */
     const unsigned char *last;    /* have enough input while in < last */

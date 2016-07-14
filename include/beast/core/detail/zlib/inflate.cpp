@@ -69,6 +69,12 @@ inflate_stream::reset(std::uint8_t windowBits)
     resetKeep();
 }
 
+int
+inflate_stream::write(int flush)
+{
+    return write(this, flush);
+}
+
 void
 inflate_stream::resetKeep()
 {
@@ -94,12 +100,6 @@ auto strm = this;
     strm->lenbits = fc.lenbits;
     strm->distcode = fc.distcode;
     strm->distbits = fc.distbits;
-}
-
-int
-inflate_stream::write(int flush)
-{
-    return write(this, flush);
 }
 
 //------------------------------------------------------------------------------
