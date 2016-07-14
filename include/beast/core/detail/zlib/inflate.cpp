@@ -39,15 +39,9 @@
 
 namespace beast {
 
-local void fixedtables (inflate_stream *state);
-local int updatewindow (inflate_stream* strm, const unsigned char *end,
-                           unsigned copy);
-
-//------------------------------------------------------------------------------
-
 inflate_stream::inflate_stream()
 {
-    inflateInit(this, 15);
+    reset(15);
 }
 
 inflate_stream::~inflate_stream()
@@ -60,14 +54,25 @@ inflate_stream::reset(std::uint8_t windowBits)
 {
     if(windowBits < 8 || windowBits > 15)
         throw std::domain_error("windowBits out of range");
-    inflateReset(this, windowBits);
+    if(window && wbits != windowBits)
+    {
+        std::free(window);
+        window = nullptr;
+    }
+
+    // update state and reset the rest of it
+    wbits = (unsigned)windowBits;
+    wsize = 0;
+    whave = 0;
+    wnext = 0;
+
+    resetKeep();
 }
 
-//------------------------------------------------------------------------------
-
-int inflateResetKeep(
-    inflate_stream* strm)
+void
+inflate_stream::resetKeep()
 {
+auto strm = this;
     strm->total_in = strm->total_out = strm->total = 0;
     strm->msg = Z_NULL;
     strm->mode = HEAD;
@@ -78,46 +83,26 @@ int inflateResetKeep(
     strm->lencode = strm->distcode = strm->next = strm->codes;
     strm->sane = 1;
     strm->back = -1;
-    Tracev((stderr, "inflate: reset\n"));
-    return Z_OK;
 }
 
-int inflateReset(inflate_stream* strm, int windowBits)
+void
+inflate_stream::fixedTables()
 {
-    if (strm->window != Z_NULL && strm->wbits != (unsigned)windowBits)
-    {
-        std::free(strm->window);
-        strm->window = Z_NULL;
-    }
-
-    /* update state and reset the rest of it */
-    strm->wbits = (unsigned)windowBits;
-
-    strm->wsize = 0;
-    strm->whave = 0;
-    strm->wnext = 0;
-    return inflateResetKeep(strm);
-}
-
-int
-inflateInit(inflate_stream* strm, int windowBits)
-{
-    int ret;
-    strm->msg = Z_NULL;                 /* in case we return an error */
-    Tracev((stderr, "inflate: allocated\n"));
-    strm->window = Z_NULL;
-    ret = inflateReset(strm, windowBits);
-    return ret;
-}
-
-void fixedtables(inflate_stream *strm)
-{
+auto strm = this;
     auto const fc = get_fixed_tables();
     strm->lencode = fc.lencode;
     strm->lenbits = fc.lenbits;
     strm->distcode = fc.distcode;
     strm->distbits = fc.distbits;
 }
+
+int
+inflate_stream::write(int flush)
+{
+    return write(this, flush);
+}
+
+//------------------------------------------------------------------------------
 
 /*
    Update the window with the last wsize (normally 32K) bytes written before
@@ -133,11 +118,9 @@ void fixedtables(inflate_stream *strm)
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-local int updatewindow(
-    inflate_stream* strm,
-    const Byte *end,
-    unsigned copy)
+int inflate_stream::updatewindow(const Byte *end, unsigned copy)
 {
+    auto strm = this;
     unsigned dist;
 
     /* if it hasn't been done already, allocate space for the window */
@@ -225,11 +208,9 @@ local int updatewindow(
         strm->bits -= strm->bits & 7; \
     } while (0)
 
-int inflate(
-    inflate_stream* strm,
-    int flush)
+int
+inflate_stream::write(inflate_stream* strm, int flush)
 {
-    auto state = strm;
     unsigned in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
     unsigned char *from;    /* where to copy match bytes from */
@@ -271,7 +252,7 @@ int inflate(
                 strm->mode = STORED;
                 break;
             case 1:                             /* fixed block */
-                fixedtables(state);
+                strm->fixedTables();
                 Tracev((stderr, "inflate:     fixed codes block%s\n",
                         strm->last ? " (last)" : ""));
                 strm->mode = LEN_;             /* decode codes */
@@ -623,7 +604,7 @@ int inflate(
   inf_leave:
     if (strm->wsize || (out != strm->avail_out && strm->mode < BAD &&
             (strm->mode < CHECK || flush != Z_FINISH)))
-        if (updatewindow(strm, strm->next_out, out - strm->avail_out)) {
+        if (strm->updatewindow(strm->next_out, out - strm->avail_out)) {
             strm->mode = MEM;
             return Z_MEM_ERROR;
         }

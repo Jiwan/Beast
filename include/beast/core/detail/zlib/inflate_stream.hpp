@@ -124,6 +124,9 @@ public:
     bool
     write(params& ps, error_code& ec);
 
+    int
+    write(int flush);
+
 //private:
     inflate_mode mode;          // current inflate mode
     int last;                   // true if processing last block
@@ -167,13 +170,23 @@ public:
     int sane;                   // if false, allow invalid distance too far
     int back;                   // bits back of last unprocessed length/lit
     unsigned was;               // initial length of match
+
+private:
+    void
+    resetKeep();
+
+    void
+    fixedTables();
+
+    int
+    updatewindow(const Byte *end, unsigned copy);
+
+    static
+    int
+    write(inflate_stream* strm, int flush);
 };
 
 extern void inflate_fast (inflate_stream* strm, unsigned start);
-
-extern int inflate              (inflate_stream* strm, int flush);
-extern int inflateReset         (inflate_stream* strm, int windowBits);
-extern int inflateInit          (inflate_stream* strm, int  windowBits);
 
 } // beast
 

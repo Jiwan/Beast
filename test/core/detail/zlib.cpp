@@ -150,12 +150,12 @@ public:
             {
                 zs.next_in = (Byte*)input.data();
                 zs.avail_in = i;
-                auto result = inflate(&zs, Z_FULL_FLUSH);
+                auto result = zs.write(Z_FULL_FLUSH);
                 expect(result == Z_OK);
             }
             zs.next_in = (Byte*)input.data() + i;
             zs.avail_in = input.size() - i;
-            auto result = inflate(&zs, Z_FULL_FLUSH);
+            auto result = zs.write(Z_FULL_FLUSH);
             output.resize(output.capacity() - zs.avail_out);
             expect(result == Z_OK);
             expect(output.size() == original.size());
