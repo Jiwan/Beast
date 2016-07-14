@@ -32,6 +32,10 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
+#include <beast/core/detail/zlib/deflate_stream.hpp>
+#include <cstring>
+#include <memory>
+
 /*
  *  ALGORITHM
  *
@@ -76,11 +80,20 @@
  *
  */
 
-#include <beast/core/detail/zlib/deflate_stream.hpp>
-#include <cstring>
-#include <memory>
-
 namespace beast {
+
+deflate_stream::deflate_stream()
+{
+    // default level 6
+    //deflateInit2(this, 6, Z_DEFLATED, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+}
+
+deflate_stream::~deflate_stream()
+{
+    deflateEnd(this);
+}
+
+//-------------------------------------------------------------------------------
 
 #ifndef DEBUG
 # define _tr_tally_lit(s, c, flush) \
@@ -109,14 +122,16 @@ namespace beast {
 /* ===========================================================================
  *  Function prototypes.
  */
-typedef enum {
+enum block_state
+{
     need_more,      /* block not completed, need more input or more output */
     block_done,     /* block flush performed */
     finish_started, /* finish started, need only more output at next deflate */
     finish_done     /* finish done, accept no more input or output */
-} block_state;
+};
 
 typedef block_state (*compress_func) (deflate_stream *s, int flush);
+
 /* Compression function. Returns the block state after the call. */
 
 local void fill_window    (deflate_stream *s);

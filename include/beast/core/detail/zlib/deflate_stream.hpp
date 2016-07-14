@@ -113,6 +113,10 @@ using IPos = unsigned;
 class deflate_stream : public z_stream
 {
 public:
+    deflate_stream();
+
+    ~deflate_stream();
+
     int   status;        /* as the name implies */
     Byte *pending_buf;  /* output still pending */
     std::uint32_t   pending_buf_size; /* size of pending_buf */
@@ -128,7 +132,7 @@ public:
     uInt  w_bits;        /* log2(w_size)  (8..16) */
     uInt  w_mask;        /* w_size - 1 */
 
-    Byte *window;
+    Byte *window = nullptr;
     /* Sliding window. Input bytes are read into the second half of the window,
      * and move to the first half later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of

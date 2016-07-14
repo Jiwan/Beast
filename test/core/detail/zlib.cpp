@@ -164,6 +164,16 @@ public:
         }
     }
 
+    void testSpecial()
+    {
+        {
+            deflate_stream zs;
+        }
+        {
+            inflate_stream zs;
+        }
+    }
+
     void testCompress()
     {
         static std::size_t constexpr N = 2048;
@@ -200,7 +210,6 @@ public:
                         zs.next_out = output.data();
                         zs.avail_out = output.capacity();
                         auto result = deflate(&zs, Z_FULL_FLUSH);
-                        deflateEnd(&zs);
                         expect(result == Z_OK);
                         output.resize(output.capacity() - zs.avail_out);
                         checkInflate(output, original);
@@ -212,6 +221,7 @@ public:
 
     void run() override
     {
+        testSpecial();
         testCompress();
     }
 };
