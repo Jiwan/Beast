@@ -104,11 +104,18 @@ struct tree_desc
     static_tree_desc* stat_desc; /* the corresponding static tree */
 };
 
-using IPos = unsigned;
-
 /* A std::uint16_t is an index in the character window. We use short instead of int to
  * save space in the various tables. IPos is used only for parameter passing.
  */
+using IPos = unsigned;
+
+enum block_state
+{
+    need_more,      /* block not completed, need more input or more output */
+    block_done,     /* block flush performed */
+    finish_started, /* finish started, need only more output at next deflate */
+    finish_done     /* finish done, accept no more input or output */
+};
 
 class deflate_stream : public z_stream
 {
@@ -117,6 +124,11 @@ public:
 
     ~deflate_stream();
 
+    int deflate(int flush);
+
+    int deflateSetDictionary(const Byte *dictionary, uInt  dictLength);
+
+public:
     int   status;        /* as the name implies */
     Byte *pending_buf;  /* output still pending */
     std::uint32_t   pending_buf_size; /* size of pending_buf */
@@ -288,6 +300,13 @@ public:
      * longest match routines access bytes past the input.  This is then
      * updated to the new high water mark.
      */
+
+    static void fill_window(deflate_stream *s);
+    static block_state deflate_stored(deflate_stream *s, int flush);
+    static block_state deflate_fast(deflate_stream *s, int flush);
+    static block_state deflate_slow(deflate_stream *s, int flush);
+    static block_state deflate_rle(deflate_stream *s, int flush);
+    static block_state deflate_huff(deflate_stream *s, int flush);
 };
 
 /* Output a byte on the stream.
@@ -338,10 +357,7 @@ void _tr_stored_block (deflate_stream *s, char *bu,
 #endif
 #endif
 
-extern int deflate (deflate_stream* strm, int flush);
 extern int deflateEnd (deflate_stream* strm);
-extern int deflateSetDictionary (deflate_stream* strm,
-    const Byte *dictionary, uInt  dictLength);
 extern int deflateReset (deflate_stream* strm);
 extern int deflateParams (deflate_stream* strm, int level, int strategy);
 extern int deflateTune (deflate_stream* strm,

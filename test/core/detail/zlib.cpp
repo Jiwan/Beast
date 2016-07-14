@@ -209,7 +209,7 @@ public:
                         zs.avail_in = original.size();
                         zs.next_out = output.data();
                         zs.avail_out = output.capacity();
-                        auto result = deflate(&zs, Z_FULL_FLUSH);
+                        auto result = zs.deflate(Z_FULL_FLUSH);
                         expect(result == Z_OK);
                         output.resize(output.capacity() - zs.avail_out);
                         checkInflate(output, original);
