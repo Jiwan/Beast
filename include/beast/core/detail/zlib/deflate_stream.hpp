@@ -129,22 +129,19 @@ public:
     int deflateSetDictionary(const Byte *dictionary, uInt  dictLength);
 
 public:
-    int   status;        /* as the name implies */
-    Byte *pending_buf;  /* output still pending */
-    std::uint32_t   pending_buf_size; /* size of pending_buf */
-    Byte *pending_out;  /* next pending byte to output to the stream */
-    uInt   pending;      /* nb of bytes in the pending buffer */
-    uInt   gzindex;      /* where in extra, name, or comment */
-    Byte  method;        /* can only be DEFLATED */
-    int   last_flush;    /* value of flush param for previous deflate call */
+    int   status_;        /* as the name implies */
+    Byte *pending_buf_;  /* output still pending */
+    std::uint32_t   pending_buf_size_; /* size of pending_buf */
+    Byte *pending_out_;  /* next pending byte to output to the stream */
+    uInt   pending_;      /* nb of bytes in the pending buffer */
+    int   last_flush_;    /* value of flush param for previous deflate call */
 
                 /* used by deflate.c: */
 
-    uInt  w_size;        /* LZ77 window size (32K by default) */
-    uInt  w_bits;        /* log2(w_size)  (8..16) */
-    uInt  w_mask;        /* w_size - 1 */
+    uInt  w_size_;        /* LZ77 window size (32K by default) */
+    uInt  w_bits_;        /* log2(w_size)  (8..16) */
+    uInt  w_mask_;        /* w_size - 1 */
 
-    Byte *window = nullptr;
     /* Sliding window. Input bytes are read into the second half of the window,
      * and move to the first half later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of
@@ -153,56 +150,57 @@ public:
      * the window size to 64K.
      * To do: use the user input buffer as sliding window.
      */
+    Byte *window_ = nullptr;
 
-    std::uint32_t window_size;
     /* Actual size of window: 2*wSize, except when the user input buffer
      * is directly used as sliding window.
      */
+    std::uint32_t window_size_;
 
-    std::uint16_t *prev;
     /* Link to older string with same hash index. To limit the size of this
      * array to 64K, this link is maintained only for the last 32K strings.
      * An index in this array is thus a window index modulo 32K.
      */
+    std::uint16_t *prev_;
 
-    std::uint16_t *head; /* Heads of the hash chains or NIL. */
+    std::uint16_t *head_; /* Heads of the hash chains or NIL. */
 
-    uInt  ins_h;          /* hash index of string to be inserted */
-    uInt  hash_size;      /* number of elements in hash table */
-    uInt  hash_bits;      /* log2(hash_size) */
-    uInt  hash_mask;      /* hash_size-1 */
+    uInt  ins_h_;          /* hash index of string to be inserted */
+    uInt  hash_size_;      /* number of elements in hash table */
+    uInt  hash_bits_;      /* log2(hash_size) */
+    uInt  hash_mask_;      /* hash_size-1 */
 
-    uInt  hash_shift;
     /* Number of bits by which ins_h must be shifted at each input
      * step. It must be such that after MIN_MATCH steps, the oldest
      * byte no longer takes part in the hash key, that is:
      *   hash_shift * MIN_MATCH >= hash_bits
      */
+    uInt  hash_shift_;
 
-    long block_start;
+    long block_start_;
     /* Window position at the beginning of the current output block. Gets
      * negative when the window is moved backwards.
      */
 
-    uInt match_length;           /* length of best match */
-    IPos prev_match;             /* previous match */
-    int match_available;         /* set if previous match exists */
-    uInt strstart;               /* start of string to insert */
-    uInt match_start;            /* start of matching string */
-    uInt lookahead;              /* number of valid bytes ahead in window */
+    uInt match_length_;           /* length of best match */
+    IPos prev_match_;             /* previous match */
+    int match_available_;         /* set if previous match exists */
+    uInt strstart_;               /* start of string to insert */
+    uInt match_start_;            /* start of matching string */
+    uInt lookahead_;              /* number of valid bytes ahead in window */
 
-    uInt prev_length;
+    uInt prev_length_;
     /* Length of the best match at previous step. Matches not greater than this
      * are discarded. This is used in the lazy match evaluation.
      */
 
-    uInt max_chain_length;
+    uInt max_chain_length_;
     /* To speed up deflation, hash chains are never searched beyond this
      * length.  A higher limit improves compression ratio but degrades the
      * speed.
      */
 
-    uInt max_lazy_match;
+    uInt max_lazy_match_;
     /* Attempt to find a better match only when the current match is strictly
      * smaller than this value. This mechanism is used only for compression
      * levels >= 4.
@@ -212,41 +210,40 @@ public:
      * used only for compression levels <= 3.
      */
 
-    int level;    /* compression level (1..9) */
-    int strategy; /* favor or force Huffman coding*/
+    int level_;    /* compression level (1..9) */
+    int strategy_; /* favor or force Huffman coding*/
 
-    uInt good_match;
+    uInt good_match_;
     /* Use a faster search when the previous match is longer than this */
 
-    int nice_match; /* Stop searching when current match exceeds this */
+    int nice_match_; /* Stop searching when current match exceeds this */
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
-    ct_data dyn_ltree[HEAP_SIZE];   /* literal and length tree */
-    ct_data dyn_dtree[2*D_CODES+1]; /* distance tree */
-    ct_data bl_tree[2*BL_CODES+1];  /* Huffman tree for bit lengths */
+    ct_data dyn_ltree_[HEAP_SIZE];   /* literal and length tree */
+    ct_data dyn_dtree_[2*D_CODES+1]; /* distance tree */
+    ct_data bl_tree_[2*BL_CODES+1];  /* Huffman tree for bit lengths */
 
-    tree_desc l_desc;               /* desc. for literal tree */
-    tree_desc d_desc;               /* desc. for distance tree */
-    tree_desc bl_desc;              /* desc. for bit length tree */
+    tree_desc l_desc_;               /* desc. for literal tree */
+    tree_desc d_desc_;               /* desc. for distance tree */
+    tree_desc bl_desc_;              /* desc. for bit length tree */
 
-    std::uint16_t bl_count[MAX_BITS+1];
+    std::uint16_t bl_count_[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
 
-    int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
-    int heap_len;               /* number of elements in the heap */
-    int heap_max;               /* element of largest frequency */
+    int heap_[2*L_CODES+1];      /* heap used to build the Huffman trees */
+    int heap_len_;               /* number of elements in the heap */
+    int heap_max_;               /* element of largest frequency */
     /* The sons of heap[n] are heap[2*n] and heap[2*n+1]. heap[0] is not used.
      * The same heap array is used to build all trees.
      */
 
-    std::uint8_t depth[2*L_CODES+1];
+    std::uint8_t depth_[2*L_CODES+1];
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
 
-    std::uint8_t *l_buf;          /* buffer for literals or lengths */
+    std::uint8_t *l_buf_;          /* buffer for literals or lengths */
 
-    uInt  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
      * limiting lit_bufsize to 64K:
      *   - frequencies can be kept in 16 bit counters
@@ -265,40 +262,42 @@ public:
      *     trees more frequently.
      *   - I can't count above 4
      */
+    uInt  lit_bufsize_;
 
-    uInt last_lit;      /* running index in l_buf */
+    uInt last_lit_;      /* running index in l_buf */
 
-    std::uint16_t *d_buf;
+    std::uint16_t *d_buf_;
     /* Buffer for distances. To simplify the code, d_buf and l_buf have
      * the same number of elements. To use different lengths, an extra flag
      * array would be necessary.
      */
 
-    std::uint32_t opt_len;        /* bit length of current block with optimal trees */
-    std::uint32_t static_len;     /* bit length of current block with static trees */
-    uInt matches;       /* number of string matches in current block */
-    uInt insert;        /* bytes at end of window left to insert */
+    std::uint32_t opt_len_;        /* bit length of current block with optimal trees */
+    std::uint32_t static_len_;     /* bit length of current block with static trees */
+    uInt matches_;       /* number of string matches in current block */
+    uInt insert_;        /* bytes at end of window left to insert */
 
 #ifdef DEBUG
-    std::uint32_t compressed_len; /* total bit length of compressed file mod 2^32 */
-    std::uint32_t bits_sent;      /* bit length of compressed data sent mod 2^32 */
+    std::uint32_t compressed_len_; /* total bit length of compressed file mod 2^32 */
+    std::uint32_t bits_sent_;      /* bit length of compressed data sent mod 2^32 */
 #endif
 
-    std::uint16_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */
-    int bi_valid;
+    std::uint16_t bi_buf_;
+
     /* Number of valid bits in bi_buf.  All bits above the last valid bit
      * are always zero.
      */
+    int bi_valid_;
 
-    std::uint32_t high_water;
     /* High water mark offset in window for initialized bytes -- bytes above
      * this are set to zero in order to avoid memory check warnings when
      * longest match routines access bytes past the input.  This is then
      * updated to the new high water mark.
      */
+    std::uint32_t high_water_;
 
     static void fill_window(deflate_stream *s);
     static block_state deflate_stored(deflate_stream *s, int flush);
@@ -329,7 +328,7 @@ public:
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
  */
-#define put_byte(s, c) {s->pending_buf[s->pending++] = (c);}
+#define put_byte(s, c) {s->pending_buf_[s->pending_++] = (c);}
 
 
 #define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
@@ -337,7 +336,7 @@ public:
  * See deflate.c for comments about the MIN_MATCH+1.
  */
 
-#define MAX_DIST(s)  ((s)->w_size-MIN_LOOKAHEAD)
+#define MAX_DIST(s)  ((s)->w_size_-MIN_LOOKAHEAD)
 /* In order to simplify the code, particularly on 16 bit machines, match
  * distances are limited to MAX_DIST instead of WSIZE.
  */
