@@ -131,12 +131,7 @@ local void lm_init        (deflate_stream *s);
 local void putShortMSB    (deflate_stream *s, uInt b);
 local void flush_pending  (deflate_stream* strm);
 local int read_buf        (deflate_stream* strm, Byte *buf, unsigned size);
-#ifdef ASMV
-      void match_init (void); /* asm code initialization */
-      uInt longest_match  (deflate_stream *s, IPos cur_match);
-#else
 local uInt longest_match  (deflate_stream *s, IPos cur_match);
-#endif
 
 #ifdef DEBUG
 local  void check_match (deflate_stream *s, IPos start, IPos match,
@@ -168,12 +163,6 @@ typedef struct config_s {
    compress_func func;
 } config;
 
-#ifdef FASTEST
-local const config configuration_table[2] = {
-/*      good lazy nice chain */
-/* 0 */ {0,    0,  0,    0, &deflate_stream::deflate_stored},  /* store only */
-/* 1 */ {4,    4,  8,    4, &deflate_stream::deflate_fast}}; /* max speed, no lazy matches */
-#else
 local const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, &deflate_stream::deflate_stored},  /* store only */
@@ -187,7 +176,6 @@ local const config configuration_table[10] = {
 /* 7 */ {8,   32, 128, 256, &deflate_stream::deflate_slow},
 /* 8 */ {32, 128, 258, 1024, &deflate_stream::deflate_slow},
 /* 9 */ {32, 258, 258, 4096, &deflate_stream::deflate_slow}}; /* max compression */
-#endif
 
 /* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
@@ -223,17 +211,10 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-#ifdef FASTEST
-#define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
-    match_head = s->head[s->ins_h], \
-    s->head[s->ins_h] = (std::uint16_t)(str))
-#else
 #define INSERT_STRING(s, str, match_head) \
    (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
     match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
     s->head[s->ins_h] = (std::uint16_t)(str))
-#endif
 
 /* ===========================================================================
  * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
@@ -302,7 +283,6 @@ void deflate_stream::fill_window(deflate_stream *s)
             } while (--n);
 
             n = wsize;
-#ifndef FASTEST
             p = &s->prev[n];
             do {
                 m = *--p;
@@ -311,7 +291,6 @@ void deflate_stream::fill_window(deflate_stream *s)
                  * its value will never be used.
                  */
             } while (--n);
-#endif
             more += wsize;
         }
         if (s->avail_in == 0) break;
@@ -342,9 +321,7 @@ void deflate_stream::fill_window(deflate_stream *s)
 #endif
             while (s->insert) {
                 UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]);
-#ifndef FASTEST
                 s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
                 s->head[s->ins_h] = (std::uint16_t)str;
                 str++;
                 s->insert--;
@@ -415,11 +392,7 @@ int deflateInit2(
 
     strm->msg = Z_NULL;
 
-#ifdef FASTEST
-    if (level != 0) level = 1;
-#else
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
-#endif
 
     if (windowBits < 0) { /* suppress zlib wrapper */
         windowBits = -windowBits;
@@ -508,9 +481,7 @@ auto strm = this;
         n = s->lookahead - (MIN_MATCH-1);
         do {
             UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]);
-#ifndef FASTEST
             s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
             s->head[s->ins_h] = (std::uint16_t)str;
             str++;
         } while (--n);
@@ -610,11 +581,7 @@ int deflateParams(
     if (strm == Z_NULL || strm == Z_NULL) return Z_STREAM_ERROR;
     auto s = strm;
 
-#ifdef FASTEST
-    if (level != 0) level = 1;
-#else
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
-#endif
     if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
         return Z_STREAM_ERROR;
     }
@@ -910,14 +877,8 @@ local void lm_init (
     s->match_length = s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
     s->ins_h = 0;
-#ifndef FASTEST
-#ifdef ASMV
-    match_init(); /* initialize the asm code */
-#endif
-#endif
 }
 
-#ifndef FASTEST
 /* ===========================================================================
  * Set match_start to the longest match starting at the given string and
  * return its length. Matches shorter or equal to prev_length are discarded,
@@ -927,7 +888,6 @@ local void lm_init (
  *   string (strstart) and its distance is <= MAX_DIST, and prev_length >= 1
  * OUT assertion: the match length is not greater than s->lookahead.
  */
-#ifndef ASMV
 /* For 80x86 and 680x0, an optimized version will be provided in match.asm or
  * match.S. The code will be functionally equivalent.
  */
@@ -1023,67 +983,6 @@ local uInt longest_match(
     if ((uInt)best_len <= s->lookahead) return (uInt)best_len;
     return s->lookahead;
 }
-#endif /* ASMV */
-
-#else /* FASTEST */
-
-/* ---------------------------------------------------------------------------
- * Optimized version for FASTEST only
- */
-local uInt longest_match(
-    deflate_stream *s,
-    IPos cur_match)                             /* current match */
-{
-    Byte *scan = s->window + s->strstart; /* current string */
-    Byte *match;                       /* matched string */
-    int len;                           /* length of current match */
-    Byte *strend = s->window + s->strstart + MAX_MATCH;
-
-    /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
-     * It is easy to get rid of this optimization if necessary.
-     */
-    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "fc.code too clever");
-
-    Assert((std::uint32_t)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
-
-    Assert(cur_match < s->strstart, "no future");
-
-    match = s->window + cur_match;
-
-    /* Return failure if the match length is less than 2:
-     */
-    if (match[0] != scan[0] || match[1] != scan[1]) return MIN_MATCH-1;
-
-    /* The check at best_len-1 can be removed because it will be made
-     * again later. (This heuristic is not always a win.)
-     * It is not necessary to compare scan[2] and match[2] since they
-     * are always equal when the other bytes match, given that
-     * the hash keys are equal and that HASH_BITS >= 8.
-     */
-    scan += 2, match += 2;
-    Assert(*scan == *match, "match[2]?");
-
-    /* We check for insufficient lookahead only every 8th comparison;
-     * the 256th check will be made at strstart+258.
-     */
-    do {
-    } while (*++scan == *++match && *++scan == *++match &&
-             *++scan == *++match && *++scan == *++match &&
-             *++scan == *++match && *++scan == *++match &&
-             *++scan == *++match && *++scan == *++match &&
-             scan < strend);
-
-    Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
-
-    len = MAX_MATCH - (int)(strend - scan);
-
-    if (len < MIN_MATCH) return MIN_MATCH - 1;
-
-    s->match_start = cur_match;
-    return (uInt)len <= s->lookahead ? (uInt)len : s->lookahead;
-}
-
-#endif /* FASTEST */
 
 #ifdef DEBUG
 /* ===========================================================================
@@ -1173,7 +1072,6 @@ deflate_streamfill_window(deflate_stream *s)
             } while (--n);
 
             n = wsize;
-#ifndef FASTEST
             p = &s->prev[n];
             do {
                 m = *--p;
@@ -1182,7 +1080,6 @@ deflate_streamfill_window(deflate_stream *s)
                  * its value will never be used.
                  */
             } while (--n);
-#endif
             more += wsize;
         }
         if (s->avail_in == 0) break;
@@ -1213,9 +1110,7 @@ deflate_streamfill_window(deflate_stream *s)
 #endif
             while (s->insert) {
                 UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]);
-#ifndef FASTEST
                 s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
                 s->head[s->ins_h] = (std::uint16_t)str;
                 str++;
                 s->insert--;
@@ -1411,7 +1306,6 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
             /* Insert new strings in the hash table only if the match length
              * is not too large. This saves time but degrades compression.
              */
-#ifndef FASTEST
             if (s->match_length <= s->max_insert_length &&
                 s->lookahead >= MIN_MATCH) {
                 s->match_length--; /* string at strstart already in table */
@@ -1424,7 +1318,6 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
                 } while (--s->match_length != 0);
                 s->strstart++;
             } else
-#endif
             {
                 s->strstart += s->match_length;
                 s->match_length = 0;
@@ -1456,7 +1349,6 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
     return block_done;
 }
 
-#ifndef FASTEST
 /* ===========================================================================
  * Same as above, but achieves better compression. We use a lazy
  * evaluation for matches: a match is finally adopted only if there is
@@ -1585,7 +1477,6 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
-#endif /* FASTEST */
 
 /* ===========================================================================
  * For Z_RLE, simply look for runs of bytes, generate matches only of distance
