@@ -307,6 +307,24 @@ public:
     static block_state deflate_slow(deflate_stream *s, int flush);
     static block_state deflate_rle(deflate_stream *s, int flush);
     static block_state deflate_huff(deflate_stream *s, int flush);
+
+    static void lm_init        (deflate_stream *s);
+    static void flush_pending  (deflate_stream* strm);
+    static int read_buf        (deflate_stream* strm, Byte *buf, unsigned size);
+    static uInt longest_match  (deflate_stream *s, IPos cur_match);
+
+    static int deflateEnd (deflate_stream* strm);
+    static int deflateResetKeep (deflate_stream* strm);
+    static int deflateReset (deflate_stream* strm);
+    static int deflateParams (deflate_stream* strm, int level, int strategy);
+    static int deflateTune (deflate_stream* strm,
+        int good_length, int max_lazy, int nice_length, int max_chain);
+    static uLong deflateBound (deflate_stream* strm, uLong sourceLen);
+    static int deflatePending (deflate_stream* strm, unsigned *pending, int *bits);
+    static int deflatePrime (deflate_stream* strm, int bits, int value);
+    static int deflateInit (deflate_stream* strm, int level);
+    static int deflateInit2 (deflate_stream* strm, int level, int  method,
+        int windowBits, int memLevel, int strategy);
 };
 
 /* Output a byte on the stream.
@@ -356,18 +374,6 @@ void _tr_stored_block (deflate_stream *s, char *bu,
   extern const std::uint8_t _dist_code[];
 #endif
 #endif
-
-extern int deflateEnd (deflate_stream* strm);
-extern int deflateReset (deflate_stream* strm);
-extern int deflateParams (deflate_stream* strm, int level, int strategy);
-extern int deflateTune (deflate_stream* strm,
-    int good_length, int max_lazy, int nice_length, int max_chain);
-extern uLong deflateBound (deflate_stream* strm, uLong sourceLen);
-extern int deflatePending (deflate_stream* strm, unsigned *pending, int *bits);
-extern int deflatePrime (deflate_stream* strm, int bits, int value);
-extern int deflateInit (deflate_stream* strm, int level);
-extern int deflateInit2 (deflate_stream* strm, int level, int  method,
-    int windowBits, int memLevel, int strategy);
 
 } // beast
 

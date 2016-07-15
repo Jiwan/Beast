@@ -198,13 +198,13 @@ public:
                         deflate_stream zs;
                         zs.avail_in = 0;
                         zs.next_in = Z_NULL;
-                        expect(deflateInit2(&zs,
+                        expect(deflate_stream::deflateInit2(&zs,
                             level,
                             Z_DEFLATED,
                             -wbits,
                             4,
                             strategy) == Z_OK);
-                        buffer output(deflateBound(&zs, original.size()));
+                        buffer output(deflate_stream::deflateBound(&zs, original.size()));
                         zs.next_in = (Byte*)original.data();
                         zs.avail_in = original.size();
                         zs.next_out = output.data();

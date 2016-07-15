@@ -125,14 +125,6 @@ deflate_stream::~deflate_stream()
 
 using compress_func = block_state(*)(deflate_stream*, int flush);
 
-/* Compression function. Returns the block state after the call. */
-
-local void lm_init        (deflate_stream *s);
-local void putShortMSB    (deflate_stream *s, uInt b);
-local void flush_pending  (deflate_stream* strm);
-local int read_buf        (deflate_stream* strm, Byte *buf, unsigned size);
-local uInt longest_match  (deflate_stream *s, IPos cur_match);
-
 #ifdef DEBUG
 local  void check_match (deflate_stream *s, IPos start, IPos match,
                             int length);
@@ -225,9 +217,9 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
     std::memset((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
-int deflateInit(
-    deflate_stream* strm,
-    int level)
+
+int
+deflate_stream::deflateInit(deflate_stream* strm, int level)
 {
     return deflateInit2(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
                          Z_DEFAULT_STRATEGY);
@@ -374,7 +366,9 @@ void deflate_stream::fill_window(deflate_stream *s)
 }
 
 /* ========================================================================= */
-int deflateInit2(
+
+int
+deflate_stream::deflateInit2(
     deflate_stream* strm,
     int  level,
     int  method,
@@ -501,8 +495,9 @@ auto strm = this;
 }
 
 /* ========================================================================= */
-int deflateResetKeep (
-    deflate_stream* strm)
+
+int
+deflate_stream::deflateResetKeep(deflate_stream* strm)
 {
     strm->total_in = strm->total_out = 0;
     strm->msg = Z_NULL;
@@ -521,8 +516,9 @@ int deflateResetKeep (
 }
 
 /* ========================================================================= */
-int deflateReset (
-    deflate_stream* strm)
+
+int
+deflate_stream::deflateReset(deflate_stream* strm)
 {
     int ret;
 
@@ -533,10 +529,12 @@ int deflateReset (
 }
 
 /* ========================================================================= */
-int deflatePending (
+
+int
+deflate_stream::deflatePending (
+    deflate_stream* strm,
     unsigned *pending,
-    int *bits,
-    deflate_stream* strm)
+    int *bits)
 {
     if (pending != Z_NULL)
         *pending = strm->pending;
@@ -546,10 +544,9 @@ int deflatePending (
 }
 
 /* ========================================================================= */
-int deflatePrime (
-    deflate_stream* strm,
-    int bits,
-    int value)
+
+int
+deflate_stream::deflatePrime(deflate_stream* strm, int bits, int value)
 {
     int put;
 
@@ -570,10 +567,9 @@ int deflatePrime (
 }
 
 /* ========================================================================= */
-int deflateParams(
-    deflate_stream* strm,
-    int level,
-    int strategy)
+
+int
+deflate_stream::deflateParams(deflate_stream* strm, int level, int strategy)
 {
     compress_func func;
     int err = Z_OK;
@@ -606,7 +602,9 @@ int deflateParams(
 }
 
 /* ========================================================================= */
-int deflateTune(
+
+int
+deflate_stream::deflateTune(
     deflate_stream* strm,
     int good_length,
     int max_lazy,
@@ -638,7 +636,8 @@ int deflateTune(
  * upper bound of about 14% expansion does not seem onerous for output buffer
  * allocation.
  */
-uLong deflateBound(
+uLong
+deflate_stream::deflateBound(
     deflate_stream* strm,
     uLong sourceLen)
 {
@@ -671,8 +670,8 @@ uLong deflateBound(
  * to avoid allocating a large strm->next_out buffer and copying into it.
  * (See also read_buf()).
  */
-local void flush_pending(
-    deflate_stream* strm)
+void
+deflate_stream::flush_pending(deflate_stream* strm)
 {
     unsigned len;
     auto s = strm;
@@ -694,7 +693,9 @@ local void flush_pending(
 }
 
 /* ========================================================================= */
-int deflate_stream::deflate(int flush)
+
+int
+deflate_stream::deflate(int flush)
 {
 auto strm = this;
     int old_flush; /* value of flush param for previous deflate call */
@@ -800,8 +801,9 @@ auto strm = this;
 }
 
 /* ========================================================================= */
-int deflateEnd (
-    deflate_stream* strm)
+
+int
+deflate_stream::deflateEnd(deflate_stream* strm)
 {
     int status;
 
@@ -834,10 +836,8 @@ int deflateEnd (
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-local int read_buf(
-    deflate_stream* strm,
-    Byte *buf,
-    unsigned size)
+int
+deflate_stream::read_buf(deflate_stream* strm, Byte *buf, unsigned size)
 {
     unsigned len = strm->avail_in;
 
@@ -856,8 +856,8 @@ local int read_buf(
 /* ===========================================================================
  * Initialize the "longest match" routines for a new zlib stream
  */
-local void lm_init (
-    deflate_stream *s)
+void
+deflate_stream::lm_init(deflate_stream *s)
 {
     s->window_size = (std::uint32_t)2L*s->w_size;
 
@@ -891,9 +891,8 @@ local void lm_init (
 /* For 80x86 and 680x0, an optimized version will be provided in match.asm or
  * match.S. The code will be functionally equivalent.
  */
-local uInt longest_match(
-    deflate_stream *s,
-    IPos cur_match)                             /* current match */
+uInt
+deflate_stream::longest_match(deflate_stream *s, IPos cur_match)
 {
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
     Byte *scan = s->window + s->strstart; /* current string */
@@ -1011,156 +1010,6 @@ local void check_match(
 #else
 #  define check_match(s, start, match, length)
 #endif /* DEBUG */
-
-/* ===========================================================================
- * Fill the window when the lookahead becomes insufficient.
- * Updates strstart and lookahead.
- *
- * IN assertion: lookahead < MIN_LOOKAHEAD
- * OUT assertions: strstart <= window_size-MIN_LOOKAHEAD
- *    At least one byte has been read, or avail_in == 0; reads are
- *    performed for at least two bytes (required for the zip translate_eol
- *    option -- not supported here).
- */
-void
-deflate_streamfill_window(deflate_stream *s)
-{
-    unsigned n, m;
-    std::uint16_t *p;
-    unsigned more;    /* Amount of free space at the end of the window. */
-    uInt wsize = s->w_size;
-
-    Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
-
-    do {
-        more = (unsigned)(s->window_size -(std::uint32_t)s->lookahead -(std::uint32_t)s->strstart);
-
-        /* Deal with !@#$% 64K limit: */
-        if (sizeof(int) <= 2) {
-            if (more == 0 && s->strstart == 0 && s->lookahead == 0) {
-                more = wsize;
-
-            } else if (more == (unsigned)(-1)) {
-                /* Very unlikely, but possible on 16 bit machine if
-                 * strstart == 0 && lookahead == 1 (input done a byte at time)
-                 */
-                more--;
-            }
-        }
-
-        /* If the window is almost full and there is insufficient lookahead,
-         * move the upper half to the lower one to make room in the upper half.
-         */
-        if (s->strstart >= wsize+MAX_DIST(s)) {
-
-            std::memcpy(s->window, s->window+wsize, (unsigned)wsize);
-            s->match_start -= wsize;
-            s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
-            s->block_start -= (long) wsize;
-
-            /* Slide the hash table (could be avoided with 32 bit values
-               at the expense of memory usage). We slide even when level == 0
-               to keep the hash table consistent if we switch back to level > 0
-               later. (Using level 0 permanently is not an optimal usage of
-               zlib, so we don't care about this pathological case.)
-             */
-            n = s->hash_size;
-            p = &s->head[n];
-            do {
-                m = *--p;
-                *p = (std::uint16_t)(m >= wsize ? m-wsize : NIL);
-            } while (--n);
-
-            n = wsize;
-            p = &s->prev[n];
-            do {
-                m = *--p;
-                *p = (std::uint16_t)(m >= wsize ? m-wsize : NIL);
-                /* If n is not on any hash chain, prev[n] is garbage but
-                 * its value will never be used.
-                 */
-            } while (--n);
-            more += wsize;
-        }
-        if (s->avail_in == 0) break;
-
-        /* If there was no sliding:
-         *    strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
-         *    more == window_size - lookahead - strstart
-         * => more >= window_size - (MIN_LOOKAHEAD-1 + WSIZE + MAX_DIST-1)
-         * => more >= window_size - 2*WSIZE + 2
-         * In the BIG_MEM or MMAP case (not yet supported),
-         *   window_size == input_size + MIN_LOOKAHEAD  &&
-         *   strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
-         * Otherwise, window_size == 2*WSIZE so more >= 2.
-         * If there was sliding, more >= WSIZE. So in all cases, more >= 2.
-         */
-        Assert(more >= 2, "more < 2");
-
-        n = read_buf(s, s->window + s->strstart + s->lookahead, more);
-        s->lookahead += n;
-
-        /* Initialize the hash value now that we have some input: */
-        if (s->lookahead + s->insert >= MIN_MATCH) {
-            uInt str = s->strstart - s->insert;
-            s->ins_h = s->window[str];
-            UPDATE_HASH(s, s->ins_h, s->window[str + 1]);
-#if MIN_MATCH != 3
-            Call UPDATE_HASH() MIN_MATCH-3 more times
-#endif
-            while (s->insert) {
-                UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]);
-                s->prev[str & s->w_mask] = s->head[s->ins_h];
-                s->head[s->ins_h] = (std::uint16_t)str;
-                str++;
-                s->insert--;
-                if (s->lookahead + s->insert < MIN_MATCH)
-                    break;
-            }
-        }
-        /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
-         * but this is not important since only literal bytes will be emitted.
-         */
-
-    } while (s->lookahead < MIN_LOOKAHEAD && s->avail_in != 0);
-
-    /* If the WIN_INIT bytes after the end of the current data have never been
-     * written, then zero those bytes in order to avoid memory check reports of
-     * the use of uninitialized (or uninitialised as Julian writes) bytes by
-     * the longest match routines.  Update the high water mark for the next
-     * time through here.  WIN_INIT is set to MAX_MATCH since the longest match
-     * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
-     */
-    if (s->high_water < s->window_size) {
-        std::uint32_t curr = s->strstart + (std::uint32_t)(s->lookahead);
-        std::uint32_t init;
-
-        if (s->high_water < curr) {
-            /* Previous high water mark below current data -- zero WIN_INIT
-             * bytes or up to end of window, whichever is less.
-             */
-            init = s->window_size - curr;
-            if (init > WIN_INIT)
-                init = WIN_INIT;
-            std::memset(s->window + curr, 0, (unsigned)init);
-            s->high_water = curr + init;
-        }
-        else if (s->high_water < (std::uint32_t)curr + WIN_INIT) {
-            /* High water mark at or above current data, but below current data
-             * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
-             * to end of window, whichever is less.
-             */
-            init = (std::uint32_t)curr + WIN_INIT - s->high_water;
-            if (init > s->window_size - s->high_water)
-                init = s->window_size - s->high_water;
-            std::memset(s->window + s->high_water, 0, (unsigned)init);
-            s->high_water += init;
-        }
-    }
-
-    Assert((std::uint32_t)s->strstart <= s->window_size - MIN_LOOKAHEAD,
-           "not enough room for search");
-}
 
 /* ===========================================================================
  * Flush the current block, with given end-of-file flag.
