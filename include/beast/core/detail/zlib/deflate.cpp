@@ -1155,7 +1155,7 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
             /* Insert new strings in the hash table only if the match length
              * is not too large. This saves time but degrades compression.
              */
-            if (s->match_length <= s->max_insert_length &&
+            if (s->match_length <= s->max_lazy_match &&
                 s->lookahead >= MIN_MATCH) {
                 s->match_length--; /* string at strstart already in table */
                 do {
