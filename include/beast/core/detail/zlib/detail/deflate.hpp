@@ -43,21 +43,8 @@ namespace detail {
 /* Data structure describing a single value and its code string. */
 struct ct_data
 {
-    union fc_t
-    {
-        std::uint16_t  freq;       /* frequency count */
-        std::uint16_t  code;       /* bit string */
-    };
-    
-    fc_t fc; // frequency count or bit string
-
-    union dl_t
-    {
-        std::uint16_t  dad;        /* father node in Huffman tree */
-        std::uint16_t  len;        /* length of bit string */
-    };
-    
-    dl_t dl; // parent node in tree or length of bit string
+    std::uint16_t fc; // frequency count or bit string    
+    std::uint16_t dl; // parent node in tree or length of bit string
 };
 
 } // detail

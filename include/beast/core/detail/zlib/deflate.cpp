@@ -100,7 +100,7 @@ deflate_stream::~deflate_stream()
   { std::uint8_t cc = (c); \
     s->d_buf_[s->last_lit_] = 0; \
     s->l_buf_[s->last_lit_++] = cc; \
-    s->dyn_ltree_[cc].fc.freq++; \
+    s->dyn_ltree_[cc].fc++; \
     flush = (s->last_lit_ == s->lit_bufsize_-1); \
    }
 # define _tr_tally_dist(s, distance, length, flush) \
@@ -109,8 +109,8 @@ deflate_stream::~deflate_stream()
     s->d_buf_[s->last_lit_] = dist; \
     s->l_buf_[s->last_lit_++] = len; \
     dist--; \
-    s->dyn_ltree_[_length_code[len]+LITERALS+1].fc.freq++; \
-    s->dyn_dtree_[d_code(dist)].fc.freq++; \
+    s->dyn_ltree_[_length_code[len]+LITERALS+1].fc++; \
+    s->dyn_dtree_[d_code(dist)].fc++; \
     flush = (s->last_lit_ == s->lit_bufsize_-1); \
   }
 #else
@@ -914,7 +914,7 @@ deflate_stream::longest_match(deflate_stream *s, IPos cur_match)
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
      */
-    Assert(s->hash_bits_ >= 8 && MAX_MATCH == 258, "fc.code too clever");
+    Assert(s->hash_bits_ >= 8 && MAX_MATCH == 258, "fc too clever");
 
     /* Do not waste too much time if we already have a good match: */
     if (s->prev_length_ >= s->good_match_) {

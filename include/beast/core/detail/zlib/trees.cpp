@@ -185,13 +185,13 @@ local void gen_trees_header (void);
 #endif
 
 #ifndef DEBUG
-#  define send_code(s, c, tree) send_bits(s, tree[c].fc.code, tree[c].dl.len)
+#  define send_code(s, c, tree) send_bits(s, tree[c].fc, tree[c].dl)
    /* Send a code of the given tree. c and tree must not have side effects */
 
 #else /* DEBUG */
 #  define send_code(s, c, tree) \
      { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
-       send_bits(s, tree[c].fc.code, tree[c].dl.len); }
+       send_bits(s, tree[c].fc, tree[c].dl); }
 #endif
 
 /* ===========================================================================
@@ -315,10 +315,10 @@ local void tr_static_init()
     /* Construct the codes of the static literal tree */
     for (bits = 0; bits <= MAX_BITS; bits++) bl_count[bits] = 0;
     n = 0;
-    while (n <= 143) static_ltree[n++].dl.len = 8, bl_count[8]++;
-    while (n <= 255) static_ltree[n++].dl.len = 9, bl_count[9]++;
-    while (n <= 279) static_ltree[n++].dl.len = 7, bl_count[7]++;
-    while (n <= 287) static_ltree[n++].dl.len = 8, bl_count[8]++;
+    while (n <= 143) static_ltree[n++].dl = 8, bl_count[8]++;
+    while (n <= 255) static_ltree[n++].dl = 9, bl_count[9]++;
+    while (n <= 279) static_ltree[n++].dl = 7, bl_count[7]++;
+    while (n <= 287) static_ltree[n++].dl = 8, bl_count[8]++;
     /* Codes 286 and 287 do not exist, but we must include them in the
      * tree construction to get a canonical Huffman tree (longest code
      * all ones)
@@ -327,8 +327,8 @@ local void tr_static_init()
 
     /* The static distance tree is trivial: */
     for (n = 0; n < D_CODES; n++) {
-        static_dtree[n].dl.len = 5;
-        static_dtree[n].fc.code = bi_reverse((unsigned)n, 5);
+        static_dtree[n].dl = 5;
+        static_dtree[n].fc = bi_reverse((unsigned)n, 5);
     }
     static_init_done = 1;
 
@@ -361,14 +361,14 @@ void gen_trees_header()
 
     fprintf(header, "local const detail::ct_data static_ltree[L_CODES+2] = {\n");
     for (i = 0; i < L_CODES+2; i++) {
-        fprintf(header, "{{%3u},{%3u}}%s", static_ltree[i].fc.code,
-                static_ltree[i].dl.len, SEPARATOR(i, L_CODES+1, 5));
+        fprintf(header, "{{%3u},{%3u}}%s", static_ltree[i].fc,
+                static_ltree[i].dl, SEPARATOR(i, L_CODES+1, 5));
     }
 
     fprintf(header, "local const detail::ct_data static_dtree[D_CODES] = {\n");
     for (i = 0; i < D_CODES; i++) {
-        fprintf(header, "{{%2u},{%2u}}%s", static_dtree[i].fc.code,
-                static_dtree[i].dl.len, SEPARATOR(i, D_CODES-1, 5));
+        fprintf(header, "{{%2u},{%2u}}%s", static_dtree[i].fc,
+                static_dtree[i].dl, SEPARATOR(i, D_CODES-1, 5));
     }
 
     fprintf(header, "const std::uint8_t _dist_code[DIST_CODE_LEN] = {\n");
@@ -437,11 +437,11 @@ local void init_block(
     int n; /* iterates over tree elements */
 
     /* Initialize the trees. */
-    for (n = 0; n < L_CODES;  n++) s->dyn_ltree_[n].fc.freq = 0;
-    for (n = 0; n < D_CODES;  n++) s->dyn_dtree_[n].fc.freq = 0;
-    for (n = 0; n < BL_CODES; n++) s->bl_tree_[n].fc.freq = 0;
+    for (n = 0; n < L_CODES;  n++) s->dyn_ltree_[n].fc = 0;
+    for (n = 0; n < D_CODES;  n++) s->dyn_dtree_[n].fc = 0;
+    for (n = 0; n < BL_CODES; n++) s->bl_tree_[n].fc = 0;
 
-    s->dyn_ltree_[END_BLOCK].fc.freq = 1;
+    s->dyn_ltree_[END_BLOCK].fc = 1;
     s->opt_len_ = s->static_len_ = 0L;
     s->last_lit_ = s->matches_ = 0;
 }
@@ -466,8 +466,8 @@ local void init_block(
  * the subtrees have equal frequency. This minimizes the worst case length.
  */
 #define smaller(tree, n, m, depth) \
-   (tree[n].fc.freq < tree[m].fc.freq || \
-   (tree[n].fc.freq == tree[m].fc.freq && depth[n] <= depth[m]))
+   (tree[n].fc < tree[m].fc || \
+   (tree[n].fc == tree[m].fc && depth[n] <= depth[m]))
 
 /* ===========================================================================
  * Restore the heap property by moving down the tree starting at node k,
@@ -532,23 +532,23 @@ local void gen_bitlen(
     /* In a first pass, compute the optimal bit lengths (which may
      * overflow in the case of the bit length tree).
      */
-    tree[s->heap_[s->heap_max_]].dl.len = 0; /* root of the heap */
+    tree[s->heap_[s->heap_max_]].dl = 0; /* root of the heap */
 
     for (h = s->heap_max_+1; h < HEAP_SIZE; h++) {
         n = s->heap_[h];
-        bits = tree[tree[n].dl.dad].dl.len + 1;
+        bits = tree[tree[n].dl].dl + 1;
         if (bits > max_length) bits = max_length, overflow++;
-        tree[n].dl.len = (std::uint16_t)bits;
-        /* We overwrite tree[n].dl.dad which is no longer needed */
+        tree[n].dl = (std::uint16_t)bits;
+        /* We overwrite tree[n].dl which is no longer needed */
 
         if (n > max_code) continue; /* not a leaf node */
 
         s->bl_count_[bits]++;
         xbits = 0;
         if (n >= base) xbits = extra[n-base];
-        f = tree[n].fc.freq;
+        f = tree[n].fc;
         s->opt_len_ += (std::uint32_t)f * (bits + xbits);
-        if (stree) s->static_len_ += (std::uint32_t)f * (stree[n].dl.len + xbits);
+        if (stree) s->static_len_ += (std::uint32_t)f * (stree[n].dl + xbits);
     }
     if (overflow == 0) return;
 
@@ -578,11 +578,11 @@ local void gen_bitlen(
         while (n != 0) {
             m = s->heap_[--h];
             if (m > max_code) continue;
-            if ((unsigned) tree[m].dl.len != (unsigned) bits) {
-                Trace((stderr,"code %d bits %d->%d\n", m, tree[m].dl.len, bits));
-                s->opt_len_ += ((long)bits - (long)tree[m].dl.len)
-                              *(long)tree[m].fc.freq;
-                tree[m].dl.len = (std::uint16_t)bits;
+            if ((unsigned) tree[m].dl != (unsigned) bits) {
+                Trace((stderr,"code %d bits %d->%d\n", m, tree[m].dl, bits));
+                s->opt_len_ += ((long)bits - (long)tree[m].dl)
+                              *(long)tree[m].fc;
+                tree[m].dl = (std::uint16_t)bits;
             }
             n--;
         }
@@ -621,13 +621,13 @@ local void gen_codes (
     Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
 
     for (n = 0;  n <= max_code; n++) {
-        int len = tree[n].dl.len;
+        int len = tree[n].dl;
         if (len == 0) continue;
         /* Now reverse the bits */
-        tree[n].fc.code = bi_reverse(next_code[len]++, len);
+        tree[n].fc = bi_reverse(next_code[len]++, len);
 
         Tracecv(tree != static_ltree, (stderr,"\nn %3d %c l %2d c %4x (%x) ",
-             n, (isgraph(n) ? n : ' '), len, tree[n].fc.code, next_code[len]-1));
+             n, (isgraph(n) ? n : ' '), len, tree[n].fc, next_code[len]-1));
     }
 }
 
@@ -657,11 +657,11 @@ local void build_tree(
     s->heap_len_ = 0, s->heap_max_ = HEAP_SIZE;
 
     for (n = 0; n < elems; n++) {
-        if (tree[n].fc.freq != 0) {
+        if (tree[n].fc != 0) {
             s->heap_[++(s->heap_len_)] = max_code = n;
             s->depth_[n] = 0;
         } else {
-            tree[n].dl.len = 0;
+            tree[n].dl = 0;
         }
     }
 
@@ -672,9 +672,9 @@ local void build_tree(
      */
     while (s->heap_len_ < 2) {
         node = s->heap_[++(s->heap_len_)] = (max_code < 2 ? ++max_code : 0);
-        tree[node].fc.freq = 1;
+        tree[node].fc = 1;
         s->depth_[node] = 0;
-        s->opt_len_--; if (stree) s->static_len_ -= stree[node].dl.len;
+        s->opt_len_--; if (stree) s->static_len_ -= stree[node].dl;
         /* node is 0 or 1 so it does not have extra bits */
     }
     desc->max_code = max_code;
@@ -696,14 +696,14 @@ local void build_tree(
         s->heap_[--(s->heap_max_)] = m;
 
         /* Create a new node father of n and m */
-        tree[node].fc.freq = tree[n].fc.freq + tree[m].fc.freq;
+        tree[node].fc = tree[n].fc + tree[m].fc;
         s->depth_[node] = (std::uint8_t)((s->depth_[n] >= s->depth_[m] ?
                                 s->depth_[n] : s->depth_[m]) + 1);
-        tree[n].dl.dad = tree[m].dl.dad = (std::uint16_t)node;
+        tree[n].dl = tree[m].dl = (std::uint16_t)node;
 #ifdef DUMP_BL_TREE
         if (tree == s->bl_tree_) {
             fprintf(stderr,"\nnode %d(%d), sons %d(%d) %d(%d)",
-                    node, tree[node].fc.freq, n, tree[n].fc.freq, m, tree[m].fc.freq);
+                    node, tree[node].fc, n, tree[n].fc, m, tree[m].fc);
         }
 #endif
         /* and insert the new node in the heap */
@@ -735,27 +735,27 @@ local void scan_tree (
     int n;                     /* iterates over all tree elements */
     int prevlen = -1;          /* last emitted length */
     int curlen;                /* length of current code */
-    int nextlen = tree[0].dl.len; /* length of next code */
+    int nextlen = tree[0].dl; /* length of next code */
     int count = 0;             /* repeat count of the current code */
     int max_count = 7;         /* max repeat count */
     int min_count = 4;         /* min repeat count */
 
     if (nextlen == 0) max_count = 138, min_count = 3;
-    tree[max_code+1].dl.len = (std::uint16_t)0xffff; /* guard */
+    tree[max_code+1].dl = (std::uint16_t)0xffff; /* guard */
 
     for (n = 0; n <= max_code; n++) {
-        curlen = nextlen; nextlen = tree[n+1].dl.len;
+        curlen = nextlen; nextlen = tree[n+1].dl;
         if (++count < max_count && curlen == nextlen) {
             continue;
         } else if (count < min_count) {
-            s->bl_tree_[curlen].fc.freq += count;
+            s->bl_tree_[curlen].fc += count;
         } else if (curlen != 0) {
-            if (curlen != prevlen) s->bl_tree_[curlen].fc.freq++;
-            s->bl_tree_[REP_3_6].fc.freq++;
+            if (curlen != prevlen) s->bl_tree_[curlen].fc++;
+            s->bl_tree_[REP_3_6].fc++;
         } else if (count <= 10) {
-            s->bl_tree_[REPZ_3_10].fc.freq++;
+            s->bl_tree_[REPZ_3_10].fc++;
         } else {
-            s->bl_tree_[REPZ_11_138].fc.freq++;
+            s->bl_tree_[REPZ_11_138].fc++;
         }
         count = 0; prevlen = curlen;
         if (nextlen == 0) {
@@ -780,16 +780,16 @@ local void send_tree (
     int n;                     /* iterates over all tree elements */
     int prevlen = -1;          /* last emitted length */
     int curlen;                /* length of current code */
-    int nextlen = tree[0].dl.len; /* length of next code */
+    int nextlen = tree[0].dl; /* length of next code */
     int count = 0;             /* repeat count of the current code */
     int max_count = 7;         /* max repeat count */
     int min_count = 4;         /* min repeat count */
 
-    /* tree[max_code+1].dl.len = -1; */  /* guard already set */
+    /* tree[max_code+1].dl = -1; */  /* guard already set */
     if (nextlen == 0) max_count = 138, min_count = 3;
 
     for (n = 0; n <= max_code; n++) {
-        curlen = nextlen; nextlen = tree[n+1].dl.len;
+        curlen = nextlen; nextlen = tree[n+1].dl;
         if (++count < max_count && curlen == nextlen) {
             continue;
         } else if (count < min_count) {
@@ -843,7 +843,7 @@ local int build_bl_tree(
      * 3 but the actual value used is 4.)
      */
     for (max_blindex = BL_CODES-1; max_blindex >= 3; max_blindex--) {
-        if (s->bl_tree_[bl_order[max_blindex]].dl.len != 0) break;
+        if (s->bl_tree_[bl_order[max_blindex]].dl != 0) break;
     }
     /* Update opt_len to include the bit length tree and counts */
     s->opt_len_ += 3*(max_blindex+1) + 5+5+4;
@@ -875,7 +875,7 @@ local void send_all_trees(
     send_bits(s, blcodes-4,  4); /* not -3 as stated in appnote.txt */
     for (rank = 0; rank < blcodes; rank++) {
         Tracev((stderr, "\nbl code %2d ", bl_order[rank]));
-        send_bits(s, s->bl_tree_[bl_order[rank]].dl.len, 3);
+        send_bits(s, s->bl_tree_[bl_order[rank]].dl, 3);
     }
     Tracev((stderr, "\nbl tree: sent %ld", s->bits_sent_));
 
@@ -1043,7 +1043,7 @@ int _tr_tally (
     s->l_buf_[s->last_lit_++] = (std::uint8_t)lc;
     if (dist == 0) {
         /* lc is the unmatched char */
-        s->dyn_ltree_[lc].fc.freq++;
+        s->dyn_ltree_[lc].fc++;
     } else {
         s->matches_++;
         /* Here, lc is the match length - MIN_MATCH */
@@ -1052,8 +1052,8 @@ int _tr_tally (
                (std::uint16_t)lc <= (std::uint16_t)(MAX_MATCH-MIN_MATCH) &&
                (std::uint16_t)d_code(dist) < (std::uint16_t)D_CODES,  "_tr_tally: bad match");
 
-        s->dyn_ltree_[_length_code[lc]+LITERALS+1].fc.freq++;
-        s->dyn_dtree_[d_code(dist)].fc.freq++;
+        s->dyn_ltree_[_length_code[lc]+LITERALS+1].fc++;
+        s->dyn_dtree_[d_code(dist)].fc++;
     }
 
 #ifdef TRUNCATE_BLOCK
@@ -1064,7 +1064,7 @@ int _tr_tally (
         std::uint32_t in_length = (std::uint32_t)((long)s->strstart - s->block_start);
         int dcode;
         for (dcode = 0; dcode < D_CODES; dcode++) {
-            out_length += (std::uint32_t)s->dyn_dtree_[dcode].fc.freq *
+            out_length += (std::uint32_t)s->dyn_dtree_[dcode].fc *
                 (5L+extra_dbits[dcode]);
         }
         out_length >>= 3;
@@ -1142,7 +1142,7 @@ local void compress_block(
  * - The following partially-portable control characters form a
  *   "gray list" that is ignored in this detection algorithm:
  *   (7 {BEL}, 8 {BS}, 11 {VT}, 12 {FF}, 26 {SUB}, 27 {ESC}).
- * IN assertion: the fields fc.freq of dyn_ltree are set.
+ * IN assertion: the fields fc of dyn_ltree are set.
  */
 local int detect_data_type(
     deflate_stream *s)
@@ -1156,15 +1156,15 @@ local int detect_data_type(
 
     /* Check for non-textual ("black-listed") bytes. */
     for (n = 0; n <= 31; n++, black_mask >>= 1)
-        if ((black_mask & 1) && (s->dyn_ltree_[n].fc.freq != 0))
+        if ((black_mask & 1) && (s->dyn_ltree_[n].fc != 0))
             return Z_BINARY;
 
     /* Check for textual ("white-listed") bytes. */
-    if (s->dyn_ltree_[9].fc.freq != 0 || s->dyn_ltree_[10].fc.freq != 0
-            || s->dyn_ltree_[13].fc.freq != 0)
+    if (s->dyn_ltree_[9].fc != 0 || s->dyn_ltree_[10].fc != 0
+            || s->dyn_ltree_[13].fc != 0)
         return Z_TEXT;
     for (n = 32; n < LITERALS; n++)
-        if (s->dyn_ltree_[n].fc.freq != 0)
+        if (s->dyn_ltree_[n].fc != 0)
             return Z_TEXT;
 
     /* There are no "black-listed" or "white-listed" bytes:
