@@ -107,14 +107,14 @@ local const std::uint8_t bl_order[BL_CODES]
 #if defined(GEN_TREES_H)
 /* non ANSI compilers may not accept trees.hpp */
 
-local ct_data static_ltree[L_CODES+2];
+local detail::ct_data static_ltree[L_CODES+2];
 /* The static literal tree. Since the bit lengths are imposed, there is no
  * need for the L_CODES extra codes used during heap construction. However
  * The codes 286 and 287 are needed to build a canonical tree (see _tr_init
  * below).
  */
 
-local ct_data static_dtree[D_CODES];
+local detail::ct_data static_dtree[D_CODES];
 /* The static distance tree. (Actually a trivial tree since all codes use
  * 5 bits.)
  */
@@ -140,7 +140,7 @@ local int base_dist[D_CODES];
 
 struct static_tree_desc
 {
-    const ct_data *static_tree;  /* static tree or NULL */
+    const detail::ct_data *static_tree;  /* static tree or NULL */
     const int *extra_bits;      /* extra bits for each code or NULL */
     int     extra_base;          /* base index for extra_bits */
     int     elems;               /* max number of elements in the tree */
@@ -154,7 +154,7 @@ local static_tree_desc  static_d_desc =
 {static_dtree, extra_dbits, 0,          D_CODES, MAX_BITS};
 
 local static_tree_desc  static_bl_desc =
-{(const ct_data *)0, extra_blbits, 0,   BL_CODES, MAX_BL_BITS};
+{(const detail::ct_data *)0, extra_blbits, 0,   BL_CODES, MAX_BL_BITS};
 
 /* ===========================================================================
  * Local (static) routines in this file.
@@ -162,17 +162,17 @@ local static_tree_desc  static_bl_desc =
 
 local void tr_static_init (void);
 local void init_block     (deflate_stream *s);
-local void pqdownheap     (deflate_stream *s, ct_data *tree, int k);
+local void pqdownheap     (deflate_stream *s, detail::ct_data *tree, int k);
 local void gen_bitlen     (deflate_stream *s, tree_desc *desc);
-local void gen_codes      (ct_data *tree, int max_code, std::uint16_t *bl_count);
+local void gen_codes      (detail::ct_data *tree, int max_code, std::uint16_t *bl_count);
 local void build_tree     (deflate_stream *s, tree_desc *desc);
-local void scan_tree      (deflate_stream *s, ct_data *tree, int max_code);
-local void send_tree      (deflate_stream *s, ct_data *tree, int max_code);
+local void scan_tree      (deflate_stream *s, detail::ct_data *tree, int max_code);
+local void send_tree      (deflate_stream *s, detail::ct_data *tree, int max_code);
 local int  build_bl_tree  (deflate_stream *s);
 local void send_all_trees (deflate_stream *s, int lcodes, int dcodes,
                               int blcodes);
-local void compress_block (deflate_stream *s, const ct_data *ltree,
-                              const ct_data *dtree);
+local void compress_block (deflate_stream *s, const detail::ct_data *ltree,
+                              const detail::ct_data *dtree);
 local int  detect_data_type (deflate_stream *s);
 local unsigned bi_reverse (unsigned value, int length);
 local void bi_windup      (deflate_stream *s);
@@ -323,7 +323,7 @@ local void tr_static_init()
      * tree construction to get a canonical Huffman tree (longest code
      * all ones)
      */
-    gen_codes((ct_data *)static_ltree, L_CODES+1, bl_count);
+    gen_codes((detail::ct_data *)static_ltree, L_CODES+1, bl_count);
 
     /* The static distance tree is trivial: */
     for (n = 0; n < D_CODES; n++) {
@@ -359,13 +359,13 @@ void gen_trees_header()
     fprintf(header,
             "/* header created automatically with -DGEN_TREES_H */\n\n");
 
-    fprintf(header, "local const ct_data static_ltree[L_CODES+2] = {\n");
+    fprintf(header, "local const detail::ct_data static_ltree[L_CODES+2] = {\n");
     for (i = 0; i < L_CODES+2; i++) {
         fprintf(header, "{{%3u},{%3u}}%s", static_ltree[i].fc.code,
                 static_ltree[i].dl.len, SEPARATOR(i, L_CODES+1, 5));
     }
 
-    fprintf(header, "local const ct_data static_dtree[D_CODES] = {\n");
+    fprintf(header, "local const detail::ct_data static_dtree[D_CODES] = {\n");
     for (i = 0; i < D_CODES; i++) {
         fprintf(header, "{{%2u},{%2u}}%s", static_dtree[i].fc.code,
                 static_dtree[i].dl.len, SEPARATOR(i, D_CODES-1, 5));
@@ -477,7 +477,7 @@ local void init_block(
  */
 local void pqdownheap(
     deflate_stream *s,
-    ct_data *tree,  /* the tree to restore */
+    detail::ct_data *tree,  /* the tree to restore */
     int k)               /* node to move down */
 {
     int v = s->heap_[k];
@@ -514,9 +514,9 @@ local void gen_bitlen(
     deflate_stream *s,
     tree_desc *desc)    /* the tree descriptor */
 {
-    ct_data *tree        = desc->dyn_tree;
+    detail::ct_data *tree        = desc->dyn_tree;
     int max_code         = desc->max_code;
-    const ct_data *stree = desc->stat_desc->static_tree;
+    const detail::ct_data *stree = desc->stat_desc->static_tree;
     const int *extra    = desc->stat_desc->extra_bits;
     int base             = desc->stat_desc->extra_base;
     int max_length       = desc->stat_desc->max_length;
@@ -598,7 +598,7 @@ local void gen_bitlen(
  *     zero code length.
  */
 local void gen_codes (
-    ct_data *tree,             /* the tree to decorate */
+    detail::ct_data *tree,             /* the tree to decorate */
     int max_code,              /* largest code with non zero frequency */
     std::uint16_t *bl_count)            /* number of codes at each bit length */
 {
@@ -643,8 +643,8 @@ local void build_tree(
     deflate_stream *s,
     tree_desc *desc) /* the tree descriptor */
 {
-    ct_data *tree         = desc->dyn_tree;
-    const ct_data *stree  = desc->stat_desc->static_tree;
+    detail::ct_data *tree         = desc->dyn_tree;
+    const detail::ct_data *stree  = desc->stat_desc->static_tree;
     int elems             = desc->stat_desc->elems;
     int n, m;          /* iterate over heap elements */
     int max_code = -1; /* largest code with non zero frequency */
@@ -720,7 +720,7 @@ local void build_tree(
     gen_bitlen(s, (tree_desc *)desc);
 
     /* The field len is now set, we can generate the bit codes */
-    gen_codes ((ct_data *)tree, max_code, s->bl_count_);
+    gen_codes ((detail::ct_data *)tree, max_code, s->bl_count_);
 }
 
 /* ===========================================================================
@@ -729,7 +729,7 @@ local void build_tree(
  */
 local void scan_tree (
     deflate_stream *s,
-    ct_data *tree,   /* the tree to be scanned */
+    detail::ct_data *tree,   /* the tree to be scanned */
     int max_code)    /* and its largest code of non zero frequency */
 {
     int n;                     /* iterates over all tree elements */
@@ -774,7 +774,7 @@ local void scan_tree (
  */
 local void send_tree (
     deflate_stream *s,
-    ct_data *tree, /* the tree to be scanned */
+    detail::ct_data *tree, /* the tree to be scanned */
     int max_code)       /* and its largest code of non zero frequency */
 {
     int n;                     /* iterates over all tree elements */
@@ -829,8 +829,8 @@ local int build_bl_tree(
     int max_blindex;  /* index of last bit length code of non zero freq */
 
     /* Determine the bit length frequencies for literal and distance trees */
-    scan_tree(s, (ct_data *)s->dyn_ltree_, s->l_desc_.max_code);
-    scan_tree(s, (ct_data *)s->dyn_dtree_, s->d_desc_.max_code);
+    scan_tree(s, (detail::ct_data *)s->dyn_ltree_, s->l_desc_.max_code);
+    scan_tree(s, (detail::ct_data *)s->dyn_dtree_, s->d_desc_.max_code);
 
     /* Build the bit length tree: */
     build_tree(s, (tree_desc *)(&(s->bl_desc_)));
@@ -879,10 +879,10 @@ local void send_all_trees(
     }
     Tracev((stderr, "\nbl tree: sent %ld", s->bits_sent_));
 
-    send_tree(s, (ct_data *)s->dyn_ltree_, lcodes-1); /* literal tree */
+    send_tree(s, (detail::ct_data *)s->dyn_ltree_, lcodes-1); /* literal tree */
     Tracev((stderr, "\nlit tree: sent %ld", s->bits_sent_));
 
-    send_tree(s, (ct_data *)s->dyn_dtree_, dcodes-1); /* distance tree */
+    send_tree(s, (detail::ct_data *)s->dyn_dtree_, dcodes-1); /* distance tree */
     Tracev((stderr, "\ndist tree: sent %ld", s->bits_sent_));
 }
 
@@ -999,8 +999,8 @@ void _tr_flush_block(
     } else if (s->strategy_ == Z_FIXED || static_lenb == opt_lenb) {
 #endif
         send_bits(s, (STATIC_TREES<<1)+last, 3);
-        compress_block(s, (const ct_data *)static_ltree,
-                       (const ct_data *)static_dtree);
+        compress_block(s, (const detail::ct_data *)static_ltree,
+                       (const detail::ct_data *)static_dtree);
 #ifdef DEBUG
         s->compressed_len_ += 3 + s->static_len_;
 #endif
@@ -1008,8 +1008,8 @@ void _tr_flush_block(
         send_bits(s, (DYN_TREES<<1)+last, 3);
         send_all_trees(s, s->l_desc_.max_code+1, s->d_desc_.max_code+1,
                        max_blindex+1);
-        compress_block(s, (const ct_data *)s->dyn_ltree_,
-                       (const ct_data *)s->dyn_dtree_);
+        compress_block(s, (const detail::ct_data *)s->dyn_ltree_,
+                       (const detail::ct_data *)s->dyn_dtree_);
 #ifdef DEBUG
         s->compressed_len_ += 3 + s->opt_len_;
 #endif
@@ -1086,8 +1086,8 @@ int _tr_tally (
  */
 local void compress_block(
     deflate_stream *s,
-    const ct_data *ltree, /* literal tree */
-    const ct_data *dtree) /* distance tree */
+    const detail::ct_data *ltree, /* literal tree */
+    const detail::ct_data *dtree) /* distance tree */
 {
     unsigned dist;      /* distance of matched string */
     int lc;             /* match length or unmatched char (if dist == 0) */

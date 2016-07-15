@@ -35,6 +35,8 @@
 #ifndef BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
 #define BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
 
+#include <beast/core/detail/zlib/detail/deflate.hpp>
+
 #include "zutil.hpp"
 #include <cstdlib>
 
@@ -74,32 +76,11 @@ enum StreamStatus
     FINISH_STATE = 666
 };
 
-
-/* Data structure describing a single value and its code string. */
-struct ct_data
-{
-    union fc_t
-    {
-        std::uint16_t  freq;       /* frequency count */
-        std::uint16_t  code;       /* bit string */
-    };
-    
-    fc_t fc;
-
-    union dl_t
-    {
-        std::uint16_t  dad;        /* father node in Huffman tree */
-        std::uint16_t  len;        /* length of bit string */
-    };
-    
-    dl_t dl;
-};
-
 struct static_tree_desc;
 
 struct tree_desc
 {
-    ct_data *dyn_tree;           /* the dynamic tree */
+    detail::ct_data *dyn_tree;           /* the dynamic tree */
     int     max_code;            /* largest code with non zero frequency */
     static_tree_desc* stat_desc; /* the corresponding static tree */
 };
@@ -219,10 +200,10 @@ public:
     int nice_match_; /* Stop searching when current match exceeds this */
 
                 /* used by trees.c: */
-    /* Didn't use ct_data typedef below to suppress compiler warning */
-    ct_data dyn_ltree_[HEAP_SIZE];   /* literal and length tree */
-    ct_data dyn_dtree_[2*D_CODES+1]; /* distance tree */
-    ct_data bl_tree_[2*BL_CODES+1];  /* Huffman tree for bit lengths */
+    /* Didn't use detail::ct_data typedef below to suppress compiler warning */
+    detail::ct_data dyn_ltree_[HEAP_SIZE];   /* literal and length tree */
+    detail::ct_data dyn_dtree_[2*D_CODES+1]; /* distance tree */
+    detail::ct_data bl_tree_[2*BL_CODES+1];  /* Huffman tree for bit lengths */
 
     tree_desc l_desc_;               /* desc. for literal tree */
     tree_desc d_desc_;               /* desc. for distance tree */
