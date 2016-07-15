@@ -102,8 +102,6 @@ local const std::uint8_t bl_order[BL_CODES]
  * Local data. These are initialized only once.
  */
 
-#define DIST_CODE_LEN  512 /* see definition of array dist_code below */
-
 #if defined(GEN_TREES_H)
 /* non ANSI compilers may not accept trees.hpp */
 
@@ -426,6 +424,14 @@ void _tr_init(
 
     /* Initialize the first block of the first file: */
     init_block(s);
+
+{
+    auto const& t = detail::get_deflate_tables();
+    for(std::size_t i = 0; i < std::extent<decltype(t.base_length)>::value; ++i)
+        assert(t.base_length[i] == base_length[i]);
+    for(std::size_t i = 0; i < std::extent<decltype(t.length_code)>::value; ++i)
+        assert(t.length_code[i] == _length_code[i]);
+}
 }
 
 /* ===========================================================================

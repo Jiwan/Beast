@@ -42,21 +42,6 @@
 
 namespace beast {
 
-// number of length codes, not counting the special END_BLOCK code
-std::uint16_t constexpr LENGTH_CODES = 29;
-
-// number of literal bytes 0..255
-std::uint16_t constexpr LITERALS = 256;
-
-// number of Literal or Length codes, including the END_BLOCK code
-std::uint16_t constexpr L_CODES = LITERALS + 1 + LENGTH_CODES;
-
-// number of distance codes
-std::uint16_t constexpr D_CODES = 30;
-
-// number of codes used to transfer the bit lengths
-std::uint16_t constexpr BL_CODES = 19;
-
 // maximum heap size
 std::uint16_t constexpr HEAP_SIZE = 2 * L_CODES + 1;
 

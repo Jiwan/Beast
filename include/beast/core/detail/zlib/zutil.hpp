@@ -75,10 +75,6 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #define STATIC_TREES 1
 #define DYN_TREES    2
 
-/* The minimum and maximum match lengths */
-#define MIN_MATCH  3
-#define MAX_MATCH  258
-
 /* Diagnostic functions */
 #ifdef DEBUG
 #  include <stdio.h>

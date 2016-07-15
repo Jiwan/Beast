@@ -308,9 +308,6 @@ void deflate_stream::fill_window(deflate_stream *s)
             uInt str = s->strstart_ - s->insert_;
             s->ins_h_ = s->window_[str];
             UPDATE_HASH(s, s->ins_h_, s->window_[str + 1]);
-#if MIN_MATCH != 3
-            Call UPDATE_HASH() MIN_MATCH-3 more times
-#endif
             while (s->insert_) {
                 UPDATE_HASH(s, s->ins_h_, s->window_[str + MIN_MATCH-1]);
                 s->prev_[str & s->w_mask_] = s->head_[s->ins_h_];
@@ -1171,9 +1168,6 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
                 s->match_length_ = 0;
                 s->ins_h_ = s->window_[s->strstart_];
                 UPDATE_HASH(s, s->ins_h_, s->window_[s->strstart_+1]);
-#if MIN_MATCH != 3
-                Call UPDATE_HASH() MIN_MATCH-3 more times
-#endif
                 /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
                  */
