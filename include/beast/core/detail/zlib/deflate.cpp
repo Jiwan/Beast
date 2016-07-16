@@ -109,7 +109,7 @@ deflate_stream::~deflate_stream()
     s->d_buf_[s->last_lit_] = dist; \
     s->l_buf_[s->last_lit_++] = len; \
     dist--; \
-    s->dyn_ltree_[_length_code[len]+LITERALS+1].fc++; \
+    s->dyn_ltree_[_length_code[len]+limits::literals+1].fc++; \
     s->dyn_dtree_[d_code(dist)].fc++; \
     flush = (s->last_lit_ == s->lit_bufsize_-1); \
   }
@@ -169,7 +169,7 @@ local const config configuration_table[10] = {
 /* 8 */ {32, 128, 258, 1024, &deflate_stream::deflate_slow},
 /* 9 */ {32, 258, 258, 4096, &deflate_stream::deflate_slow}}; /* max compression */
 
-/* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
+/* Note: the deflate() code requires max_lazy >= limits::minMatch and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
  * meaning.
  */
@@ -200,11 +200,11 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
  * If this file is compiled with -DFASTEST, the compression level is forced
  * to 1, and no hash chains are maintained.
  * IN  assertion: all calls to to INSERT_STRING are made with consecutive
- *    input characters and the first MIN_MATCH bytes of str are valid
- *    (except for the last MIN_MATCH-1 bytes of the input file).
+ *    input characters and the first limits::minMatch bytes of str are valid
+ *    (except for the last limits::minMatch-1 bytes of the input file).
  */
 #define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h_, s->window_[(str) + (MIN_MATCH-1)]), \
+   (UPDATE_HASH(s, s->ins_h_, s->window_[(str) + (limits::minMatch-1)]), \
     match_head = s->prev_[(str) & s->w_mask_] = s->head_[s->ins_h_], \
     s->head_[s->ins_h_] = (std::uint16_t)(str))
 
@@ -304,21 +304,21 @@ void deflate_stream::fill_window(deflate_stream *s)
         s->lookahead_ += n;
 
         /* Initialize the hash value now that we have some input: */
-        if (s->lookahead_ + s->insert_ >= MIN_MATCH) {
+        if (s->lookahead_ + s->insert_ >= limits::minMatch) {
             uInt str = s->strstart_ - s->insert_;
             s->ins_h_ = s->window_[str];
             UPDATE_HASH(s, s->ins_h_, s->window_[str + 1]);
             while (s->insert_) {
-                UPDATE_HASH(s, s->ins_h_, s->window_[str + MIN_MATCH-1]);
+                UPDATE_HASH(s, s->ins_h_, s->window_[str + limits::minMatch-1]);
                 s->prev_[str & s->w_mask_] = s->head_[s->ins_h_];
                 s->head_[s->ins_h_] = (std::uint16_t)str;
                 str++;
                 s->insert_--;
-                if (s->lookahead_ + s->insert_ < MIN_MATCH)
+                if (s->lookahead_ + s->insert_ < limits::minMatch)
                     break;
             }
         }
-        /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
+        /* If the whole input has less than limits::minMatch bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
          */
 
@@ -328,8 +328,8 @@ void deflate_stream::fill_window(deflate_stream *s)
      * written, then zero those bytes in order to avoid memory check reports of
      * the use of uninitialized (or uninitialised as Julian writes) bytes by
      * the longest match routines.  Update the high water mark for the next
-     * time through here.  WIN_INIT is set to MAX_MATCH since the longest match
-     * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
+     * time through here.  WIN_INIT is set to limits::maxMatch since the longest match
+     * routines allow scanning to strstart + limits::maxMatch, ignoring lookahead.
      */
     if (s->high_water_ < s->window_size_) {
         std::uint32_t curr = s->strstart_ + (std::uint32_t)(s->lookahead_);
@@ -403,7 +403,7 @@ deflate_stream::deflateInit2(
     s->hash_bits_ = memLevel + 7;
     s->hash_size_ = 1 << s->hash_bits_;
     s->hash_mask_ = s->hash_size_ - 1;
-    s->hash_shift_ =  ((s->hash_bits_+MIN_MATCH-1)/MIN_MATCH);
+    s->hash_shift_ =  ((s->hash_bits_+limits::minMatch-1)/limits::minMatch);
 
     s->window_ = (Byte *) std::malloc(s->w_size_ * 2*sizeof(Byte));
     s->prev_   = (std::uint16_t *)  std::malloc(s->w_size_ * sizeof(std::uint16_t));
@@ -466,24 +466,24 @@ auto strm = this;
     strm->avail_in = dictLength;
     strm->next_in = (const Byte *)dictionary;
     fill_window(s);
-    while (s->lookahead_ >= MIN_MATCH) {
+    while (s->lookahead_ >= limits::minMatch) {
         str = s->strstart_;
-        n = s->lookahead_ - (MIN_MATCH-1);
+        n = s->lookahead_ - (limits::minMatch-1);
         do {
-            UPDATE_HASH(s, s->ins_h_, s->window_[str + MIN_MATCH-1]);
+            UPDATE_HASH(s, s->ins_h_, s->window_[str + limits::minMatch-1]);
             s->prev_[str & s->w_mask_] = s->head_[s->ins_h_];
             s->head_[s->ins_h_] = (std::uint16_t)str;
             str++;
         } while (--n);
         s->strstart_ = str;
-        s->lookahead_ = MIN_MATCH-1;
+        s->lookahead_ = limits::minMatch-1;
         fill_window(s);
     }
     s->strstart_ += s->lookahead_;
     s->block_start_ = (long)s->strstart_;
     s->insert_ = s->lookahead_;
     s->lookahead_ = 0;
-    s->match_length_ = s->prev_length_ = MIN_MATCH-1;
+    s->match_length_ = s->prev_length_ = limits::minMatch-1;
     s->match_available_ = 0;
     strm->next_in = next;
     strm->avail_in = avail;
@@ -870,7 +870,7 @@ deflate_stream::lm_init(deflate_stream *s)
     s->block_start_ = 0L;
     s->lookahead_ = 0;
     s->insert_ = 0;
-    s->match_length_ = s->prev_length_ = MIN_MATCH-1;
+    s->match_length_ = s->prev_length_ = limits::minMatch-1;
     s->match_available_ = 0;
     s->ins_h_ = 0;
 }
@@ -904,14 +904,14 @@ deflate_stream::longest_match(deflate_stream *s, IPos cur_match)
     std::uint16_t *prev = s->prev_;
     uInt wmask = s->w_mask_;
 
-    Byte *strend = s->window_ + s->strstart_ + MAX_MATCH;
+    Byte *strend = s->window_ + s->strstart_ + limits::maxMatch;
     Byte scan_end1  = scan[best_len-1];
     Byte scan_end   = scan[best_len];
 
-    /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
+    /* The code is optimized for HASH_BITS >= 8 and limits::maxMatch-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
      */
-    Assert(s->hash_bits_ >= 8 && MAX_MATCH == 258, "fc too clever");
+    Assert(s->hash_bits_ >= 8 && limits::maxMatch == 258, "fc too clever");
 
     /* Do not waste too much time if we already have a good match: */
     if (s->prev_length_ >= s->good_match_) {
@@ -962,8 +962,8 @@ deflate_stream::longest_match(deflate_stream *s, IPos cur_match)
 
         Assert(scan <= s->window_+(unsigned)(s->window_size_-1), "wild scan");
 
-        len = MAX_MATCH - (int)(strend - scan);
-        scan = strend - MAX_MATCH;
+        len = limits::maxMatch - (int)(strend - scan);
+        scan = strend - limits::maxMatch;
 
         if (len > best_len) {
             s->match_start_ = cur_match;
@@ -1109,8 +1109,8 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except
-         * at the end of the input file. We need MAX_MATCH bytes
-         * for the next match, plus MIN_MATCH bytes to insert the
+         * at the end of the input file. We need limits::maxMatch bytes
+         * for the next match, plus limits::minMatch bytes to insert the
          * string following the next match.
          */
         if (s->lookahead_ < MIN_LOOKAHEAD) {
@@ -1125,12 +1125,12 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
          * dictionary, and set hash_head to the head of the hash chain:
          */
         hash_head = NIL;
-        if (s->lookahead_ >= MIN_MATCH) {
+        if (s->lookahead_ >= limits::minMatch) {
             INSERT_STRING(s, s->strstart_, hash_head);
         }
 
         /* Find the longest match, discarding those <= prev_length.
-         * At this point we have always match_length < MIN_MATCH
+         * At this point we have always match_length < limits::minMatch
          */
         if (hash_head != NIL && s->strstart_ - hash_head <= MAX_DIST(s)) {
             /* To simplify the code, we prevent matches with the string
@@ -1140,11 +1140,11 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
             s->match_length_ = longest_match (s, hash_head);
             /* longest_match() sets match_start */
         }
-        if (s->match_length_ >= MIN_MATCH) {
+        if (s->match_length_ >= limits::minMatch) {
             check_match(s, s->strstart_, s->match_start_, s->match_length_);
 
             _tr_tally_dist(s, s->strstart_ - s->match_start_,
-                           s->match_length_ - MIN_MATCH, bflush);
+                           s->match_length_ - limits::minMatch, bflush);
 
             s->lookahead_ -= s->match_length_;
 
@@ -1152,13 +1152,13 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
              * is not too large. This saves time but degrades compression.
              */
             if (s->match_length_ <= s->max_lazy_match_ &&
-                s->lookahead_ >= MIN_MATCH) {
+                s->lookahead_ >= limits::minMatch) {
                 s->match_length_--; /* string at strstart already in table */
                 do {
                     s->strstart_++;
                     INSERT_STRING(s, s->strstart_, hash_head);
-                    /* strstart never exceeds WSIZE-MAX_MATCH, so there are
-                     * always MIN_MATCH bytes ahead.
+                    /* strstart never exceeds WSIZE-limits::maxMatch, so there are
+                     * always limits::minMatch bytes ahead.
                      */
                 } while (--s->match_length_ != 0);
                 s->strstart_++;
@@ -1168,7 +1168,7 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
                 s->match_length_ = 0;
                 s->ins_h_ = s->window_[s->strstart_];
                 UPDATE_HASH(s, s->ins_h_, s->window_[s->strstart_+1]);
-                /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
+                /* If lookahead < limits::minMatch, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
                  */
             }
@@ -1181,7 +1181,7 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
         }
         if (bflush) FLUSH_BLOCK(s, 0);
     }
-    s->insert_ = s->strstart_ < MIN_MATCH-1 ? s->strstart_ : MIN_MATCH-1;
+    s->insert_ = s->strstart_ < limits::minMatch-1 ? s->strstart_ : limits::minMatch-1;
     if (flush == Z_FINISH) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
@@ -1205,8 +1205,8 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
     /* Process the input block. */
     for (;;) {
         /* Make sure that we always have enough lookahead, except
-         * at the end of the input file. We need MAX_MATCH bytes
-         * for the next match, plus MIN_MATCH bytes to insert the
+         * at the end of the input file. We need limits::maxMatch bytes
+         * for the next match, plus limits::minMatch bytes to insert the
          * string following the next match.
          */
         if (s->lookahead_ < MIN_LOOKAHEAD) {
@@ -1221,14 +1221,14 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
          * dictionary, and set hash_head to the head of the hash chain:
          */
         hash_head = NIL;
-        if (s->lookahead_ >= MIN_MATCH) {
+        if (s->lookahead_ >= limits::minMatch) {
             INSERT_STRING(s, s->strstart_, hash_head);
         }
 
         /* Find the longest match, discarding those <= prev_length.
          */
         s->prev_length_ = s->match_length_, s->prev_match_ = s->match_start_;
-        s->match_length_ = MIN_MATCH-1;
+        s->match_length_ = limits::minMatch-1;
 
         if (hash_head != NIL && s->prev_length_ < s->max_lazy_match_ &&
             s->strstart_ - hash_head <= MAX_DIST(s)) {
@@ -1241,28 +1241,28 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
 
             if (s->match_length_ <= 5 && (s->strategy_ == Z_FILTERED
 #if TOO_FAR <= 32767
-                || (s->match_length_ == MIN_MATCH &&
+                || (s->match_length_ == limits::minMatch &&
                     s->strstart_ - s->match_start_ > TOO_FAR)
 #endif
                 )) {
 
-                /* If prev_match is also MIN_MATCH, match_start is garbage
+                /* If prev_match is also limits::minMatch, match_start is garbage
                  * but we will ignore the current match anyway.
                  */
-                s->match_length_ = MIN_MATCH-1;
+                s->match_length_ = limits::minMatch-1;
             }
         }
         /* If there was a match at the previous step and the current
          * match is not better, output the previous match:
          */
-        if (s->prev_length_ >= MIN_MATCH && s->match_length_ <= s->prev_length_) {
-            uInt max_insert = s->strstart_ + s->lookahead_ - MIN_MATCH;
+        if (s->prev_length_ >= limits::minMatch && s->match_length_ <= s->prev_length_) {
+            uInt max_insert = s->strstart_ + s->lookahead_ - limits::minMatch;
             /* Do not insert strings in hash table beyond this. */
 
             check_match(s, s->strstart_-1, s->prev_match_, s->prev_length_);
 
             _tr_tally_dist(s, s->strstart_ -1 - s->prev_match_,
-                           s->prev_length_ - MIN_MATCH, bflush);
+                           s->prev_length_ - limits::minMatch, bflush);
 
             /* Insert in hash table all strings up to the end of the match.
              * strstart-1 and strstart are already inserted. If there is not
@@ -1277,7 +1277,7 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
                 }
             } while (--s->prev_length_ != 0);
             s->match_available_ = 0;
-            s->match_length_ = MIN_MATCH-1;
+            s->match_length_ = limits::minMatch-1;
             s->strstart_++;
 
             if (bflush) FLUSH_BLOCK(s, 0);
@@ -1310,7 +1310,7 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
         _tr_tally_lit(s, s->window_[s->strstart_-1], bflush);
         s->match_available_ = 0;
     }
-    s->insert_ = s->strstart_ < MIN_MATCH-1 ? s->strstart_ : MIN_MATCH-1;
+    s->insert_ = s->strstart_ < limits::minMatch-1 ? s->strstart_ : limits::minMatch-1;
     if (flush == Z_FINISH) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
@@ -1334,12 +1334,12 @@ deflate_stream::deflate_rle(deflate_stream *s, int flush)
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except
-         * at the end of the input file. We need MAX_MATCH bytes
+         * at the end of the input file. We need limits::maxMatch bytes
          * for the longest run, plus one for the unrolled loop.
          */
-        if (s->lookahead_ <= MAX_MATCH) {
+        if (s->lookahead_ <= limits::maxMatch) {
             fill_window(s);
-            if (s->lookahead_ <= MAX_MATCH && flush == Z_NO_FLUSH) {
+            if (s->lookahead_ <= limits::maxMatch && flush == Z_NO_FLUSH) {
                 return need_more;
             }
             if (s->lookahead_ == 0) break; /* flush the current block */
@@ -1347,29 +1347,29 @@ deflate_stream::deflate_rle(deflate_stream *s, int flush)
 
         /* See how many times the previous byte repeats */
         s->match_length_ = 0;
-        if (s->lookahead_ >= MIN_MATCH && s->strstart_ > 0) {
+        if (s->lookahead_ >= limits::minMatch && s->strstart_ > 0) {
             scan = s->window_ + s->strstart_ - 1;
             prev = *scan;
             if (prev == *++scan && prev == *++scan && prev == *++scan) {
-                strend = s->window_ + s->strstart_ + MAX_MATCH;
+                strend = s->window_ + s->strstart_ + limits::maxMatch;
                 do {
                 } while (prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          scan < strend);
-                s->match_length_ = MAX_MATCH - (int)(strend - scan);
+                s->match_length_ = limits::maxMatch - (int)(strend - scan);
                 if (s->match_length_ > s->lookahead_)
                     s->match_length_ = s->lookahead_;
             }
             Assert(scan <= s->window_+(uInt)(s->window_size_-1), "wild scan");
         }
 
-        /* Emit match if have run of MIN_MATCH or longer, else emit literal */
-        if (s->match_length_ >= MIN_MATCH) {
+        /* Emit match if have run of limits::minMatch or longer, else emit literal */
+        if (s->match_length_ >= limits::minMatch) {
             check_match(s, s->strstart_, s->strstart_ - 1, s->match_length_);
 
-            _tr_tally_dist(s, 1, s->match_length_ - MIN_MATCH, bflush);
+            _tr_tally_dist(s, 1, s->match_length_ - limits::minMatch, bflush);
 
             s->lookahead_ -= s->match_length_;
             s->strstart_ += s->match_length_;

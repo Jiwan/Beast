@@ -43,7 +43,7 @@
 namespace beast {
 
 // maximum heap size
-std::uint16_t constexpr HEAP_SIZE = 2 * L_CODES + 1;
+std::uint16_t constexpr HEAP_SIZE = 2 * limits::lCodes + 1;
 
 // size of bit buffer in bi_buf
 std::uint8_t constexpr Buf_size = 16;
@@ -108,7 +108,7 @@ public:
     /* Sliding window. Input bytes are read into the second half of the window,
      * and move to the first half later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of
-     * wSize-MAX_MATCH bytes, but this ensures that IO is always
+     * wSize-limits::maxMatch bytes, but this ensures that IO is always
      * performed with a length multiple of the block size. Also, it limits
      * the window size to 64K.
      * To do: use the user input buffer as sliding window.
@@ -134,9 +134,9 @@ public:
     uInt  hash_mask_;      /* hash_size-1 */
 
     /* Number of bits by which ins_h must be shifted at each input
-     * step. It must be such that after MIN_MATCH steps, the oldest
+     * step. It must be such that after limits::minMatch steps, the oldest
      * byte no longer takes part in the hash key, that is:
-     *   hash_shift * MIN_MATCH >= hash_bits
+     *   hash_shift * limits::minMatch >= hash_bits
      */
     uInt  hash_shift_;
 
@@ -184,24 +184,24 @@ public:
                 /* used by trees.c: */
     /* Didn't use detail::ct_data typedef below to suppress compiler warning */
     detail::ct_data dyn_ltree_[HEAP_SIZE];   /* literal and length tree */
-    detail::ct_data dyn_dtree_[2*D_CODES+1]; /* distance tree */
-    detail::ct_data bl_tree_[2*BL_CODES+1];  /* Huffman tree for bit lengths */
+    detail::ct_data dyn_dtree_[2*limits::dCodes+1]; /* distance tree */
+    detail::ct_data bl_tree_[2*limits::blCodes+1];  /* Huffman tree for bit lengths */
 
     tree_desc l_desc_;               /* desc. for literal tree */
     tree_desc d_desc_;               /* desc. for distance tree */
     tree_desc bl_desc_;              /* desc. for bit length tree */
 
-    std::uint16_t bl_count_[MAX_BITS+1];
+    std::uint16_t bl_count_[limits::maxBits+1];
     /* number of codes at each bit length for an optimal tree */
 
-    int heap_[2*L_CODES+1];      /* heap used to build the Huffman trees */
+    int heap_[2*limits::lCodes+1];      /* heap used to build the Huffman trees */
     int heap_len_;               /* number of elements in the heap */
     int heap_max_;               /* element of largest frequency */
     /* The sons of heap[n] are heap[2*n] and heap[2*n+1]. heap[0] is not used.
      * The same heap array is used to build all trees.
      */
 
-    std::uint8_t depth_[2*L_CODES+1];
+    std::uint8_t depth_[2*limits::lCodes+1];
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
 
@@ -294,9 +294,9 @@ public:
 #define put_byte(s, c) {s->pending_buf_[s->pending_++] = (c);}
 
 
-#define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
+#define MIN_LOOKAHEAD (limits::maxMatch+limits::minMatch+1)
 /* Minimum amount of lookahead, except at the end of the input file.
- * See deflate.c for comments about the MIN_MATCH+1.
+ * See deflate.c for comments about the limits::minMatch+1.
  */
 
 #define MAX_DIST(s)  ((s)->w_size_-MIN_LOOKAHEAD)
@@ -304,7 +304,7 @@ public:
  * distances are limited to MAX_DIST instead of WSIZE.
  */
 
-#define WIN_INIT MAX_MATCH
+#define WIN_INIT limits::maxMatch
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 

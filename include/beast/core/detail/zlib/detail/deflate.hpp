@@ -70,32 +70,9 @@ struct limits
     static_assert(minMatch==3, "");
 };
 
-std::uint8_t constexpr MAX_BITS = 15;
-
-std::uint16_t constexpr LENGTH_CODES = 29;
-
-std::uint16_t constexpr LITERALS = 256;
-
-std::uint16_t constexpr L_CODES = LITERALS + 1 + LENGTH_CODES;
-
-std::uint16_t constexpr D_CODES = 30;
-
-std::uint16_t constexpr BL_CODES = 19;
-
-std::uint16_t constexpr DIST_CODE_LEN = 512;
-
-std::uint16_t constexpr MIN_MATCH = 3;
-
-// Can't change MIN_MATCH without also changing code, see original zlib
-static_assert(MIN_MATCH==3, "");
-
-std::uint16_t constexpr MAX_MATCH = 258;
-
-
-
 namespace detail {
 
-/* Data structure describing a single value and its code string. */
+// Describes a single value and its code string.
 struct ct_data
 {
     std::uint16_t fc; // frequency count or bit string    
@@ -111,41 +88,41 @@ struct ct_data
 struct deflate_tables
 {
     // Number of extra bits for each length code
-    std::uint8_t extra_lbits[LENGTH_CODES] = {
+    std::uint8_t extra_lbits[limits::lengthCodes] = {
         0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0
     };
 
     // Number of extra bits for each distance code
-    std::uint8_t extra_dbits[D_CODES] = {
+    std::uint8_t extra_dbits[limits::dCodes] = {
         0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13
     };
 
     // Number of extra bits for each bit length code
-    std::uint8_t extra_blbits[BL_CODES] = {
+    std::uint8_t extra_blbits[limits::blCodes] = {
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7
     };
 
     // The lengths of the bit length codes are sent in order
     // of decreasing probability, to avoid transmitting the
     // lengths for unused bit length codes.
-    std::uint8_t bl_order[BL_CODES] = {
+    std::uint8_t bl_order[limits::blCodes] = {
         16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15
     };
 
-    ct_data ltree[L_CODES + 2];
+    ct_data ltree[limits::lCodes + 2];
 
-    ct_data dtree[D_CODES];
+    ct_data dtree[limits::dCodes];
 
     // Distance codes. The first 256 values correspond to the distances
     // 3 .. 258, the last 256 values correspond to the top 8 bits of
     // the 15 bit distances.
-    std::uint8_t dist_code[DIST_CODE_LEN];
+    std::uint8_t dist_code[limits::distCodeLen];
 
-    std::uint8_t length_code[MAX_MATCH-MIN_MATCH+1];
+    std::uint8_t length_code[limits::maxMatch-limits::minMatch+1];
 
-    std::uint8_t base_length[LENGTH_CODES];
+    std::uint8_t base_length[limits::lengthCodes];
 
-    std::uint16_t base_dist[D_CODES];
+    std::uint16_t base_dist[limits::dCodes];
 };
 
 template<class = void>
@@ -173,23 +150,23 @@ template<class = void>
 void
 gen_codes(ct_data *tree, int max_code, std::uint16_t *bl_count)
 {
-    std::uint16_t next_code[MAX_BITS+1]; /* next code value for each bit length */
+    std::uint16_t next_code[limits::maxBits+1]; /* next code value for each bit length */
     std::uint16_t code = 0;              /* running code value */
     int bits;                  /* bit index */
     int n;                     /* code index */
 
     // The distribution counts are first used to
     // generate the code values without bit reversal.
-    for (bits = 1; bits <= MAX_BITS; bits++) {
+    for (bits = 1; bits <= limits::maxBits; bits++) {
         next_code[bits] = code = (code + bl_count[bits-1]) << 1;
     }
     // Check that the bit counts in bl_count are consistent.
     // The last code must be all ones.
-    assert(code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1);
-    for (n = 0;  n <= max_code; n++)
+    assert(code + bl_count[limits::maxBits]-1 == (1<<limits::maxBits)-1);
+    for(n = 0; n <= max_code; n++)
     {
         int len = tree[n].dl;
-        if (len == 0)
+        if(len == 0)
             continue;
         tree[n].fc = bi_reverse(next_code[len]++, len);
     }
@@ -206,11 +183,11 @@ get_deflate_tables()
         init()
         {
             // number of codes at each bit length for an optimal tree
-            //std::uint16_t bl_count[MAX_BITS+1];
+            //std::uint16_t bl_count[limits::maxBits+1];
 
             // Initialize the mapping length (0..255) -> length code (0..28)
             std::uint16_t length = 0;
-            for(std::uint8_t code = 0; code < LENGTH_CODES-1; ++code)
+            for(std::uint8_t code = 0; code < limits::lengthCodes-1; ++code)
             {
                 tables.base_length[code] = length;
                 for(std::size_t n = 0; n < (1U<<tables.extra_lbits[code]); ++n)
@@ -220,7 +197,7 @@ get_deflate_tables()
             // Note that the length 255 (match length 258) can be represented
             // in two different ways: code 284 + 5 bits or code 285, so we
             // overwrite length_code[255] to use the best encoding:
-            tables.length_code[length-1] = LENGTH_CODES-1;
+            tables.length_code[length-1] = limits::lengthCodes-1;
 
             // Initialize the mapping dist (0..32K) -> dist code (0..29)
             {
@@ -235,7 +212,7 @@ get_deflate_tables()
                 assert(dist == 256);
                 // from now on, all distances are divided by 128
                 dist >>= 7;
-                for(; code < D_CODES; ++code)
+                for(; code < limits::dCodes; ++code)
                 {
                     tables.base_dist[code] = dist << 7;
                     for(std::size_t n = 0; n < (1U<<(extra_dbits[code]-7)); ++n)
@@ -245,7 +222,7 @@ get_deflate_tables()
             }
 
             // Construct the codes of the static literal tree
-            std::uint16_t bl_count[MAX_BITS+1];
+            std::uint16_t bl_count[limits::maxBits+1];
             std::memset(bl_count, 0, sizeof(bl_count));
             std::size_t n = 0;
             while (n <= 143) tables.ltree[n++].dl = 8, bl_count[8]++;
@@ -254,9 +231,9 @@ get_deflate_tables()
             while (n <= 287) tables.ltree[n++].dl = 8, bl_count[8]++;
             // Codes 286 and 287 do not exist, but we must include them in the tree
             // construction to get a canonical Huffman tree (longest code all ones)
-            gen_codes(tables.ltree, L_CODES+1, bl_count);
+            gen_codes(tables.ltree, limits::lCodes+1, bl_count);
 
-            for(n = 0; n < D_CODES; ++n)
+            for(n = 0; n < limits::dCodes; ++n)
             {
                 tables.dtree[n].dl = 5;
                 tables.dtree[n].fc = bi_reverse(n, 5);

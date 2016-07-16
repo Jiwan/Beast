@@ -83,16 +83,16 @@ namespace beast {
 #define REPZ_11_138  18
 /* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-local const int extra_lbits[LENGTH_CODES] /* extra bits for each length code */
+local const int extra_lbits[limits::lengthCodes] /* extra bits for each length code */
    = {0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0};
 
-local const int extra_dbits[D_CODES] /* extra bits for each distance code */
+local const int extra_dbits[limits::dCodes] /* extra bits for each distance code */
    = {0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13};
 
-local const int extra_blbits[BL_CODES]/* extra bits for each bit length code */
+local const int extra_blbits[limits::blCodes]/* extra bits for each bit length code */
    = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7};
 
-local const std::uint8_t bl_order[BL_CODES]
+local const std::uint8_t bl_order[limits::blCodes]
    = {16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15};
 /* The lengths of the bit length codes are sent in order of decreasing
  * probability, to avoid transmitting the lengths for unused bit length codes.
@@ -105,31 +105,31 @@ local const std::uint8_t bl_order[BL_CODES]
 #if defined(GEN_TREES_H)
 /* non ANSI compilers may not accept trees.hpp */
 
-local detail::ct_data static_ltree[L_CODES+2];
+local detail::ct_data static_ltree[limits::lCodes+2];
 /* The static literal tree. Since the bit lengths are imposed, there is no
- * need for the L_CODES extra codes used during heap construction. However
+ * need for the limits::lCodes extra codes used during heap construction. However
  * The codes 286 and 287 are needed to build a canonical tree (see _tr_init
  * below).
  */
 
-local detail::ct_data static_dtree[D_CODES];
+local detail::ct_data static_dtree[limits::dCodes];
 /* The static distance tree. (Actually a trivial tree since all codes use
  * 5 bits.)
  */
 
-std::uint8_t _dist_code[DIST_CODE_LEN];
+std::uint8_t _dist_code[limits::distCodeLen];
 /* Distance codes. The first 256 values correspond to the distances
  * 3 .. 258, the last 256 values correspond to the top 8 bits of
  * the 15 bit distances.
  */
 
-std::uint8_t _length_code[MAX_MATCH-MIN_MATCH+1];
-/* length code for each normalized match length (0 == MIN_MATCH) */
+std::uint8_t _length_code[limits::maxMatch-limits::minMatch+1];
+/* length code for each normalized match length (0 == limits::minMatch) */
 
-local int base_length[LENGTH_CODES];
-/* First normalized length for each code (0 = MIN_MATCH) */
+local int base_length[limits::lengthCodes];
+/* First normalized length for each code (0 = limits::minMatch) */
 
-local int base_dist[D_CODES];
+local int base_dist[limits::dCodes];
 /* First normalized distance for each code (0 = distance of 1) */
 
 #else
@@ -146,13 +146,13 @@ struct static_tree_desc
 };
 
 local static_tree_desc  static_l_desc =
-{static_ltree, extra_lbits, LITERALS+1, L_CODES, MAX_BITS};
+{static_ltree, extra_lbits, limits::literals+1, limits::lCodes, limits::maxBits};
 
 local static_tree_desc  static_d_desc =
-{static_dtree, extra_dbits, 0,          D_CODES, MAX_BITS};
+{static_dtree, extra_dbits, 0,          limits::dCodes, limits::maxBits};
 
 local static_tree_desc  static_bl_desc =
-{(const detail::ct_data *)0, extra_blbits, 0,   BL_CODES, MAX_BL_BITS};
+{(const detail::ct_data *)0, extra_blbits, 0,   limits::blCodes, MAX_BL_BITS};
 
 /* ===========================================================================
  * Local (static) routines in this file.
@@ -263,7 +263,7 @@ local void tr_static_init()
     int length;   /* length value */
     int code;     /* code value */
     int dist;     /* distance index */
-    std::uint16_t bl_count[MAX_BITS+1];
+    std::uint16_t bl_count[limits::maxBits+1];
     /* number of codes at each bit length for an optimal tree */
 
     if (static_init_done) return;
@@ -279,7 +279,7 @@ local void tr_static_init()
 
     /* Initialize the mapping length (0..255) -> length code (0..28) */
     length = 0;
-    for (code = 0; code < LENGTH_CODES-1; code++) {
+    for (code = 0; code < limits::lengthCodes-1; code++) {
         base_length[code] = length;
         for (n = 0; n < (1<<extra_lbits[code]); n++) {
             _length_code[length++] = (std::uint8_t)code;
@@ -302,7 +302,7 @@ local void tr_static_init()
     }
     Assert (dist == 256, "tr_static_init: dist != 256");
     dist >>= 7; /* from now on, all distances are divided by 128 */
-    for ( ; code < D_CODES; code++) {
+    for ( ; code < limits::dCodes; code++) {
         base_dist[code] = dist << 7;
         for (n = 0; n < (1<<(extra_dbits[code]-7)); n++) {
             _dist_code[256 + dist++] = (std::uint8_t)code;
@@ -311,7 +311,7 @@ local void tr_static_init()
     Assert (dist == 256, "tr_static_init: 256+dist != 512");
 
     /* Construct the codes of the static literal tree */
-    for (bits = 0; bits <= MAX_BITS; bits++) bl_count[bits] = 0;
+    for (bits = 0; bits <= limits::maxBits; bits++) bl_count[bits] = 0;
     n = 0;
     while (n <= 143) static_ltree[n++].dl = 8, bl_count[8]++;
     while (n <= 255) static_ltree[n++].dl = 9, bl_count[9]++;
@@ -321,10 +321,10 @@ local void tr_static_init()
      * tree construction to get a canonical Huffman tree (longest code
      * all ones)
      */
-    gen_codes((detail::ct_data *)static_ltree, L_CODES+1, bl_count);
+    gen_codes((detail::ct_data *)static_ltree, limits::lCodes+1, bl_count);
 
     /* The static distance tree is trivial: */
-    for (n = 0; n < D_CODES; n++) {
+    for (n = 0; n < limits::dCodes; n++) {
         static_dtree[n].dl = 5;
         static_dtree[n].fc = bi_reverse((unsigned)n, 5);
     }
@@ -357,41 +357,41 @@ void gen_trees_header()
     fprintf(header,
             "/* header created automatically with -DGEN_TREES_H */\n\n");
 
-    fprintf(header, "local const detail::ct_data static_ltree[L_CODES+2] = {\n");
-    for (i = 0; i < L_CODES+2; i++) {
+    fprintf(header, "local const detail::ct_data static_ltree[limits::lCodes+2] = {\n");
+    for (i = 0; i < limits::lCodes+2; i++) {
         fprintf(header, "{{%3u},{%3u}}%s", static_ltree[i].fc,
-                static_ltree[i].dl, SEPARATOR(i, L_CODES+1, 5));
+                static_ltree[i].dl, SEPARATOR(i, limits::lCodes+1, 5));
     }
 
-    fprintf(header, "local const detail::ct_data static_dtree[D_CODES] = {\n");
-    for (i = 0; i < D_CODES; i++) {
+    fprintf(header, "local const detail::ct_data static_dtree[limits::dCodes] = {\n");
+    for (i = 0; i < limits::dCodes; i++) {
         fprintf(header, "{{%2u},{%2u}}%s", static_dtree[i].fc,
-                static_dtree[i].dl, SEPARATOR(i, D_CODES-1, 5));
+                static_dtree[i].dl, SEPARATOR(i, limits::dCodes-1, 5));
     }
 
-    fprintf(header, "const std::uint8_t _dist_code[DIST_CODE_LEN] = {\n");
-    for (i = 0; i < DIST_CODE_LEN; i++) {
+    fprintf(header, "const std::uint8_t _dist_code[limits::distCodeLen] = {\n");
+    for (i = 0; i < limits::distCodeLen; i++) {
         fprintf(header, "%2u%s", _dist_code[i],
-                SEPARATOR(i, DIST_CODE_LEN-1, 20));
+                SEPARATOR(i, limits::distCodeLen-1, 20));
     }
 
     fprintf(header,
-        "const std::uint8_t _length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
-    for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
+        "const std::uint8_t _length_code[limits::maxMatch-limits::minMatch+1]= {\n");
+    for (i = 0; i < limits::maxMatch-limits::minMatch+1; i++) {
         fprintf(header, "%2u%s", _length_code[i],
-                SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
+                SEPARATOR(i, limits::maxMatch-limits::minMatch, 20));
     }
 
-    fprintf(header, "local const int base_length[LENGTH_CODES] = {\n");
-    for (i = 0; i < LENGTH_CODES; i++) {
+    fprintf(header, "local const int base_length[limits::lengthCodes] = {\n");
+    for (i = 0; i < limits::lengthCodes; i++) {
         fprintf(header, "%1u%s", base_length[i],
-                SEPARATOR(i, LENGTH_CODES-1, 20));
+                SEPARATOR(i, limits::lengthCodes-1, 20));
     }
 
-    fprintf(header, "local const int base_dist[D_CODES] = {\n");
-    for (i = 0; i < D_CODES; i++) {
+    fprintf(header, "local const int base_dist[limits::dCodes] = {\n");
+    for (i = 0; i < limits::dCodes; i++) {
         fprintf(header, "%5u%s", base_dist[i],
-                SEPARATOR(i, D_CODES-1, 10));
+                SEPARATOR(i, limits::dCodes-1, 10));
     }
 
     fclose(header);
@@ -447,9 +447,9 @@ local void init_block(
     int n; /* iterates over tree elements */
 
     /* Initialize the trees. */
-    for (n = 0; n < L_CODES;  n++) s->dyn_ltree_[n].fc = 0;
-    for (n = 0; n < D_CODES;  n++) s->dyn_dtree_[n].fc = 0;
-    for (n = 0; n < BL_CODES; n++) s->bl_tree_[n].fc = 0;
+    for (n = 0; n < limits::lCodes;  n++) s->dyn_ltree_[n].fc = 0;
+    for (n = 0; n < limits::dCodes;  n++) s->dyn_dtree_[n].fc = 0;
+    for (n = 0; n < limits::blCodes; n++) s->bl_tree_[n].fc = 0;
 
     s->dyn_ltree_[END_BLOCK].fc = 1;
     s->opt_len_ = s->static_len_ = 0L;
@@ -537,7 +537,7 @@ local void gen_bitlen(
     std::uint16_t f;              /* frequency */
     int overflow = 0;   /* number of elements with bit length too large */
 
-    for (bits = 0; bits <= MAX_BITS; bits++) s->bl_count_[bits] = 0;
+    for (bits = 0; bits <= limits::maxBits; bits++) s->bl_count_[bits] = 0;
 
     /* In a first pass, compute the optimal bit lengths (which may
      * overflow in the case of the bit length tree).
@@ -612,7 +612,7 @@ local void gen_codes (
     int max_code,              /* largest code with non zero frequency */
     std::uint16_t *bl_count)            /* number of codes at each bit length */
 {
-    std::uint16_t next_code[MAX_BITS+1]; /* next code value for each bit length */
+    std::uint16_t next_code[limits::maxBits+1]; /* next code value for each bit length */
     std::uint16_t code = 0;              /* running code value */
     int bits;                  /* bit index */
     int n;                     /* code index */
@@ -620,13 +620,13 @@ local void gen_codes (
     /* The distribution counts are first used to generate the code values
      * without bit reversal.
      */
-    for (bits = 1; bits <= MAX_BITS; bits++) {
+    for (bits = 1; bits <= limits::maxBits; bits++) {
         next_code[bits] = code = (code + bl_count[bits-1]) << 1;
     }
     /* Check that the bit counts in bl_count are consistent. The last code
      * must be all ones.
      */
-    Assert (code + bl_count[MAX_BITS]-1 == (1<<MAX_BITS)-1,
+    Assert (code + bl_count[limits::maxBits]-1 == (1<<limits::maxBits)-1,
             "inconsistent bit counts");
     Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
 
@@ -852,7 +852,7 @@ local int build_bl_tree(
      * requires that at least 4 bit length codes be sent. (appnote.txt says
      * 3 but the actual value used is 4.)
      */
-    for (max_blindex = BL_CODES-1; max_blindex >= 3; max_blindex--) {
+    for (max_blindex = limits::blCodes-1; max_blindex >= 3; max_blindex--) {
         if (s->bl_tree_[bl_order[max_blindex]].dl != 0) break;
     }
     /* Update opt_len to include the bit length tree and counts */
@@ -877,7 +877,7 @@ local void send_all_trees(
     int rank;                    /* index in bl_order */
 
     Assert (lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
-    Assert (lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES,
+    Assert (lcodes <= limits::lCodes && dcodes <= limits::dCodes && blcodes <= limits::blCodes,
             "too many codes");
     Tracev((stderr, "\nbl counts: "));
     send_bits(s, lcodes-257, 5); /* not +255 as stated in appnote.txt */
@@ -1047,7 +1047,7 @@ void _tr_flush_block(
 int _tr_tally (
     deflate_stream *s,
     unsigned dist,  /* distance of matched string */
-    unsigned lc)    /* match length-MIN_MATCH or unmatched char (if dist==0) */
+    unsigned lc)    /* match length-limits::minMatch or unmatched char (if dist==0) */
 {
     s->d_buf_[s->last_lit_] = (std::uint16_t)dist;
     s->l_buf_[s->last_lit_++] = (std::uint8_t)lc;
@@ -1056,13 +1056,13 @@ int _tr_tally (
         s->dyn_ltree_[lc].fc++;
     } else {
         s->matches_++;
-        /* Here, lc is the match length - MIN_MATCH */
+        /* Here, lc is the match length - limits::minMatch */
         dist--;             /* dist = match distance - 1 */
         Assert((std::uint16_t)dist < (std::uint16_t)MAX_DIST(s) &&
-               (std::uint16_t)lc <= (std::uint16_t)(MAX_MATCH-MIN_MATCH) &&
-               (std::uint16_t)d_code(dist) < (std::uint16_t)D_CODES,  "_tr_tally: bad match");
+               (std::uint16_t)lc <= (std::uint16_t)(limits::maxMatch-limits::minMatch) &&
+               (std::uint16_t)d_code(dist) < (std::uint16_t)limits::dCodes,  "_tr_tally: bad match");
 
-        s->dyn_ltree_[_length_code[lc]+LITERALS+1].fc++;
+        s->dyn_ltree_[_length_code[lc]+limits::literals+1].fc++;
         s->dyn_dtree_[d_code(dist)].fc++;
     }
 
@@ -1073,7 +1073,7 @@ int _tr_tally (
         std::uint32_t out_length = (std::uint32_t)s->last_lit_*8L;
         std::uint32_t in_length = (std::uint32_t)((long)s->strstart - s->block_start);
         int dcode;
-        for (dcode = 0; dcode < D_CODES; dcode++) {
+        for (dcode = 0; dcode < limits::dCodes; dcode++) {
             out_length += (std::uint32_t)s->dyn_dtree_[dcode].fc *
                 (5L+extra_dbits[dcode]);
         }
@@ -1112,9 +1112,9 @@ local void compress_block(
             send_code(s, lc, ltree); /* send a literal byte */
             Tracecv(isgraph(lc), (stderr," '%c' ", lc));
         } else {
-            /* Here, lc is the match length - MIN_MATCH */
+            /* Here, lc is the match length - limits::minMatch */
             code = _length_code[lc];
-            send_code(s, code+LITERALS+1, ltree); /* send the length code */
+            send_code(s, code+limits::literals+1, ltree); /* send the length code */
             extra = extra_lbits[code];
             if (extra != 0) {
                 lc -= base_length[code];
@@ -1122,7 +1122,7 @@ local void compress_block(
             }
             dist--; /* dist is now the match distance - 1 */
             code = d_code(dist);
-            Assert (code < D_CODES, "bad d_code");
+            Assert (code < limits::dCodes, "bad d_code");
 
             send_code(s, code, dtree);       /* send the distance code */
             extra = extra_dbits[code];
@@ -1173,7 +1173,7 @@ local int detect_data_type(
     if (s->dyn_ltree_[9].fc != 0 || s->dyn_ltree_[10].fc != 0
             || s->dyn_ltree_[13].fc != 0)
         return Z_TEXT;
-    for (n = 32; n < LITERALS; n++)
+    for (n = 32; n < limits::literals; n++)
         if (s->dyn_ltree_[n].fc != 0)
             return Z_TEXT;
 

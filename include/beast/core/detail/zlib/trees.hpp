@@ -39,7 +39,7 @@
 
 /* header created automatically with -DGEN_TREES_H */
 
-local const detail::ct_data static_ltree[L_CODES+2] = {
+local const detail::ct_data static_ltree[limits::lCodes+2] = {
 {{ 12},{  8}}, {{140},{  8}}, {{ 76},{  8}}, {{204},{  8}}, {{ 44},{  8}},
 {{172},{  8}}, {{108},{  8}}, {{236},{  8}}, {{ 28},{  8}}, {{156},{  8}},
 {{ 92},{  8}}, {{220},{  8}}, {{ 60},{  8}}, {{188},{  8}}, {{124},{  8}},
@@ -100,7 +100,7 @@ local const detail::ct_data static_ltree[L_CODES+2] = {
 {{163},{  8}}, {{ 99},{  8}}, {{227},{  8}}
 };
 
-local const detail::ct_data static_dtree[D_CODES] = {
+local const detail::ct_data static_dtree[limits::dCodes] = {
 {{ 0},{ 5}}, {{16},{ 5}}, {{ 8},{ 5}}, {{24},{ 5}}, {{ 4},{ 5}},
 {{20},{ 5}}, {{12},{ 5}}, {{28},{ 5}}, {{ 2},{ 5}}, {{18},{ 5}},
 {{10},{ 5}}, {{26},{ 5}}, {{ 6},{ 5}}, {{22},{ 5}}, {{14},{ 5}},
@@ -109,7 +109,7 @@ local const detail::ct_data static_dtree[D_CODES] = {
 {{19},{ 5}}, {{11},{ 5}}, {{27},{ 5}}, {{ 7},{ 5}}, {{23},{ 5}}
 };
 
-const std::uint8_t _dist_code[DIST_CODE_LEN] = {
+const std::uint8_t _dist_code[limits::distCodeLen] = {
  0,  1,  2,  3,  4,  4,  5,  5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  8,
  8,  8,  8,  8,  9,  9,  9,  9,  9,  9,  9,  9, 10, 10, 10, 10, 10, 10, 10, 10,
 10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
@@ -138,7 +138,7 @@ const std::uint8_t _dist_code[DIST_CODE_LEN] = {
 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29
 };
 
-const std::uint8_t _length_code[MAX_MATCH-MIN_MATCH+1]= {
+const std::uint8_t _length_code[limits::maxMatch-limits::minMatch+1]= {
  0,  1,  2,  3,  4,  5,  6,  7,  8,  8,  9,  9, 10, 10, 11, 11, 12, 12, 12, 12,
 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16,
 17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19,
@@ -154,12 +154,12 @@ const std::uint8_t _length_code[MAX_MATCH-MIN_MATCH+1]= {
 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28
 };
 
-local const int base_length[LENGTH_CODES] = {
+local const int base_length[limits::lengthCodes] = {
 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56,
 64, 80, 96, 112, 128, 160, 192, 224, 0
 };
 
-local const int base_dist[D_CODES] = {
+local const int base_dist[limits::dCodes] = {
     0,     1,     2,     3,     4,     6,     8,    12,    16,    24,
    32,    48,    64,    96,   128,   192,   256,   384,   512,   768,
  1024,  1536,  2048,  3072,  4096,  6144,  8192, 12288, 16384, 24576
