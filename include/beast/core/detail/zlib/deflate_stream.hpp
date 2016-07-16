@@ -45,9 +45,6 @@ namespace beast {
 // maximum heap size
 std::uint16_t constexpr HEAP_SIZE = 2 * L_CODES + 1;
 
-// All codes must not exceed MAX_BITS bits
-std::uint8_t constexpr MAX_BITS = 15;
-
 // size of bit buffer in bi_buf
 std::uint8_t constexpr Buf_size = 16;
 

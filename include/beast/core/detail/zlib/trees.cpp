@@ -425,13 +425,17 @@ void _tr_init(
     /* Initialize the first block of the first file: */
     init_block(s);
 
-{
-    auto const& t = detail::get_deflate_tables();
-    for(std::size_t i = 0; i < std::extent<decltype(t.base_length)>::value; ++i)
-        assert(t.base_length[i] == base_length[i]);
-    for(std::size_t i = 0; i < std::extent<decltype(t.length_code)>::value; ++i)
-        assert(t.length_code[i] == _length_code[i]);
-}
+auto const& t = detail::get_deflate_tables();
+for(std::size_t i = 0; i < std::extent<decltype(t.base_length)>::value; ++i)
+    assert(t.base_length[i] == base_length[i]);
+for(std::size_t i = 0; i < std::extent<decltype(t.length_code)>::value; ++i)
+    assert(t.length_code[i] == _length_code[i]);
+for(std::size_t i = 0; i < std::extent<decltype(t.base_dist)>::value; ++i)
+    assert(t.base_dist[i] == base_dist[i]);
+for(std::size_t i = 0; i < std::extent<decltype(t.ltree)>::value; ++i)
+    assert(t.ltree[i] == static_ltree[i]);
+for(std::size_t i = 0; i < std::extent<decltype(t.dtree)>::value; ++i)
+    assert(t.dtree[i] == static_dtree[i]);
 }
 
 /* ===========================================================================
