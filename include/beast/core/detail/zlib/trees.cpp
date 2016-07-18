@@ -68,9 +68,6 @@
 
 namespace beast {
 
-#define MAX_BL_BITS 7
-/* Bit length codes must not exceed MAX_BL_BITS bits */
-
 #define END_BLOCK 256
 /* end of block literal code */
 
@@ -135,24 +132,6 @@ local int base_dist[limits::dCodes];
 #else
 #  include "trees.hpp"
 #endif /* GEN_TREES_H */
-
-struct static_tree_desc
-{
-    const detail::ct_data *static_tree;  /* static tree or NULL */
-    const int *extra_bits;      /* extra bits for each code or NULL */
-    int     extra_base;          /* base index for extra_bits */
-    int     elems;               /* max number of elements in the tree */
-    int     max_length;          /* max bit length for the codes */
-};
-
-local static_tree_desc  static_l_desc =
-{static_ltree, extra_lbits, limits::literals+1, limits::lCodes, limits::maxBits};
-
-local static_tree_desc  static_d_desc =
-{static_dtree, extra_dbits, 0,          limits::dCodes, limits::maxBits};
-
-local static_tree_desc  static_bl_desc =
-{(const detail::ct_data *)0, extra_blbits, 0,   limits::blCodes, MAX_BL_BITS};
 
 /* ===========================================================================
  * Local (static) routines in this file.
@@ -407,13 +386,13 @@ void _tr_init(
     tr_static_init();
 
     s->l_desc_.dyn_tree = s->dyn_ltree_;
-    s->l_desc_.stat_desc = &static_l_desc;
+    s->l_desc_.stat_desc = &s->lut_.l_desc;
 
     s->d_desc_.dyn_tree = s->dyn_dtree_;
-    s->d_desc_.stat_desc = &static_d_desc;
+    s->d_desc_.stat_desc = &s->lut_.d_desc;
 
     s->bl_desc_.dyn_tree = s->bl_tree_;
-    s->bl_desc_.stat_desc = &static_bl_desc;
+    s->bl_desc_.stat_desc = &s->lut_.bl_desc;
 
     s->bi_buf_ = 0;
     s->bi_valid_ = 0;
@@ -527,7 +506,7 @@ local void gen_bitlen(
     detail::ct_data *tree        = desc->dyn_tree;
     int max_code         = desc->max_code;
     const detail::ct_data *stree = desc->stat_desc->static_tree;
-    const int *extra    = desc->stat_desc->extra_bits;
+    std::uint8_t const *extra    = desc->stat_desc->extra_bits;
     int base             = desc->stat_desc->extra_base;
     int max_length       = desc->stat_desc->max_length;
     int h;              /* heap index */
@@ -930,7 +909,7 @@ void _tr_align(
     deflate_stream *s)
 {
     send_bits(s, STATIC_TREES<<1, 3);
-    send_code(s, END_BLOCK, static_ltree);
+    send_code(s, END_BLOCK, s->lut_.ltree);
 #ifdef DEBUG
     s->compressed_len_ += 10L; /* 3 for block type, 7 for EOB */
 #endif
@@ -1009,8 +988,7 @@ void _tr_flush_block(
     } else if (s->strategy_ == Z_FIXED || static_lenb == opt_lenb) {
 #endif
         send_bits(s, (STATIC_TREES<<1)+last, 3);
-        compress_block(s, (const detail::ct_data *)static_ltree,
-                       (const detail::ct_data *)static_dtree);
+        compress_block(s, s->lut_.ltree, s->lut_.dtree);
 #ifdef DEBUG
         s->compressed_len_ += 3 + s->static_len_;
 #endif

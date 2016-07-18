@@ -58,13 +58,13 @@ enum StreamStatus
     FINISH_STATE = 666
 };
 
-struct static_tree_desc;
+//struct static_tree_desc;
 
 struct tree_desc
 {
     detail::ct_data *dyn_tree;           /* the dynamic tree */
     int     max_code;            /* largest code with non zero frequency */
-    static_tree_desc* stat_desc; /* the corresponding static tree */
+    detail::static_tree_desc const* stat_desc; /* the corresponding static tree */
 };
 
 /* A std::uint16_t is an index in the character window. We use short instead of int to
@@ -92,6 +92,8 @@ public:
     int deflateSetDictionary(const Byte *dictionary, uInt  dictLength);
 
 public:
+    detail::deflate_tables const& lut_;
+
     int   status_;        /* as the name implies */
     Byte *pending_buf_;  /* output still pending */
     std::uint32_t   pending_buf_size_; /* size of pending_buf */

@@ -83,6 +83,7 @@
 namespace beast {
 
 deflate_stream::deflate_stream()
+    : lut_(detail::get_deflate_tables())
 {
     // default level 6
     //deflateInit2(this, 6, Z_DEFLATED, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);

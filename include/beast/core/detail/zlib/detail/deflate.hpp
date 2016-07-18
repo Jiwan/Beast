@@ -64,6 +64,9 @@ struct limits
     // Number of distance codes
     static std::uint16_t constexpr distCodeLen = 512;
 
+    // Size limit on bit length codes
+    static std::uint8_t constexpr maxBlBits= 7;
+
     static std::uint16_t constexpr minMatch = 3;
     static std::uint16_t constexpr maxMatch = 258;
 
@@ -84,6 +87,15 @@ struct ct_data
     {
         return fc == rhs.fc && dl == rhs.dl;
     }
+};
+
+struct static_tree_desc
+{
+    ct_data const*      static_tree;// static tree or NULL
+    std::uint8_t const* extra_bits; // extra bits for each code or NULL
+    std::uint16_t       extra_base; // base index for extra_bits
+    std::uint16_t       elems;      //  max number of elements in the tree
+    std::uint8_t        max_length; // max bit length for the codes
 };
 
 struct deflate_tables
@@ -124,6 +136,19 @@ struct deflate_tables
     std::uint8_t base_length[limits::lengthCodes];
 
     std::uint16_t base_dist[limits::dCodes];
+
+    static_tree_desc l_desc = {
+        ltree, extra_lbits, limits::literals+1, limits::lCodes, limits::maxBits
+    };
+
+    static_tree_desc d_desc = {
+        dtree, extra_dbits, 0, limits::dCodes, limits::maxBits
+    };
+
+    static_tree_desc bl_desc =
+    {
+        nullptr, extra_blbits, 0, limits::blCodes, limits::maxBlBits
+    };
 };
 
 template<class = void>
