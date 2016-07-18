@@ -37,6 +37,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 
 namespace beast {
 
@@ -206,7 +207,7 @@ get_deflate_tables()
                 for(code = 0; code < 16; code++)
                 {
                     tables.base_dist[code] = dist;
-                    for(std::size_t n = 0; n < (1U<<extra_dbits[code]); ++n)
+                    for(std::size_t n = 0; n < (1U<<tables.extra_dbits[code]); ++n)
                         tables.dist_code[dist++] = code;
                 }
                 assert(dist == 256);
@@ -215,7 +216,7 @@ get_deflate_tables()
                 for(; code < limits::dCodes; ++code)
                 {
                     tables.base_dist[code] = dist << 7;
-                    for(std::size_t n = 0; n < (1U<<(extra_dbits[code]-7)); ++n)
+                    for(std::size_t n = 0; n < (1U<<(tables.extra_dbits[code]-7)); ++n)
                         tables.dist_code[256 + dist++] = code;
                 }
                 assert(dist == 256);
