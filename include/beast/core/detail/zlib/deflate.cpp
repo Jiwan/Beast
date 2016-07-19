@@ -82,14 +82,16 @@
 
 namespace beast {
 
-deflate_stream::deflate_stream()
+template<class _>
+deflate_stream_t<_>::deflate_stream_t()
     : lut_(detail::get_deflate_tables())
 {
     // default level 6
     //deflateInit2(this, 6, Z_DEFLATED, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
 }
 
-deflate_stream::~deflate_stream()
+template<class _>
+deflate_stream_t<_>::~deflate_stream_t()
 {
     deflateEnd(this);
 }
@@ -219,15 +221,18 @@ struct static_tree_desc {int dummy;}; /* for buggy compilers */
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateInit(deflate_stream* strm, int level)
+deflate_stream_t<_>::deflateInit(deflate_stream_t* strm, int level)
 {
     return deflateInit2(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
                          Z_DEFAULT_STRATEGY);
     /* To do: ignore strm->next_in if we use it as window */
 }
 
-void deflate_stream::fill_window(deflate_stream *s)
+template<class _>
+void
+deflate_stream_t<_>::fill_window(deflate_stream_t *s)
 {
     unsigned n, m;
     std::uint16_t *p;
@@ -365,9 +370,10 @@ void deflate_stream::fill_window(deflate_stream *s)
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateInit2(
-    deflate_stream* strm,
+deflate_stream_t<_>::deflateInit2(
+    deflate_stream_t* strm,
     int  level,
     int  method,
     int  windowBits,
@@ -436,8 +442,9 @@ deflate_stream::deflateInit2(
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateSetDictionary (
+deflate_stream_t<_>::deflateSetDictionary (
     const Byte *dictionary,
     uInt  dictLength)
 {
@@ -493,8 +500,9 @@ auto strm = this;
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateResetKeep(deflate_stream* strm)
+deflate_stream_t<_>::deflateResetKeep(deflate_stream_t* strm)
 {
     strm->total_in = strm->total_out = 0;
     strm->msg = Z_NULL;
@@ -514,8 +522,9 @@ deflate_stream::deflateResetKeep(deflate_stream* strm)
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateReset(deflate_stream* strm)
+deflate_stream_t<_>::deflateReset(deflate_stream_t* strm)
 {
     int ret;
 
@@ -527,9 +536,10 @@ deflate_stream::deflateReset(deflate_stream* strm)
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflatePending (
-    deflate_stream* strm,
+deflate_stream_t<_>::deflatePending (
+    deflate_stream_t* strm,
     unsigned *pending,
     int *bits)
 {
@@ -542,8 +552,9 @@ deflate_stream::deflatePending (
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflatePrime(deflate_stream* strm, int bits, int value)
+deflate_stream_t<_>::deflatePrime(deflate_stream_t* strm, int bits, int value)
 {
     int put;
 
@@ -565,8 +576,9 @@ deflate_stream::deflatePrime(deflate_stream* strm, int bits, int value)
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateParams(deflate_stream* strm, int level, int strategy)
+deflate_stream_t<_>::deflateParams(deflate_stream_t* strm, int level, int strategy)
 {
     compress_func func;
     int err = Z_OK;
@@ -600,9 +612,10 @@ deflate_stream::deflateParams(deflate_stream* strm, int level, int strategy)
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateTune(
-    deflate_stream* strm,
+deflate_stream_t<_>::deflateTune(
+    deflate_stream_t* strm,
     int good_length,
     int max_lazy,
     int nice_length,
@@ -633,9 +646,10 @@ deflate_stream::deflateTune(
  * upper bound of about 14% expansion does not seem onerous for output buffer
  * allocation.
  */
+template<class _>
 uLong
-deflate_stream::deflateBound(
-    deflate_stream* strm,
+deflate_stream_t<_>::deflateBound(
+    deflate_stream_t* strm,
     uLong sourceLen)
 {
     uLong complen, wraplen;
@@ -667,8 +681,9 @@ deflate_stream::deflateBound(
  * to avoid allocating a large strm->next_out buffer and copying into it.
  * (See also read_buf()).
  */
+template<class _>
 void
-deflate_stream::flush_pending(deflate_stream* strm)
+deflate_stream_t<_>::flush_pending(deflate_stream_t* strm)
 {
     unsigned len;
     auto s = strm;
@@ -691,8 +706,9 @@ deflate_stream::flush_pending(deflate_stream* strm)
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflate(int flush)
+deflate_stream_t<_>::deflate(int flush)
 {
 auto strm = this;
     int old_flush; /* value of flush param for previous deflate call */
@@ -799,8 +815,9 @@ auto strm = this;
 
 /* ========================================================================= */
 
+template<class _>
 int
-deflate_stream::deflateEnd(deflate_stream* strm)
+deflate_stream_t<_>::deflateEnd(deflate_stream_t* strm)
 {
     int status;
 
@@ -833,8 +850,9 @@ deflate_stream::deflateEnd(deflate_stream* strm)
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
+template<class _>
 int
-deflate_stream::read_buf(deflate_stream* strm, Byte *buf, unsigned size)
+deflate_stream_t<_>::read_buf(deflate_stream_t* strm, Byte *buf, unsigned size)
 {
     unsigned len = strm->avail_in;
 
@@ -853,8 +871,9 @@ deflate_stream::read_buf(deflate_stream* strm, Byte *buf, unsigned size)
 /* ===========================================================================
  * Initialize the "longest match" routines for a new zlib stream
  */
+template<class _>
 void
-deflate_stream::lm_init(deflate_stream *s)
+deflate_stream_t<_>::lm_init(deflate_stream_t *s)
 {
     s->window_size_ = (std::uint32_t)2L*s->w_size_;
 
@@ -888,8 +907,9 @@ deflate_stream::lm_init(deflate_stream *s)
 /* For 80x86 and 680x0, an optimized version will be provided in match.asm or
  * match.S. The code will be functionally equivalent.
  */
+template<class _>
 uInt
-deflate_stream::longest_match(deflate_stream *s, IPos cur_match)
+deflate_stream_t<_>::longest_match(deflate_stream_t *s, IPos cur_match)
 {
     unsigned chain_length = s->max_chain_length_;/* max hash chain length */
     Byte *scan = s->window_ + s->strstart_; /* current string */
@@ -984,8 +1004,10 @@ deflate_stream::longest_match(deflate_stream *s, IPos cur_match)
 /* ===========================================================================
  * Check that the match at match_start is indeed a match.
  */
-local void check_match(
-    deflate_stream *s,
+template<class _>
+void
+deflate_stream_t<_>::check_match(
+    deflate_stream_t *s,
     IPos start, match,
     int length)
 {
@@ -1038,8 +1060,10 @@ local void check_match(
  * NOTE: this function should be optimized to avoid extra copying from
  * window to pending_buf.
  */
-block_state deflate_stream::deflate_stored(
-    deflate_stream *s,
+template<class _>
+block_state
+deflate_stream_t<_>::deflate_stored(
+    deflate_stream_t *s,
     int flush)
 {
     /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
@@ -1102,8 +1126,9 @@ block_state deflate_stream::deflate_stored(
  * new strings in the dictionary only for unmatched strings or for short
  * matches. It is used only for the fast compression options.
  */
+template<class _>
 block_state
-deflate_stream::deflate_fast(deflate_stream *s, int flush)
+deflate_stream_t<_>::deflate_fast(deflate_stream_t *s, int flush)
 {
     IPos hash_head;       /* head of the hash chain */
     int bflush;           /* set if current block must be flushed */
@@ -1197,8 +1222,9 @@ deflate_stream::deflate_fast(deflate_stream *s, int flush)
  * evaluation for matches: a match is finally adopted only if there is
  * no better match at the next window position.
  */
+template<class _>
 block_state
-deflate_stream::deflate_slow(deflate_stream *s, int flush)
+deflate_stream_t<_>::deflate_slow(deflate_stream_t *s, int flush)
 {
     IPos hash_head;          /* head of hash chain */
     int bflush;              /* set if current block must be flushed */
@@ -1326,8 +1352,9 @@ deflate_stream::deflate_slow(deflate_stream *s, int flush)
  * one.  Do not maintain a hash table.  (It will be regenerated if this run of
  * deflate switches away from Z_RLE.)
  */
+template<class _>
 block_state
-deflate_stream::deflate_rle(deflate_stream *s, int flush)
+deflate_stream_t<_>::deflate_rle(deflate_stream_t *s, int flush)
 {
     int bflush;             /* set if current block must be flushed */
     uInt prev;              /* byte at distance one to match */
@@ -1398,8 +1425,9 @@ deflate_stream::deflate_rle(deflate_stream *s, int flush)
  * For Z_HUFFMAN_ONLY, do not look for matches.  Do not maintain a hash table.
  * (It will be regenerated if this run of deflate switches away from Huffman.)
  */
+template<class _>
 block_state
-deflate_stream::deflate_huff(deflate_stream *s, int flush)
+deflate_stream_t<_>::deflate_huff(deflate_stream_t *s, int flush)
 {
     int bflush;             /* set if current block must be flushed */
 
@@ -1431,5 +1459,8 @@ deflate_stream::deflate_huff(deflate_stream *s, int flush)
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
+
+// VFALCO temporary hack here
+template class deflate_stream_t<void>;
 
 } // beast

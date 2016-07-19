@@ -80,12 +80,15 @@ enum block_state
     finish_done     /* finish done, accept no more input or output */
 };
 
-class deflate_stream : public z_stream
+//namespace detail {
+
+template<class = void>
+class deflate_stream_t : public z_stream
 {
 public:
-    deflate_stream();
+    deflate_stream_t();
 
-    ~deflate_stream();
+    ~deflate_stream_t();
 
     int deflate(int flush);
 
@@ -264,31 +267,35 @@ public:
      */
     std::uint32_t high_water_;
 
-    static void fill_window(deflate_stream *s);
-    static block_state deflate_stored(deflate_stream *s, int flush);
-    static block_state deflate_fast(deflate_stream *s, int flush);
-    static block_state deflate_slow(deflate_stream *s, int flush);
-    static block_state deflate_rle(deflate_stream *s, int flush);
-    static block_state deflate_huff(deflate_stream *s, int flush);
+    static void fill_window(deflate_stream_t *s);
+    static block_state deflate_stored(deflate_stream_t *s, int flush);
+    static block_state deflate_fast(deflate_stream_t *s, int flush);
+    static block_state deflate_slow(deflate_stream_t *s, int flush);
+    static block_state deflate_rle(deflate_stream_t *s, int flush);
+    static block_state deflate_huff(deflate_stream_t *s, int flush);
 
-    static void lm_init        (deflate_stream *s);
-    static void flush_pending  (deflate_stream* strm);
-    static int read_buf        (deflate_stream* strm, Byte *buf, unsigned size);
-    static uInt longest_match  (deflate_stream *s, IPos cur_match);
+    static void lm_init        (deflate_stream_t *s);
+    static void flush_pending  (deflate_stream_t* strm);
+    static int read_buf        (deflate_stream_t* strm, Byte *buf, unsigned size);
+    static uInt longest_match  (deflate_stream_t *s, IPos cur_match);
 
-    static int deflateEnd (deflate_stream* strm);
-    static int deflateResetKeep (deflate_stream* strm);
-    static int deflateReset (deflate_stream* strm);
-    static int deflateParams (deflate_stream* strm, int level, int strategy);
-    static int deflateTune (deflate_stream* strm,
+    static int deflateEnd (deflate_stream_t* strm);
+    static int deflateResetKeep (deflate_stream_t* strm);
+    static int deflateReset (deflate_stream_t* strm);
+    static int deflateParams (deflate_stream_t* strm, int level, int strategy);
+    static int deflateTune (deflate_stream_t* strm,
         int good_length, int max_lazy, int nice_length, int max_chain);
-    static uLong deflateBound (deflate_stream* strm, uLong sourceLen);
-    static int deflatePending (deflate_stream* strm, unsigned *pending, int *bits);
-    static int deflatePrime (deflate_stream* strm, int bits, int value);
-    static int deflateInit (deflate_stream* strm, int level);
-    static int deflateInit2 (deflate_stream* strm, int level, int  method,
+    static uLong deflateBound (deflate_stream_t* strm, uLong sourceLen);
+    static int deflatePending (deflate_stream_t* strm, unsigned *pending, int *bits);
+    static int deflatePrime (deflate_stream_t* strm, int bits, int value);
+    static int deflateInit (deflate_stream_t* strm, int level);
+    static int deflateInit2 (deflate_stream_t* strm, int level, int  method,
         int windowBits, int memLevel, int strategy);
 };
+
+//} // detail
+
+using deflate_stream = deflate_stream_t<>;
 
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
