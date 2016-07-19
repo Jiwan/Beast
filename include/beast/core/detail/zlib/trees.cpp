@@ -78,21 +78,6 @@ namespace beast {
 #define REPZ_11_138  18
 /* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-local const int extra_lbits[limits::lengthCodes] /* extra bits for each length code */
-   = {0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0};
-
-local const int extra_dbits[limits::dCodes] /* extra bits for each distance code */
-   = {0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13};
-
-local const int extra_blbits[limits::blCodes]/* extra bits for each bit length code */
-   = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7};
-
-local const std::uint8_t bl_order[limits::blCodes]
-   = {16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15};
-/* The lengths of the bit length codes are sent in order of decreasing
- * probability, to avoid transmitting the lengths for unused bit length codes.
- */
-
 /* ===========================================================================
  * Local (static) routines in this file.
  */
@@ -686,7 +671,7 @@ local int build_bl_tree(
      * 3 but the actual value used is 4.)
      */
     for (max_blindex = limits::blCodes-1; max_blindex >= 3; max_blindex--) {
-        if (s->bl_tree_[bl_order[max_blindex]].dl != 0) break;
+        if (s->bl_tree_[s->lut_.bl_order[max_blindex]].dl != 0) break;
     }
     /* Update opt_len to include the bit length tree and counts */
     s->opt_len_ += 3*(max_blindex+1) + 5+5+4;
@@ -718,7 +703,7 @@ local void send_all_trees(
     send_bits(s, blcodes-4,  4); /* not -3 as stated in appnote.txt */
     for (rank = 0; rank < blcodes; rank++) {
         Tracev((stderr, "\nbl code %2d ", bl_order[rank]));
-        send_bits(s, s->bl_tree_[bl_order[rank]].dl, 3);
+        send_bits(s, s->bl_tree_[s->lut_.bl_order[rank]].dl, 3);
     }
     Tracev((stderr, "\nbl tree: sent %ld", s->bits_sent_));
 
@@ -947,7 +932,7 @@ local void compress_block(
             /* Here, lc is the match length - limits::minMatch */
             code = s->lut_.length_code[lc];
             send_code(s, code+limits::literals+1, ltree); /* send the length code */
-            extra = extra_lbits[code];
+            extra = s->lut_.extra_lbits[code];
             if (extra != 0) {
                 lc -= s->lut_.base_length[code];
                 send_bits(s, lc, extra);       /* send the extra length bits */
@@ -957,7 +942,7 @@ local void compress_block(
             Assert (code < limits::dCodes, "bad d_code");
 
             send_code(s, code, dtree);       /* send the distance code */
-            extra = extra_dbits[code];
+            extra = s->lut_.extra_dbits[code];
             if (extra != 0) {
                 dist -= s->lut_.base_dist[code];
                 send_bits(s, dist, extra);   /* send the extra distance bits */
