@@ -74,6 +74,18 @@ struct limits
     static_assert(minMatch==3, "");
 };
 
+// end of block literal code
+std::uint16_t constexpr END_BLOCK = 256;
+
+// repeat previous bit length 3-6 times (2 bits of repeat count)
+std::uint8_t constexpr REP_3_6 = 16;
+
+// repeat a zero length 3-10 times  (3 bits of repeat count)
+std::uint8_t constexpr REPZ_3_10 = 17;
+
+// repeat a zero length 11-138 times  (7 bits of repeat count)
+std::uint8_t constexpr REPZ_11_138 = 18;
+
 namespace detail {
 
 // Describes a single value and its code string.

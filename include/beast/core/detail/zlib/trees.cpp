@@ -66,22 +66,6 @@
 
 namespace beast {
 
-#define END_BLOCK 256
-/* end of block literal code */
-
-#define REP_3_6      16
-/* repeat previous bit length 3-6 times (2 bits of repeat count) */
-
-#define REPZ_3_10    17
-/* repeat a zero length 3-10 times  (3 bits of repeat count) */
-
-#define REPZ_11_138  18
-/* repeat a zero length 11-138 times  (7 bits of repeat count) */
-
-/* ===========================================================================
- * Local (static) routines in this file.
- */
-
 local void init_block     (deflate_stream *s);
 local void pqdownheap     (deflate_stream *s, detail::ct_data *tree, int k);
 local void gen_bitlen     (deflate_stream *s, tree_desc *desc);
