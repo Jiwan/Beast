@@ -58,8 +58,6 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-//#define GEN_TREES_H
-
 #include "deflate_stream.hpp"
 
 #ifdef DEBUG
@@ -96,48 +94,9 @@ local const std::uint8_t bl_order[limits::blCodes]
  */
 
 /* ===========================================================================
- * Local data. These are initialized only once.
- */
-
-#if defined(GEN_TREES_H)
-/* non ANSI compilers may not accept trees.hpp */
-
-local detail::ct_data static_ltree[limits::lCodes+2];
-/* The static literal tree. Since the bit lengths are imposed, there is no
- * need for the limits::lCodes extra codes used during heap construction. However
- * The codes 286 and 287 are needed to build a canonical tree (see _tr_init
- * below).
- */
-
-local detail::ct_data static_dtree[limits::dCodes];
-/* The static distance tree. (Actually a trivial tree since all codes use
- * 5 bits.)
- */
-
-std::uint8_t _dist_code[limits::distCodeLen];
-/* Distance codes. The first 256 values correspond to the distances
- * 3 .. 258, the last 256 values correspond to the top 8 bits of
- * the 15 bit distances.
- */
-
-std::uint8_t _length_code[limits::maxMatch-limits::minMatch+1];
-/* length code for each normalized match length (0 == limits::minMatch) */
-
-local int base_length[limits::lengthCodes];
-/* First normalized length for each code (0 = limits::minMatch) */
-
-local int base_dist[limits::dCodes];
-/* First normalized distance for each code (0 = distance of 1) */
-
-#else
-#  include "trees.hpp"
-#endif /* GEN_TREES_H */
-
-/* ===========================================================================
  * Local (static) routines in this file.
  */
 
-local void tr_static_init (void);
 local void init_block     (deflate_stream *s);
 local void pqdownheap     (deflate_stream *s, detail::ct_data *tree, int k);
 local void gen_bitlen     (deflate_stream *s, tree_desc *desc);
@@ -156,10 +115,6 @@ local void bi_windup      (deflate_stream *s);
 local void bi_flush       (deflate_stream *s);
 local void copy_block     (deflate_stream *s, char *buf, unsigned len,
                               int header);
-
-#ifdef GEN_TREES_H
-local void gen_trees_header (void);
-#endif
 
 #ifndef DEBUG
 #  define send_code(s, c, tree) send_bits(s, tree[c].fc, tree[c].dl)
@@ -227,93 +182,6 @@ local void send_bits(
 }
 #endif /* DEBUG */
 
-
-/* the arguments must not have side effects */
-
-/* ===========================================================================
- * Initialize the various 'constant' tables.
- */
-local void tr_static_init()
-{
-#if defined(GEN_TREES_H)
-    static int static_init_done = 0;
-    int n;        /* iterates over tree elements */
-    int bits;     /* bit counter */
-    int length;   /* length value */
-    int code;     /* code value */
-    int dist;     /* distance index */
-    std::uint16_t bl_count[limits::maxBits+1];
-    /* number of codes at each bit length for an optimal tree */
-
-    if (static_init_done) return;
-
-    /* For some embedded targets, global variables are not initialized: */
-#ifdef NO_INIT_GLOBAL_POINTERS
-    static_l_desc.static_tree = static_ltree;
-    static_l_desc.extra_bits = extra_lbits;
-    static_d_desc.static_tree = static_dtree;
-    static_d_desc.extra_bits = extra_dbits;
-    static_bl_desc.extra_bits = extra_blbits;
-#endif
-
-    /* Initialize the mapping length (0..255) -> length code (0..28) */
-    length = 0;
-    for (code = 0; code < limits::lengthCodes-1; code++) {
-        base_length[code] = length;
-        for (n = 0; n < (1<<extra_lbits[code]); n++) {
-            _length_code[length++] = (std::uint8_t)code;
-        }
-    }
-    Assert (length == 256, "tr_static_init: length != 256");
-    /* Note that the length 255 (match length 258) can be represented
-     * in two different ways: code 284 + 5 bits or code 285, so we
-     * overwrite length_code[255] to use the best encoding:
-     */
-    _length_code[length-1] = (std::uint8_t)code;
-
-    /* Initialize the mapping dist (0..32K) -> dist code (0..29) */
-    dist = 0;
-    for (code = 0 ; code < 16; code++) {
-        base_dist[code] = dist;
-        for (n = 0; n < (1<<extra_dbits[code]); n++) {
-            _dist_code[dist++] = (std::uint8_t)code;
-        }
-    }
-    Assert (dist == 256, "tr_static_init: dist != 256");
-    dist >>= 7; /* from now on, all distances are divided by 128 */
-    for ( ; code < limits::dCodes; code++) {
-        base_dist[code] = dist << 7;
-        for (n = 0; n < (1<<(extra_dbits[code]-7)); n++) {
-            _dist_code[256 + dist++] = (std::uint8_t)code;
-        }
-    }
-    Assert (dist == 256, "tr_static_init: 256+dist != 512");
-
-    /* Construct the codes of the static literal tree */
-    for (bits = 0; bits <= limits::maxBits; bits++) bl_count[bits] = 0;
-    n = 0;
-    while (n <= 143) static_ltree[n++].dl = 8, bl_count[8]++;
-    while (n <= 255) static_ltree[n++].dl = 9, bl_count[9]++;
-    while (n <= 279) static_ltree[n++].dl = 7, bl_count[7]++;
-    while (n <= 287) static_ltree[n++].dl = 8, bl_count[8]++;
-    /* Codes 286 and 287 do not exist, but we must include them in the
-     * tree construction to get a canonical Huffman tree (longest code
-     * all ones)
-     */
-    gen_codes((detail::ct_data *)static_ltree, limits::lCodes+1, bl_count);
-
-    /* The static distance tree is trivial: */
-    for (n = 0; n < limits::dCodes; n++) {
-        static_dtree[n].dl = 5;
-        static_dtree[n].fc = bi_reverse((unsigned)n, 5);
-    }
-    static_init_done = 1;
-
-#  ifdef GEN_TREES_H
-    gen_trees_header();
-#  endif
-#endif /* defined(GEN_TREES_H) */
-}
 
 /* ===========================================================================
  * Genererate the file trees.hpp describing the static trees.
@@ -383,8 +251,6 @@ void gen_trees_header()
 void _tr_init(
     deflate_stream *s)
 {
-    tr_static_init();
-
     s->l_desc_.dyn_tree = s->dyn_ltree_;
     s->l_desc_.stat_desc = &s->lut_.l_desc;
 
@@ -403,16 +269,6 @@ void _tr_init(
 
     /* Initialize the first block of the first file: */
     init_block(s);
-
-auto const& t = detail::get_deflate_tables();
-for(std::size_t i = 0; i < std::extent<decltype(t.base_length)>::value; ++i)
-    assert(t.base_length[i] == base_length[i]);
-for(std::size_t i = 0; i < std::extent<decltype(t.length_code)>::value; ++i)
-    assert(t.length_code[i] == _length_code[i]);
-for(std::size_t i = 0; i < std::extent<decltype(t.base_dist)>::value; ++i)
-    assert(t.base_dist[i] == base_dist[i]);
-for(std::size_t i = 0; i < std::extent<decltype(t.dtree)>::value; ++i)
-    assert(t.dtree[i] == static_dtree[i]);
 }
 
 /* ===========================================================================
@@ -1038,7 +894,7 @@ int _tr_tally (
                (std::uint16_t)lc <= (std::uint16_t)(limits::maxMatch-limits::minMatch) &&
                (std::uint16_t)d_code(dist) < (std::uint16_t)limits::dCodes,  "_tr_tally: bad match");
 
-        s->dyn_ltree_[_length_code[lc]+limits::literals+1].fc++;
+        s->dyn_ltree_[s->lut_.length_code[lc]+limits::literals+1].fc++;
         s->dyn_dtree_[d_code(dist)].fc++;
     }
 
@@ -1089,11 +945,11 @@ local void compress_block(
             Tracecv(isgraph(lc), (stderr," '%c' ", lc));
         } else {
             /* Here, lc is the match length - limits::minMatch */
-            code = _length_code[lc];
+            code = s->lut_.length_code[lc];
             send_code(s, code+limits::literals+1, ltree); /* send the length code */
             extra = extra_lbits[code];
             if (extra != 0) {
-                lc -= base_length[code];
+                lc -= s->lut_.base_length[code];
                 send_bits(s, lc, extra);       /* send the extra length bits */
             }
             dist--; /* dist is now the match distance - 1 */
@@ -1103,7 +959,7 @@ local void compress_block(
             send_code(s, code, dtree);       /* send the distance code */
             extra = extra_dbits[code];
             if (extra != 0) {
-                dist -= base_dist[code];
+                dist -= s->lut_.base_dist[code];
                 send_bits(s, dist, extra);   /* send the extra distance bits */
             }
         } /* literal or match pair ? */

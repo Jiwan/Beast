@@ -320,23 +320,12 @@ void _tr_align (deflate_stream *s);
 void _tr_stored_block (deflate_stream *s, char *bu,
                         std::uint32_t stored_len, int last);
 
-#define d_code(dist) \
-   ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
  * must not have side effects. _dist_code[256] and _dist_code[257] are never
  * used.
  */
-
-#ifndef DEBUG
-/* Inline versions of _tr_tally for speed: */
-#if defined(GEN_TREES_H)
-  extern std::uint8_t _length_code[];
-  extern std::uint8_t _dist_code[];
-#else
-  extern const std::uint8_t _length_code[];
-  extern const std::uint8_t _dist_code[];
-#endif
-#endif
+#define d_code(dist) \
+   ((dist) < 256 ? s->lut_.dist_code[dist] : s->lut_.dist_code[256+((dist)>>7)])
 
 } // beast
 

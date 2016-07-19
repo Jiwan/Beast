@@ -110,7 +110,7 @@ deflate_stream::~deflate_stream()
     s->d_buf_[s->last_lit_] = dist; \
     s->l_buf_[s->last_lit_++] = len; \
     dist--; \
-    s->dyn_ltree_[_length_code[len]+limits::literals+1].fc++; \
+    s->dyn_ltree_[s->lut_.length_code[len]+limits::literals+1].fc++; \
     s->dyn_dtree_[d_code(dist)].fc++; \
     flush = (s->last_lit_ == s->lit_bufsize_-1); \
   }
