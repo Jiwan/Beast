@@ -66,29 +66,18 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 /* The three kinds of block type */
-#define STORED_BLOCK 0
-#define STATIC_TREES 1
-#define DYN_TREES    2
+
+std::uint8_t constexpr STORED_BLOCK = 0;
+std::uint8_t constexpr STATIC_TREES = 1;
+std::uint8_t constexpr DYN_TREES    = 2;
 
 /* Diagnostic functions */
-#ifdef DEBUG
-#  include <stdio.h>
-   extern int z_verbose;
-   extern void z_error (char *m);
-#  define Assert(cond,msg) {if(!(cond)) z_error(msg);}
-#  define Trace(x) {if (z_verbose>=0) fprintf x ;}
-#  define Tracev(x) {if (z_verbose>0) fprintf x ;}
-#  define Tracevv(x) {if (z_verbose>1) fprintf x ;}
-#  define Tracec(c,x) {if (z_verbose>0 && (c)) fprintf x ;}
-#  define Tracecv(c,x) {if (z_verbose>1 && (c)) fprintf x ;}
-#else
 #  define Assert(cond,msg)
 #  define Trace(x)
 #  define Tracev(x)
 #  define Tracevv(x)
 #  define Tracec(c,x)
 #  define Tracecv(c,x)
-#endif
 
 /* Reverse the bytes in a 32-bit value */
 #define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \

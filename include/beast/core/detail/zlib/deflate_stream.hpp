@@ -245,11 +245,6 @@ public:
     uInt matches_;       /* number of string matches in current block */
     uInt insert_;        /* bytes at end of window left to insert */
 
-#ifdef DEBUG
-    std::uint32_t compressed_len_; /* total bit length of compressed file mod 2^32 */
-    std::uint32_t bits_sent_;      /* bit length of compressed data sent mod 2^32 */
-#endif
-
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */

@@ -48,20 +48,4 @@ const char * const z_errmsg[10] = {
 "incompatible version",/* Z_VERSION_ERROR (-6) */
 ""};
 
-
-#ifdef DEBUG
-
-#  ifndef verbose
-#    define verbose 0
-#  endif
-int z_verbose = verbose;
-
-void z_error (m)
-    char *m;
-{
-    fprintf(stderr, "%s\n", m);
-    exit(1);
-}
-#endif
-
 } // beast

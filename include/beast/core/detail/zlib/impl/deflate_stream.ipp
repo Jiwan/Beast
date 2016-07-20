@@ -94,15 +94,8 @@ deflate_stream_t<_>::~deflate_stream_t()
 
 
 
-#ifndef DEBUG
+/* Send a code of the given tree. c and tree must not have side effects */
 #  define send_code(s, c, tree) send_bits(s, tree[c].fc, tree[c].dl)
-   /* Send a code of the given tree. c and tree must not have side effects */
-
-#else /* DEBUG */
-#  define send_code(s, c, tree) \
-     { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
-       send_bits(s, tree[c].fc, tree[c].dl); }
-#endif
 
 /* ===========================================================================
  * Output a short LSB first on the stream.
@@ -150,10 +143,6 @@ deflate_stream_t<_>::_tr_init(
 
     s->bi_buf_ = 0;
     s->bi_valid_ = 0;
-#ifdef DEBUG
-    s->compressed_len_ = 0L;
-    s->bits_sent_ = 0L;
-#endif
 
     /* Initialize the first block of the first file: */
     init_block(s);
@@ -596,10 +585,6 @@ deflate_stream_t<_>::_tr_stored_block(
     int last)         /* one if this is the last block for a file */
 {
     send_bits(s, (STORED_BLOCK<<1)+last, 3);    /* send block type */
-#ifdef DEBUG
-    s->compressed_len_ = (s->compressed_len_ + 3 + 7) & (std::uint32_t)~7L;
-    s->compressed_len_ += (stored_len + 4) << 3;
-#endif
     copy_block(s, buf, (unsigned)stored_len, 1); /* with header */
 }
 
@@ -623,9 +608,6 @@ deflate_stream_t<_>::_tr_align(deflate_stream_t *s)
 {
     send_bits(s, STATIC_TREES<<1, 3);
     send_code(s, END_BLOCK, s->lut_.ltree);
-#ifdef DEBUG
-    s->compressed_len_ += 10L; /* 3 for block type, 7 for EOB */
-#endif
     bi_flush(s);
 }
 
@@ -704,18 +686,12 @@ deflate_stream_t<_>::_tr_flush_block(
 #endif
         send_bits(s, (STATIC_TREES<<1)+last, 3);
         compress_block(s, s->lut_.ltree, s->lut_.dtree);
-#ifdef DEBUG
-        s->compressed_len_ += 3 + s->static_len_;
-#endif
     } else {
         send_bits(s, (DYN_TREES<<1)+last, 3);
         send_all_trees(s, s->l_desc_.max_code+1, s->d_desc_.max_code+1,
                        max_blindex+1);
         compress_block(s, (const detail::ct_data *)s->dyn_ltree_,
                        (const detail::ct_data *)s->dyn_dtree_);
-#ifdef DEBUG
-        s->compressed_len_ += 3 + s->opt_len_;
-#endif
     }
     Assert (s->compressed_len_ == s->bits_sent_, "bad compressed size");
     /* The above check is made mod 2^32, for files larger than 512 MB
@@ -725,9 +701,6 @@ deflate_stream_t<_>::_tr_flush_block(
 
     if (last) {
         bi_windup(s);
-#ifdef DEBUG
-        s->compressed_len_ += 7;  /* align on byte boundary */
-#endif
     }
     Tracev((stderr,"\ncomprlen %lu(%lu) ", s->compressed_len_>>3,
            s->compressed_len_-7*last));
@@ -914,9 +887,6 @@ deflate_stream_t<_>::bi_windup(deflate_stream_t *s)
     }
     s->bi_buf_ = 0;
     s->bi_valid_ = 0;
-#ifdef DEBUG
-    s->bits_sent_ = (s->bits_sent_+7) & ~7;
-#endif
 }
 
 /* ===========================================================================
@@ -936,13 +906,7 @@ deflate_stream_t<_>::copy_block(
     if (header) {
         put_short(s, (std::uint16_t)len);
         put_short(s, (std::uint16_t)~len);
-#ifdef DEBUG
-        s->bits_sent_ += 2*16;
-#endif
     }
-#ifdef DEBUG
-    s->bits_sent_ += (std::uint32_t)len<<3;
-#endif
     while (len--) {
         put_byte(s, *buf++);
     }

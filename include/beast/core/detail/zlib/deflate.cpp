@@ -84,7 +84,6 @@ namespace beast {
 
 //-------------------------------------------------------------------------------
 
-#ifndef DEBUG
 # define _tr_tally_lit(s, c, flush) \
   { std::uint8_t cc = (c); \
     s->d_buf_[s->last_lit_] = 0; \
@@ -102,16 +101,6 @@ namespace beast {
     s->dyn_dtree_[d_code(dist)].fc++; \
     flush = (s->last_lit_ == s->lit_bufsize_-1); \
   }
-#else
-# define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
-# define _tr_tally_dist(s, distance, length, flush) \
-              flush = _tr_tally(s, distance, length)
-#endif
-
-#ifdef DEBUG
-local  void check_match (deflate_stream *s, IPos start, IPos match,
-                            int length);
-#endif
 
 /* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 #ifndef TOO_FAR
@@ -940,35 +929,7 @@ deflate_stream_t<_>::longest_match(deflate_stream_t *s, IPos cur_match)
     return s->lookahead_;
 }
 
-#ifdef DEBUG
-/* ===========================================================================
- * Check that the match at match_start is indeed a match.
- */
-template<class _>
-void
-deflate_stream_t<_>::check_match(
-    deflate_stream_t *s,
-    IPos start, match,
-    int length)
-{
-    /* check that the match is indeed a match */
-    if (std::memcmp(s->window_ + match,
-                s->window_ + start, length) != 0) {
-        fprintf(stderr, " start %u, match %u, length %d\n",
-                start, match, length);
-        do {
-            fprintf(stderr, "%c%c", s->window_[match++], s->window_[start++]);
-        } while (--length != 0);
-        z_error("invalid match");
-    }
-    if (z_verbose > 1) {
-        fprintf(stderr,"\\[%d,%d]", start-match, length);
-        do { putc(s->window_[start++], stderr); } while (--length != 0);
-    }
-}
-#else
 #  define check_match(s, start, match, length)
-#endif /* DEBUG */
 
 /* ===========================================================================
  * Flush the current block, with given end-of-file flag.
