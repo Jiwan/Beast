@@ -292,6 +292,35 @@ public:
     static int deflateInit2 (deflate_stream_t* strm, int level, int  method,
         int windowBits, int memLevel, int strategy);
 
+    static void init_block     (deflate_stream_t *s);
+    static void pqdownheap     (deflate_stream_t *s, detail::ct_data *tree, int k);
+    static void gen_bitlen     (deflate_stream_t *s, tree_desc *desc);
+    static void gen_codes      (detail::ct_data *tree, int max_code, std::uint16_t *bl_count);
+    static void build_tree     (deflate_stream_t *s, tree_desc *desc);
+    static void scan_tree      (deflate_stream_t *s, detail::ct_data *tree, int max_code);
+    static void send_tree      (deflate_stream_t *s, detail::ct_data *tree, int max_code);
+    static int  build_bl_tree  (deflate_stream_t *s);
+    static void send_all_trees (deflate_stream_t *s, int lcodes, int dcodes,
+                                int blcodes);
+
+    static void _tr_init (deflate_stream_t *s);
+    static int _tr_tally (deflate_stream_t *s, unsigned dist, unsigned lc);
+    static void _tr_flush_block (deflate_stream_t *s, char *buf,
+                            std::uint32_t stored_len, int last);
+    static void _tr_flush_bits (deflate_stream_t *s);
+    static void _tr_align (deflate_stream_t *s);
+    static void _tr_stored_block (deflate_stream_t *s, char *bu,
+                            std::uint32_t stored_len, int last);
+
+    static void compress_block (deflate_stream_t *s, const detail::ct_data *ltree,
+                                const detail::ct_data *dtree);
+    static int  detect_data_type (deflate_stream_t *s);
+    static unsigned bi_reverse (unsigned value, int length);
+    static void bi_flush       (deflate_stream_t *s);
+    static void bi_windup      (deflate_stream_t *s);
+    static void copy_block     (deflate_stream_t *s, char *buf, unsigned len,
+                                  int header);
+
     using compress_func = block_state(*)(deflate_stream_t*, int flush);
 
     /* Values for max_lazy_match, good_match and max_chain_length, depending on
@@ -367,15 +396,6 @@ using deflate_stream = deflate_stream_t<>;
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
-        /* in trees.c */
-void _tr_init (deflate_stream *s);
-int _tr_tally (deflate_stream *s, unsigned dist, unsigned lc);
-void _tr_flush_block (deflate_stream *s, char *buf,
-                        std::uint32_t stored_len, int last);
-void _tr_flush_bits (deflate_stream *s);
-void _tr_align (deflate_stream *s);
-void _tr_stored_block (deflate_stream *s, char *bu,
-                        std::uint32_t stored_len, int last);
 
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
  * must not have side effects. _dist_code[256] and _dist_code[257] are never
