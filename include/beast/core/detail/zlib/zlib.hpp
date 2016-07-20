@@ -35,19 +35,16 @@
 #ifndef ZLIB_H
 #define ZLIB_H
 
-#include "zconf.hpp"
-
 #include <cstdint>
 #include <cstdlib>
 
 namespace beast {
 
-#define ZLIB_VERSION "1.2.8"
-#define ZLIB_VERNUM 0x1280
-#define ZLIB_VER_MAJOR 1
-#define ZLIB_VER_MINOR 2
-#define ZLIB_VER_REVISION 8
-#define ZLIB_VER_SUBREVISION 0
+#if !defined(__MACTYPES__)
+typedef unsigned char  Byte;  /* 8 bits */
+#endif
+typedef unsigned int   uInt;  /* 16 bits or more */
+typedef unsigned long  uLong; /* 32 bits or more */
 
 /*
      The application must update next_in and avail_in when avail_in has dropped

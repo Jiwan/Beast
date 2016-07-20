@@ -38,7 +38,6 @@
 #include <beast/core/error.hpp>
 #include <beast/core/detail/zlib/detail/inflate_tables.hpp>
 
-#include "zconf.hpp"
 #include "zlib.hpp"
 #include <cstdint>
 #include <cstdlib>

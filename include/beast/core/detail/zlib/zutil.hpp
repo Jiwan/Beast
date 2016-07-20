@@ -37,21 +37,10 @@
 
 #include "zlib.hpp"
 
-#include <cstddef>
-#include <cstring>
-#include <cstdlib>
-#include <memory>
-
 namespace beast {
 
-extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
-
-#define ERR_RETURN(strm,err) \
-  return (strm->msg = z_errmsg[Z_NEED_DICT-err], (err))
-/* To be used only when the state is known to be valid */
-
-        /* common constants */
+extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* default memLevel */
 #if MAX_MEM_LEVEL >= 8
@@ -59,12 +48,6 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #else
 #  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
 #endif
-
-/* The three kinds of block type */
-
-std::uint8_t constexpr STORED_BLOCK = 0;
-std::uint8_t constexpr STATIC_TREES = 1;
-std::uint8_t constexpr DYN_TREES    = 2;
 
 /* Diagnostic functions */
 #  define Assert(cond,msg)

@@ -201,7 +201,7 @@ public:
                         expect(deflate_stream::deflateInit2(&zs,
                             level,
                             Z_DEFLATED,
-                            -wbits,
+                            wbits,
                             4,
                             strategy) == Z_OK);
                         buffer output(deflate_stream::deflateBound(&zs, original.size()));

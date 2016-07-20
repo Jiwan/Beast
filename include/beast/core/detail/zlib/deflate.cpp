@@ -33,6 +33,7 @@
 */
 
 #include <beast/core/detail/zlib/deflate_stream.hpp>
+#include <cassert>
 #include <cstring>
 #include <memory>
 
@@ -101,6 +102,10 @@ namespace beast {
     s->dyn_dtree_[d_code(dist)].fc++; \
     flush = (s->last_lit_ == s->lit_bufsize_-1); \
   }
+
+/* To be used only when the state is known to be valid */
+#define ERR_RETURN(strm,err) \
+  return (strm->msg = z_errmsg[Z_NEED_DICT-err], (err))
 
 /* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 #ifndef TOO_FAR
@@ -320,9 +325,7 @@ deflate_stream_t<_>::deflateInit2(
 
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
 
-    if (windowBits < 0) { /* suppress zlib wrapper */
-        windowBits = -windowBits;
-    }
+    assert(windowBits >= 0);
     if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED ||
         windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
         strategy < 0 || strategy > Z_FIXED) {

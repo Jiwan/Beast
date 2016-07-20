@@ -86,6 +86,14 @@ std::uint8_t constexpr REPZ_3_10 = 17;
 // repeat a zero length 11-138 times  (7 bits of repeat count)
 std::uint8_t constexpr REPZ_11_138 = 18;
 
+// The three kinds of block type
+std::uint8_t constexpr STORED_BLOCK = 0;
+std::uint8_t constexpr STATIC_TREES = 1;
+std::uint8_t constexpr DYN_TREES    = 2;
+
+// Maximum value for memLevel in deflateInit2
+std::uint8_t constexpr MAX_MEM_LEVEL = 9;
+
 namespace detail {
 
 // Describes a single value and its code string.
