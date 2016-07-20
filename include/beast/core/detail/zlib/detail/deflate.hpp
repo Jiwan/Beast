@@ -113,24 +113,24 @@ struct static_tree_desc
 struct deflate_tables
 {
     // Number of extra bits for each length code
-    std::uint8_t extra_lbits[limits::lengthCodes] = {
+    std::uint8_t const extra_lbits[limits::lengthCodes] = {
         0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0
     };
 
     // Number of extra bits for each distance code
-    std::uint8_t extra_dbits[limits::dCodes] = {
+    std::uint8_t const extra_dbits[limits::dCodes] = {
         0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13
     };
 
     // Number of extra bits for each bit length code
-    std::uint8_t extra_blbits[limits::blCodes] = {
+    std::uint8_t const extra_blbits[limits::blCodes] = {
         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7
     };
 
     // The lengths of the bit length codes are sent in order
     // of decreasing probability, to avoid transmitting the
     // lengths for unused bit length codes.
-    std::uint8_t bl_order[limits::blCodes] = {
+    std::uint8_t const bl_order[limits::blCodes] = {
         16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15
     };
 

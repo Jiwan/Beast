@@ -122,12 +122,6 @@ deflate_stream_t<_>::~deflate_stream_t()
               flush = _tr_tally(s, distance, length)
 #endif
 
-/* ===========================================================================
- *  Function prototypes.
- */
-
-using compress_func = block_state(*)(deflate_stream*, int flush);
-
 #ifdef DEBUG
 local  void check_match (deflate_stream *s, IPos start, IPos match,
                             int length);
@@ -145,32 +139,6 @@ local  void check_match (deflate_stream *s, IPos start, IPos match,
 #endif
 /* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 
-/* Values for max_lazy_match, good_match and max_chain_length, depending on
- * the desired pack level (0..9). The values given below have been tuned to
- * exclude worst case performance for pathological files. Better values may be
- * found for specific files.
- */
-typedef struct config_s {
-   std::uint16_t good_length; /* reduce lazy search above this match length */
-   std::uint16_t max_lazy;    /* do not perform lazy search above this match length */
-   std::uint16_t nice_length; /* quit search above this match length */
-   std::uint16_t max_chain;
-   compress_func func;
-} config;
-
-local const config configuration_table[10] = {
-/*      good lazy nice chain */
-/* 0 */ {0,    0,  0,    0, &deflate_stream::deflate_stored},  /* store only */
-/* 1 */ {4,    4,  8,    4, &deflate_stream::deflate_fast}, /* max speed, no lazy matches */
-/* 2 */ {4,    5, 16,    8, &deflate_stream::deflate_fast},
-/* 3 */ {4,    6, 32,   32, &deflate_stream::deflate_fast},
-
-/* 4 */ {4,    4, 16,   16, &deflate_stream::deflate_slow},  /* lazy matches */
-/* 5 */ {8,   16, 32,   32, &deflate_stream::deflate_slow},
-/* 6 */ {8,   16, 128, 128, &deflate_stream::deflate_slow},
-/* 7 */ {8,   32, 128, 256, &deflate_stream::deflate_slow},
-/* 8 */ {32, 128, 258, 1024, &deflate_stream::deflate_slow},
-/* 9 */ {32, 258, 258, 4096, &deflate_stream::deflate_slow}}; /* max compression */
 
 /* Note: the deflate() code requires max_lazy >= limits::minMatch and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
@@ -590,9 +558,9 @@ deflate_stream_t<_>::deflateParams(deflate_stream_t* strm, int level, int strate
     if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
         return Z_STREAM_ERROR;
     }
-    func = configuration_table[s->level_].func;
+    func = get_config(s->level_).func;
 
-    if ((strategy != s->strategy_ || func != configuration_table[level].func) &&
+    if ((strategy != s->strategy_ || func != get_config(level).func) &&
         strm->total_in != 0) {
         /* Flush the last buffer: */
         err = strm->deflate(Z_BLOCK);
@@ -601,10 +569,10 @@ deflate_stream_t<_>::deflateParams(deflate_stream_t* strm, int level, int strate
     }
     if (s->level_ != level) {
         s->level_ = level;
-        s->max_lazy_match_   = configuration_table[level].max_lazy;
-        s->good_match_       = configuration_table[level].good_length;
-        s->nice_match_       = configuration_table[level].nice_length;
-        s->max_chain_length_ = configuration_table[level].max_chain;
+        s->max_lazy_match_   = get_config(level).max_lazy;
+        s->good_match_       = get_config(level).good_length;
+        s->nice_match_       = get_config(level).nice_length;
+        s->max_chain_length_ = get_config(level).max_chain;
     }
     s->strategy_ = strategy;
     return err;
@@ -765,7 +733,7 @@ auto strm = this;
 
         bstate = s->strategy_ == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
                     (s->strategy_ == Z_RLE ? deflate_rle(s, flush) :
-                        (*(configuration_table[s->level_].func))(s, flush));
+                        (*(get_config(s->level_).func))(s, flush));
 
         if (bstate == finish_started || bstate == finish_done) {
             s->status_ = FINISH_STATE;
@@ -881,10 +849,11 @@ deflate_stream_t<_>::lm_init(deflate_stream_t *s)
 
     /* Set the default configuration parameters:
      */
-    s->max_lazy_match_   = configuration_table[s->level_].max_lazy;
-    s->good_match_       = configuration_table[s->level_].good_length;
-    s->nice_match_       = configuration_table[s->level_].nice_length;
-    s->max_chain_length_ = configuration_table[s->level_].max_chain;
+    // VFALCO TODO just copy the config struct
+    s->max_lazy_match_   = get_config(s->level_).max_lazy;
+    s->good_match_       = get_config(s->level_).good_length;
+    s->nice_match_       = get_config(s->level_).nice_length;
+    s->max_chain_length_ = get_config(s->level_).max_chain;
 
     s->strstart_ = 0;
     s->block_start_ = 0L;

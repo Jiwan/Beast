@@ -291,6 +291,56 @@ public:
     static int deflateInit (deflate_stream_t* strm, int level);
     static int deflateInit2 (deflate_stream_t* strm, int level, int  method,
         int windowBits, int memLevel, int strategy);
+
+    using compress_func = block_state(*)(deflate_stream_t*, int flush);
+
+    /* Values for max_lazy_match, good_match and max_chain_length, depending on
+     * the desired pack level (0..9). The values given below have been tuned to
+     * exclude worst case performance for pathological files. Better values may be
+     * found for specific files.
+     */
+    struct config {
+       std::uint16_t good_length; /* reduce lazy search above this match length */
+       std::uint16_t max_lazy;    /* do not perform lazy search above this match length */
+       std::uint16_t nice_length; /* quit search above this match length */
+       std::uint16_t max_chain;
+       compress_func func;
+
+       config(
+               std::uint16_t good_length_,
+               std::uint16_t max_lazy_,
+               std::uint16_t nice_length_,
+               std::uint16_t max_chain_,
+               compress_func func_)
+           : good_length(good_length_)
+           , max_lazy(max_lazy_)
+           , nice_length(nice_length_)
+           , max_chain(max_chain_)
+           , func(func_)
+       {
+       }
+    };
+
+    static
+    config
+    get_config(std::size_t level)
+    {
+        switch(level)
+        {
+        //      good lazy nice chain 
+        case 0: return {  0,   0,   0,    0, &deflate_stored}; // store only 
+        case 1: return {  4,   4,   8,    4, &deflate_fast};   // max speed, no lazy matches
+        case 2: return {  4,   5,  16,    8, &deflate_fast};
+        case 3: return {  4,   6,  32,   32, &deflate_fast};
+        case 4: return {  4,   4,  16,   16, &deflate_slow};   // lazy matches
+        case 5: return {  8,  16,  32,   32, &deflate_slow};
+        case 6: return {  8,  16, 128,  128, &deflate_slow};
+        case 7: return {  8,  32, 128,  256, &deflate_slow};
+        case 8: return { 32, 128, 258, 1024, &deflate_slow};
+        default:
+        case 9: return { 32, 258, 258, 4096, &deflate_slow};    // max compression
+        }
+    }
 };
 
 //} // detail
