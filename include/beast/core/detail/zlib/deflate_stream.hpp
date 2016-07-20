@@ -295,7 +295,6 @@ public:
     static void init_block     (deflate_stream_t *s);
     static void pqdownheap     (deflate_stream_t *s, detail::ct_data *tree, int k);
     static void gen_bitlen     (deflate_stream_t *s, tree_desc *desc);
-    static void gen_codes      (detail::ct_data *tree, int max_code, std::uint16_t *bl_count);
     static void build_tree     (deflate_stream_t *s, tree_desc *desc);
     static void scan_tree      (deflate_stream_t *s, detail::ct_data *tree, int max_code);
     static void send_tree      (deflate_stream_t *s, detail::ct_data *tree, int max_code);
@@ -315,7 +314,6 @@ public:
     static void compress_block (deflate_stream_t *s, const detail::ct_data *ltree,
                                 const detail::ct_data *dtree);
     static int  detect_data_type (deflate_stream_t *s);
-    static unsigned bi_reverse (unsigned value, int length);
     static void bi_flush       (deflate_stream_t *s);
     static void bi_windup      (deflate_stream_t *s);
     static void copy_block     (deflate_stream_t *s, char *buf, unsigned len,

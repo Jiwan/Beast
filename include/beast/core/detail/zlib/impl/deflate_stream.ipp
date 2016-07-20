@@ -35,6 +35,8 @@
 #ifndef BEAST_CORE_DETAIL_ZLIB_IMPL_DEFLATE_STREAM_IPP
 #define BEAST_CORE_DETAIL_ZLIB_IMPL_DEFLATE_STREAM_IPP
 
+#include <beast/core/detail/zlib/detail/deflate.hpp>
+
 namespace beast {
 
 /*
@@ -325,50 +327,6 @@ deflate_stream_t<_>::gen_bitlen(
 }
 
 /* ===========================================================================
- * Generate the codes for a given tree and bit counts (which need not be
- * optimal).
- * IN assertion: the array bl_count contains the bit length statistics for
- * the given tree and the field len is set for all tree elements.
- * OUT assertion: the field code is set for all tree elements of non
- *     zero code length.
- */
-template<class _>
-void
-deflate_stream_t<_>::gen_codes (
-    detail::ct_data *tree,             /* the tree to decorate */
-    int max_code,              /* largest code with non zero frequency */
-    std::uint16_t *bl_count)            /* number of codes at each bit length */
-{
-    std::uint16_t next_code[limits::maxBits+1]; /* next code value for each bit length */
-    std::uint16_t code = 0;              /* running code value */
-    int bits;                  /* bit index */
-    int n;                     /* code index */
-
-    /* The distribution counts are first used to generate the code values
-     * without bit reversal.
-     */
-    for (bits = 1; bits <= limits::maxBits; bits++) {
-        next_code[bits] = code = (code + bl_count[bits-1]) << 1;
-    }
-    /* Check that the bit counts in bl_count are consistent. The last code
-     * must be all ones.
-     */
-    Assert (code + bl_count[limits::maxBits]-1 == (1<<limits::maxBits)-1,
-            "inconsistent bit counts");
-    Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
-
-    for (n = 0;  n <= max_code; n++) {
-        int len = tree[n].dl;
-        if (len == 0) continue;
-        /* Now reverse the bits */
-        tree[n].fc = bi_reverse(next_code[len]++, len);
-
-        Tracecv(tree != static_ltree, (stderr,"\nn %3d %c l %2d c %4x (%x) ",
-             n, (isgraph(n) ? n : ' '), len, tree[n].fc, next_code[len]-1));
-    }
-}
-
-/* ===========================================================================
  * Construct one Huffman tree and assigns the code bit strings and lengths.
  * Update the total bit length for the current block.
  * IN assertion: the field freq is set for all tree elements.
@@ -439,12 +397,6 @@ deflate_stream_t<_>::build_tree(
         s->depth_[node] = (std::uint8_t)((s->depth_[n] >= s->depth_[m] ?
                                 s->depth_[n] : s->depth_[m]) + 1);
         tree[n].dl = tree[m].dl = (std::uint16_t)node;
-#ifdef DUMP_BL_TREE
-        if (tree == s->bl_tree_) {
-            fprintf(stderr,"\nnode %d(%d), sons %d(%d) %d(%d)",
-                    node, tree[node].fc, n, tree[n].fc, m, tree[m].fc);
-        }
-#endif
         /* and insert the new node in the heap */
         s->heap_[SMALLEST] = node++;
         pqdownheap(s, tree, SMALLEST);
@@ -459,7 +411,7 @@ deflate_stream_t<_>::build_tree(
     gen_bitlen(s, (tree_desc *)desc);
 
     /* The field len is now set, we can generate the bit codes */
-    gen_codes ((detail::ct_data *)tree, max_code, s->bl_count_);
+    detail::gen_codes (tree, max_code, s->bl_count_);
 }
 
 /* ===========================================================================
@@ -927,25 +879,6 @@ deflate_stream_t<_>::detect_data_type(deflate_stream_t *s)
      * this stream either is empty or has tolerated ("gray-listed") bytes only.
      */
     return Z_BINARY;
-}
-
-/* ===========================================================================
- * Reverse the first len bits of a code, using straightforward code (a faster
- * method would use a table)
- * IN assertion: 1 <= len <= 15
- */
-template<class _>
-unsigned
-deflate_stream_t<_>::bi_reverse(
-    unsigned code, /* the value to invert */
-    int len)       /* its bit length */
-{
-    unsigned res = 0;
-    do {
-        res |= code & 1;
-        code >>= 1, res <<= 1;
-    } while (--len > 0);
-    return res >> 1;
 }
 
 /* ===========================================================================

@@ -163,6 +163,7 @@ struct deflate_tables
     };
 };
 
+// Reverse the first len bits of a code
 template<class = void>
 unsigned
 bi_reverse(unsigned code, int len)
