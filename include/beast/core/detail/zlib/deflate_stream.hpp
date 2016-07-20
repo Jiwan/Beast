@@ -32,8 +32,8 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
-#define BEAST_CORE_DETAIL_DEFLATE_STREAM_HPP
+#ifndef BEAST_CORE_DETAIL_ZLIB_DEFLATE_STREAM_HPP
+#define BEAST_CORE_DETAIL_ZLIB_DEFLATE_STREAM_HPP
 
 #include <beast/core/detail/zlib/detail/deflate.hpp>
 
@@ -385,5 +385,7 @@ void _tr_stored_block (deflate_stream *s, char *bu,
    ((dist) < 256 ? s->lut_.dist_code[dist] : s->lut_.dist_code[256+((dist)>>7)])
 
 } // beast
+
+#include <beast/core/detail/zlib/impl/deflate_stream.ipp>
 
 #endif

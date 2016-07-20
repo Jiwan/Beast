@@ -82,20 +82,6 @@
 
 namespace beast {
 
-template<class _>
-deflate_stream_t<_>::deflate_stream_t()
-    : lut_(detail::get_deflate_tables())
-{
-    // default level 6
-    //deflateInit2(this, 6, Z_DEFLATED, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
-}
-
-template<class _>
-deflate_stream_t<_>::~deflate_stream_t()
-{
-    deflateEnd(this);
-}
-
 //-------------------------------------------------------------------------------
 
 #ifndef DEBUG
