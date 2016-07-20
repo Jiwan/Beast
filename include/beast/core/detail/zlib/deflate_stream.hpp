@@ -131,7 +131,7 @@ public:
      */
     std::uint16_t *prev_;
 
-    std::uint16_t *head_; /* Heads of the hash chains or NIL. */
+    std::uint16_t *head_; /* Heads of the hash chains or 0. */
 
     uInt  ins_h_;          /* hash index of string to be inserted */
     uInt  hash_size_;      /* number of elements in hash table */

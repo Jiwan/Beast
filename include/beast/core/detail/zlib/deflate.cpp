@@ -127,13 +127,6 @@ local  void check_match (deflate_stream *s, IPos start, IPos match,
                             int length);
 #endif
 
-/* ===========================================================================
- * Local data
- */
-
-#define NIL 0
-/* Tail of hash chains */
-
 /* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 #ifndef TOO_FAR
 #  define TOO_FAR 4096
@@ -176,7 +169,7 @@ local  void check_match (deflate_stream *s, IPos start, IPos match,
  * prev[] will be initialized on the fly.
  */
 #define CLEAR_HASH(s) \
-    s->head_[s->hash_size_-1] = NIL; \
+    s->head_[s->hash_size_-1] = 0; \
     std::memset((Byte *)s->head_, 0, (unsigned)(s->hash_size_-1)*sizeof(*s->head_));
 
 /* ========================================================================= */
@@ -237,14 +230,14 @@ deflate_stream_t<_>::fill_window(deflate_stream_t *s)
             p = &s->head_[n];
             do {
                 m = *--p;
-                *p = (std::uint16_t)(m >= wsize ? m-wsize : NIL);
+                *p = (std::uint16_t)(m >= wsize ? m-wsize : 0);
             } while (--n);
 
             n = wsize;
             p = &s->prev_[n];
             do {
                 m = *--p;
-                *p = (std::uint16_t)(m >= wsize ? m-wsize : NIL);
+                *p = (std::uint16_t)(m >= wsize ? m-wsize : 0);
                 /* If n is not on any hash chain, prev[n] is garbage but
                  * its value will never be used.
                  */
@@ -879,7 +872,7 @@ deflate_stream_t<_>::longest_match(deflate_stream_t *s, IPos cur_match)
     int best_len = s->prev_length_;              /* best match length so far */
     int nice_match = s->nice_match_;             /* stop if match long enough */
     IPos limit = s->strstart_ > (IPos)MAX_DIST(s) ?
-        s->strstart_ - (IPos)MAX_DIST(s) : NIL;
+        s->strstart_ - (IPos)MAX_DIST(s) : 0;
     /* Stop when cur_match becomes <= limit. To simplify the code,
      * we prevent matches with the string of window index 0.
      */
@@ -1111,7 +1104,7 @@ deflate_stream_t<_>::deflate_fast(deflate_stream_t *s, int flush)
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
          */
-        hash_head = NIL;
+        hash_head = 0;
         if (s->lookahead_ >= limits::minMatch) {
             INSERT_STRING(s, s->strstart_, hash_head);
         }
@@ -1119,7 +1112,7 @@ deflate_stream_t<_>::deflate_fast(deflate_stream_t *s, int flush)
         /* Find the longest match, discarding those <= prev_length.
          * At this point we have always match_length < limits::minMatch
          */
-        if (hash_head != NIL && s->strstart_ - hash_head <= MAX_DIST(s)) {
+        if (hash_head != 0 && s->strstart_ - hash_head <= MAX_DIST(s)) {
             /* To simplify the code, we prevent matches with the string
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
@@ -1208,7 +1201,7 @@ deflate_stream_t<_>::deflate_slow(deflate_stream_t *s, int flush)
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
          */
-        hash_head = NIL;
+        hash_head = 0;
         if (s->lookahead_ >= limits::minMatch) {
             INSERT_STRING(s, s->strstart_, hash_head);
         }
@@ -1218,7 +1211,7 @@ deflate_stream_t<_>::deflate_slow(deflate_stream_t *s, int flush)
         s->prev_length_ = s->match_length_, s->prev_match_ = s->match_start_;
         s->match_length_ = limits::minMatch-1;
 
-        if (hash_head != NIL && s->prev_length_ < s->max_lazy_match_ &&
+        if (hash_head != 0 && s->prev_length_ < s->max_lazy_match_ &&
             s->strstart_ - hash_head <= MAX_DIST(s)) {
             /* To simplify the code, we prevent matches with the string
              * of window index 0 (in particular we have to avoid a match
