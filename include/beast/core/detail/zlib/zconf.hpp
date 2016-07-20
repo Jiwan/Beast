@@ -47,11 +47,6 @@
 #  endif
 #endif
 
-/* Some Mac compilers merge all .h files incorrectly: */
-#if defined(__MWERKS__)||defined(applec)||defined(THINK_C)||defined(__SC__)
-#  define NO_DUMMY_DECL
-#endif
-
 /* Maximum value for memLevel in deflateInit2 */
 #define MAX_MEM_LEVEL 9
 

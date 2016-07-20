@@ -134,23 +134,15 @@ local  void check_match (deflate_stream *s, IPos start, IPos match,
 #define NIL 0
 /* Tail of hash chains */
 
+/* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 #ifndef TOO_FAR
 #  define TOO_FAR 4096
 #endif
-/* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
-
 
 /* Note: the deflate() code requires max_lazy >= limits::minMatch and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
  * meaning.
  */
-
-#define EQUAL 0
-/* result of memcmp for equal strings */
-
-#ifndef NO_DUMMY_DECL
-struct static_tree_desc {int dummy;}; /* for buggy compilers */
-#endif
 
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
 #define RANK(f) (((f) << 1) - ((f) > 4 ? 9 : 0))
@@ -982,7 +974,7 @@ deflate_stream_t<_>::check_match(
 {
     /* check that the match is indeed a match */
     if (std::memcmp(s->window_ + match,
-                s->window_ + start, length) != EQUAL) {
+                s->window_ + start, length) != 0) {
         fprintf(stderr, " start %u, match %u, length %d\n",
                 start, match, length);
         do {
