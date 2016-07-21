@@ -42,13 +42,6 @@ namespace beast {
 /* (size given to avoid silly warnings with Visual C++) */
 extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
-/* default memLevel */
-#if MAX_MEM_LEVEL >= 8
-#  define DEF_MEM_LEVEL 8
-#else
-#  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
-#endif
-
 /* Diagnostic functions */
 #  define Assert(cond,msg)
 #  define Trace(x)

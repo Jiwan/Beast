@@ -41,6 +41,13 @@
 
 namespace beast {
 
+/* default memLevel */
+#if MAX_MEM_LEVEL >= 8
+#  define DEF_MEM_LEVEL 8
+#else
+#  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
+#endif
+
 struct limits
 {
     // Upper limit on code length
@@ -233,14 +240,14 @@ get_deflate_tables()
             //std::uint16_t bl_count[limits::maxBits+1];
 
             // Initialize the mapping length (0..255) -> length code (0..28)
-            std::uint16_t length = 0;
+            std::uint8_t length = 0;
             for(std::uint8_t code = 0; code < limits::lengthCodes-1; ++code)
             {
                 tables.base_length[code] = length;
                 for(std::size_t n = 0; n < (1U<<tables.extra_lbits[code]); ++n)
                     tables.length_code[length++] = code;
             }
-            assert(length == 256);
+            assert(length == 0);
             // Note that the length 255 (match length 258) can be represented
             // in two different ways: code 284 + 5 bits or code 285, so we
             // overwrite length_code[255] to use the best encoding:
