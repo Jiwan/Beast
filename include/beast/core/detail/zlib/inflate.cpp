@@ -36,6 +36,7 @@
 
 #include <beast/core/detail/zlib/inflate_stream.hpp>
 #include <cassert>
+#include <cstring>
 
 namespace beast {
 
