@@ -37,50 +37,6 @@
 #include <cstring>
 #include <memory>
 
-/*
- *  ALGORITHM
- *
- *      The "deflation" process depends on being able to identify portions
- *      of the input text which are identical to earlier input (within a
- *      sliding window trailing behind the input currently being processed).
- *
- *      The most straightforward technique turns out to be the fastest for
- *      most input files: try all possible matches and select the longest.
- *      The key feature of this algorithm is that insertions into the string
- *      dictionary are very simple and thus fast, and deletions are avoided
- *      completely. Insertions are performed at each input character, whereas
- *      string matches are performed only when the previous match ends. So it
- *      is preferable to spend more time in matches to allow very fast string
- *      insertions and avoid deletions. The matching algorithm for small
- *      strings is inspired from that of Rabin & Karp. A brute force approach
- *      is used to find longer strings when a small match has been found.
- *      A similar algorithm is used in comic (by Jan-Mark Wams) and freeze
- *      (by Leonid Broukhis).
- *         A previous version of this file used a more sophisticated algorithm
- *      (by Fiala and Greene) which is guaranteed to run in linear amortized
- *      time, but has a larger average cost, uses more memory and is patented.
- *      However the F&G algorithm may be faster for some highly redundant
- *      files if the parameter max_chain_length (described below) is too large.
- *
- *  ACKNOWLEDGEMENTS
- *
- *      The idea of lazy evaluation of matches is due to Jan-Mark Wams, and
- *      I found it in 'freeze' written by Leonid Broukhis.
- *      Thanks to many people for bug reports and testing.
- *
- *  REFERENCES
- *
- *      Deutsch, L.P.,"DEFLATE Compressed Data Format Specification".
- *      Available in http://tools.ietf.org/html/rfc1951
- *
- *      A description of the Rabin and Karp algorithm is given in the book
- *         "Algorithms" by R. Sedgewick, Addison-Wesley, p252.
- *
- *      Fiala,E.R., and Greene,D.H.
- *         Data Compression with Finite Windows, Comm.ACM, 32,4 (1989) 490-595
- *
- */
-
 namespace beast {
 
 //-------------------------------------------------------------------------------
@@ -318,10 +274,10 @@ deflate_stream_t<_>::deflateInit2(
      * output size for (length,distance) codes is <= 24 bits.
      */
 
-    if (strm == Z_NULL)
+    if (strm == 0)
         return Z_STREAM_ERROR;
 
-    strm->msg = Z_NULL;
+    strm->msg = 0;
 
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
 
@@ -355,8 +311,8 @@ deflate_stream_t<_>::deflateInit2(
     s->pending_buf_ = (std::uint8_t *) overlay;
     s->pending_buf_size_ = (std::uint32_t)s->lit_bufsize_ * (sizeof(std::uint16_t)+2L);
 
-    if (s->window_ == Z_NULL || s->prev_ == Z_NULL || s->head_ == Z_NULL ||
-        s->pending_buf_ == Z_NULL) {
+    if (s->window_ == 0 || s->prev_ == 0 || s->head_ == 0 ||
+        s->pending_buf_ == 0) {
         s->status_ = FINISH_STATE;
         strm->msg = "unspecified zlib error";
         deflateEnd (strm);
@@ -436,7 +392,7 @@ int
 deflate_stream_t<_>::deflateResetKeep(deflate_stream_t* strm)
 {
     strm->total_in = strm->total_out = 0;
-    strm->msg = Z_NULL;
+    strm->msg = 0;
     strm->data_type = Z_UNKNOWN;
 
     auto s = strm;
@@ -474,9 +430,9 @@ deflate_stream_t<_>::deflatePending (
     unsigned *pending,
     int *bits)
 {
-    if (pending != Z_NULL)
+    if (pending != 0)
         *pending = strm->pending_;
-    if (bits != Z_NULL)
+    if (bits != 0)
         *bits = strm->bi_valid_;
     return Z_OK;
 }
@@ -514,7 +470,7 @@ deflate_stream_t<_>::deflateParams(deflate_stream_t* strm, int level, int strate
     compress_func func;
     int err = Z_OK;
 
-    if (strm == Z_NULL || strm == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == 0 || strm == 0) return Z_STREAM_ERROR;
     auto s = strm;
 
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
@@ -590,7 +546,7 @@ deflate_stream_t<_>::deflateBound(
               ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 5;
 
     /* if can't get parameters, return conservative bound plus zlib wrapper */
-    if (strm == Z_NULL || strm == Z_NULL)
+    if (strm == 0 || strm == 0)
         return complen + 6;
 
     /* compute wrapper length */
@@ -644,14 +600,14 @@ deflate_stream_t<_>::deflate(int flush)
 auto strm = this;
     int old_flush; /* value of flush param for previous deflate call */
 
-    if (strm == Z_NULL || strm == Z_NULL ||
+    if (strm == 0 || strm == 0 ||
         flush > Z_BLOCK || flush < 0) {
         return Z_STREAM_ERROR;
     }
     auto s = strm;
 
-    if (strm->next_out == Z_NULL ||
-        (strm->next_in == Z_NULL && strm->avail_in != 0) ||
+    if (strm->next_out == 0 ||
+        (strm->next_in == 0 && strm->avail_in != 0) ||
         (s->status_ == FINISH_STATE && flush != Z_FINISH)) {
         ERR_RETURN(strm, Z_STREAM_ERROR);
     }
@@ -752,7 +708,7 @@ deflate_stream_t<_>::deflateEnd(deflate_stream_t* strm)
 {
     int status;
 
-    if (strm == Z_NULL || strm == Z_NULL) return Z_STREAM_ERROR;
+    if (strm == 0 || strm == 0) return Z_STREAM_ERROR;
 
     status = strm->status_;
     if (status != EXTRA_STATE &&
@@ -769,7 +725,7 @@ deflate_stream_t<_>::deflateEnd(deflate_stream_t* strm)
     std::free(strm->head_);
     std::free(strm->prev_);
     std::free(strm->window_);
-    strm = Z_NULL;
+    strm = 0;
 
     return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
 }
@@ -941,7 +897,7 @@ deflate_stream_t<_>::longest_match(deflate_stream_t *s, IPos cur_match)
 #define FLUSH_BLOCK_ONLY(s, last) { \
    _tr_flush_block(s, (s->block_start_ >= 0L ? \
                    (char *)&s->window_[(unsigned)s->block_start_] : \
-                   (char *)Z_NULL), \
+                   (char *)0), \
                 (std::uint32_t)((long)s->strstart_ - s->block_start_), \
                 (last)); \
    s->block_start_ = s->strstart_; \

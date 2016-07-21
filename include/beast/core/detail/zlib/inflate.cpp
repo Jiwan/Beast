@@ -79,7 +79,7 @@ inflate_stream::resetKeep()
 {
 auto strm = this;
     strm->total_in = strm->total_out = strm->total = 0;
-    strm->msg = Z_NULL;
+    strm->msg = 0;
     strm->mode = HEAD;
     strm->last = 0;
     strm->dmax = 32768U;
@@ -123,9 +123,9 @@ int inflate_stream::updatewindow(const Byte *end, unsigned copy)
     unsigned dist;
 
     /* if it hasn't been done already, allocate space for the window */
-    if (strm->window == Z_NULL) {
+    if (strm->window == 0) {
         strm->window = (unsigned char *) std::malloc(1U << strm->wbits);
-        if (strm->window == Z_NULL) return 1;
+        if (strm->window == 0) return 1;
     }
 
     /* if window not in use yet, initialize */
@@ -220,8 +220,8 @@ inflate_stream::write(inflate_stream* strm, int flush)
     static const unsigned short order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-    if (strm->next_out == Z_NULL ||
-            (strm->next_in == Z_NULL && strm->avail_in != 0))
+    if (strm->next_out == 0 ||
+            (strm->next_in == 0 && strm->avail_in != 0))
         return Z_STREAM_ERROR;
 
     if (strm->mode == TYPE) strm->mode = TYPEDO;      /* skip check */

@@ -143,7 +143,7 @@ public:
             buffer output(original.size());
             inflate_stream zs;
             zs.avail_in = 0;
-            zs.next_in = Z_NULL;
+            zs.next_in = 0;
             zs.next_out = output.data();
             zs.avail_out = output.capacity();
             if(i > 0)
@@ -197,7 +197,7 @@ public:
                     {
                         deflate_stream zs;
                         zs.avail_in = 0;
-                        zs.next_in = Z_NULL;
+                        zs.next_in = 0;
                         expect(deflate_stream::deflateInit2(&zs,
                             level,
                             Z_DEFLATED,

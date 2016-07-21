@@ -32,8 +32,8 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef ZLIB_H
-#define ZLIB_H
+#ifndef BEAST_CORE_DETAIL_ZLIB_ZLIB_HPP
+#define BEAST_CORE_DETAIL_ZLIB_ZLIB_HPP
 
 #include <cstdint>
 #include <cstdlib>
@@ -58,7 +58,7 @@ typedef unsigned long  uLong; /* 32 bits or more */
    memory management.  The compression library attaches no meaning to the
    opaque value.
 
-     zalloc must return Z_NULL if there is not enough memory for the object.
+     zalloc must return 0 if there is not enough memory for the object.
    If zlib is used in a multi-threaded application, zalloc and zfree must be
    thread safe.
 
@@ -92,50 +92,61 @@ struct z_stream
 /* constants */
 
 /* Allowed flush values; see deflate() and inflate() below for details */
-#define Z_NO_FLUSH      0
-#define Z_PARTIAL_FLUSH 1
-#define Z_SYNC_FLUSH    2
-#define Z_FULL_FLUSH    3
-#define Z_FINISH        4
-#define Z_BLOCK         5
-#define Z_TREES         6
+enum z_Flush
+{
+    Z_NO_FLUSH      = 0,
+    Z_PARTIAL_FLUSH = 1,
+    Z_SYNC_FLUSH    = 2,
+    Z_FULL_FLUSH    = 3,
+    Z_FINISH        = 4,
+    Z_BLOCK         = 5,
+    Z_TREES         = 6
+};
 
 /* Return codes for the compression/decompression functions. Negative values
  * are errors, positive values are used for special but normal events.
  */
-#define Z_OK            0
-#define Z_STREAM_END    1
-#define Z_NEED_DICT     2
-#define Z_ERRNO        (-1)
-#define Z_STREAM_ERROR (-2)
-#define Z_DATA_ERROR   (-3)
-#define Z_MEM_ERROR    (-4)
-#define Z_BUF_ERROR    (-5)
-#define Z_VERSION_ERROR (-6)
+enum z_Result
+{
+    Z_OK            =  0,
+    Z_STREAM_END    =  1,
+    Z_NEED_DICT     =  2,
+    Z_ERRNO         = -1,
+    Z_STREAM_ERROR  = -2,
+    Z_DATA_ERROR    = -3,
+    Z_MEM_ERROR     = -4,
+    Z_BUF_ERROR     = -5,
+    Z_VERSION_ERROR = -6
+};
 
 /* compression levels */
-#define Z_NO_COMPRESSION         0
-#define Z_BEST_SPEED             1
-#define Z_BEST_COMPRESSION       9
-#define Z_DEFAULT_COMPRESSION  (-1)
+enum z_Compression
+{
+    Z_NO_COMPRESSION        =  0,
+    Z_BEST_SPEED            =  1,
+    Z_BEST_COMPRESSION      =  9,
+    Z_DEFAULT_COMPRESSION   = -1
+};
 
 /* compression strategy; see deflateInit2() below for details */
-#define Z_FILTERED            1
-#define Z_HUFFMAN_ONLY        2
-#define Z_RLE                 3
-#define Z_FIXED               4
-#define Z_DEFAULT_STRATEGY    0
+enum z_Strategy
+{
+    Z_FILTERED          = 1,
+    Z_HUFFMAN_ONLY      = 2,
+    Z_RLE               = 3,
+    Z_FIXED             = 4,
+    Z_DEFAULT_STRATEGY  = 0
+};
 
 /* Possible values of the data_type field (though see inflate()) */
-#define Z_BINARY   0
-#define Z_TEXT     1
-#define Z_ASCII    Z_TEXT   /* for compatibility with 1.2.2 and earlier */
-#define Z_UNKNOWN  2
+enum z_Type
+{
+    Z_BINARY    = 0,
+    Z_TEXT      = 1,
+    Z_UNKNOWN   = 2
+};
 
-/* The deflate compression method (the only one supported in this version) */
-#define Z_DEFLATED   8 // VFALCO Useless, remove
-
-#define Z_NULL  0  /* for initializing zalloc, zfree, opaque */
+std::uint8_t constexpr Z_DEFLATED = 8; // VFALCO Useless, remove
 
 } // beast
 
