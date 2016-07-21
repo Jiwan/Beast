@@ -48,6 +48,14 @@ namespace beast {
 #  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
 #endif
 
+/* Diagnostic functions */
+#  define Assert(cond,msg)
+#  define Trace(x)
+#  define Tracev(x)
+#  define Tracevv(x)
+#  define Tracec(c,x)
+#  define Tracecv(c,x)
+
 struct limits
 {
     // Upper limit on code length

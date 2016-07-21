@@ -32,8 +32,6 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#include "zutil.hpp"
-
 #include <beast/core/detail/zlib/inflate_stream.hpp>
 #include <cassert>
 #include <cstring>
@@ -248,14 +246,10 @@ inflate_stream::write(inflate_stream* strm, int flush)
             DROPBITS(1);
             switch (BITS(2)) {
             case 0:                             /* stored block */
-                Tracev((stderr, "inflate:     stored block%s\n",
-                        strm->last ? " (last)" : ""));
                 strm->mode = STORED;
                 break;
             case 1:                             /* fixed block */
                 strm->fixedTables();
-                Tracev((stderr, "inflate:     fixed codes block%s\n",
-                        strm->last ? " (last)" : ""));
                 strm->mode = LEN_;             /* decode codes */
                 if (flush == Z_TREES) {
                     DROPBITS(2);
@@ -263,8 +257,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 }
                 break;
             case 2:                             /* dynamic block */
-                Tracev((stderr, "inflate:     dynamic codes block%s\n",
-                        strm->last ? " (last)" : ""));
                 strm->mode = TABLE;
                 break;
             case 3:
@@ -282,8 +274,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 break;
             }
             strm->length = (unsigned)strm->hold & 0xffff;
-            Tracev((stderr, "inflate:       stored length %u\n",
-                    strm->length));
             INITBITS();
             strm->mode = COPY_;
             if (flush == Z_TREES) goto inf_leave;
@@ -303,7 +293,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 strm->length -= copy;
                 break;
             }
-            Tracev((stderr, "inflate:       stored end\n"));
             strm->mode = TYPE;
             break;
         case TABLE:
@@ -321,7 +310,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 break;
             }
 #endif
-            Tracev((stderr, "inflate:       table sizes ok\n"));
             strm->have = 0;
             strm->mode = LENLENS;
         case LENLENS:
@@ -342,7 +330,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 strm->mode = BAD;
                 break;
             }
-            Tracev((stderr, "inflate:       code lengths ok\n"));
             strm->have = 0;
             strm->mode = CODELENS;
         case CODELENS:
@@ -425,7 +412,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 strm->mode = BAD;
                 break;
             }
-            Tracev((stderr, "inflate:       codes ok\n"));
             strm->mode = LEN_;
             if (flush == Z_TREES) goto inf_leave;
         case LEN_:
@@ -458,14 +444,10 @@ inflate_stream::write(inflate_stream* strm, int flush)
             strm->back += here.bits;
             strm->length = (unsigned)here.val;
             if ((int)(here.op) == 0) {
-                Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
-                        "inflate:         literal '%c'\n" :
-                        "inflate:         literal 0x%02x\n", here.val));
                 strm->mode = LIT;
                 break;
             }
             if (here.op & 32) {
-                Tracevv((stderr, "inflate:         end of block\n"));
                 strm->back = -1;
                 strm->mode = TYPE;
                 break;
@@ -484,7 +466,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 DROPBITS(strm->extra);
                 strm->back += strm->extra;
             }
-            Tracevv((stderr, "inflate:         length %u\n", strm->length));
             strm->was = strm->length;
             strm->mode = DIST;
         case DIST:
@@ -528,7 +509,6 @@ inflate_stream::write(inflate_stream* strm, int flush)
                 break;
             }
 #endif
-            Tracevv((stderr, "inflate:         distance %u\n", strm->offset));
             strm->mode = MATCH;
         case MATCH:
             if (strm->avail_out == 0) goto inf_leave;

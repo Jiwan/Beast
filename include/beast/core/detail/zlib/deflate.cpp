@@ -105,7 +105,7 @@ namespace beast {
 
 /* To be used only when the state is known to be valid */
 #define ERR_RETURN(strm,err) \
-  return (strm->msg = z_errmsg[Z_NEED_DICT-err], (err))
+  return (strm->msg = "unspecified zlib error", (err))
 
 /* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 #ifndef TOO_FAR
@@ -358,7 +358,7 @@ deflate_stream_t<_>::deflateInit2(
     if (s->window_ == Z_NULL || s->prev_ == Z_NULL || s->head_ == Z_NULL ||
         s->pending_buf_ == Z_NULL) {
         s->status_ = FINISH_STATE;
-        strm->msg = z_errmsg[Z_NEED_DICT-Z_MEM_ERROR];
+        strm->msg = "unspecified zlib error";
         deflateEnd (strm);
         return Z_MEM_ERROR;
     }

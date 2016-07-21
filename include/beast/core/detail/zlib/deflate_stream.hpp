@@ -35,9 +35,10 @@
 #ifndef BEAST_CORE_DETAIL_ZLIB_DEFLATE_STREAM_HPP
 #define BEAST_CORE_DETAIL_ZLIB_DEFLATE_STREAM_HPP
 
+#include "zlib.hpp"
+
 #include <beast/core/detail/zlib/detail/deflate.hpp>
 
-#include "zutil.hpp"
 #include <cstdlib>
 
 namespace beast {
