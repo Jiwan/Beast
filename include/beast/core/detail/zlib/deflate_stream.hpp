@@ -49,6 +49,7 @@ std::uint16_t constexpr HEAP_SIZE = 2 * limits::lCodes + 1;
 // size of bit buffer in bi_buf
 std::uint8_t constexpr Buf_size = 16;
 
+// VFALCO THis might not be needed, e.g. for zip/gzip
 enum StreamStatus
 {
     EXTRA_STATE = 69,
@@ -58,8 +59,6 @@ enum StreamStatus
     BUSY_STATE = 113,
     FINISH_STATE = 666
 };
-
-//struct static_tree_desc;
 
 struct tree_desc
 {

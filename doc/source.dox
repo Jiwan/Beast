@@ -105,6 +105,7 @@ WARN_LOGFILE           =
 INPUT = \
         ../include/beast/ \
         ../include/beast/core \
+        ../include/beast/core/detail/zlib \
         ../include/beast/http \
         ../include/beast/websocket \
         ../include/beast/doc_debug.hpp \
