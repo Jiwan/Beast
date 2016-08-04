@@ -38,6 +38,7 @@
 #include <beast/detail/zlib/zlib.hpp>
 #include <beast/detail/zlib/detail/deflate.hpp>
 #include <cstdlib>
+#include <memory>
 
 namespace beast {
 
@@ -80,13 +81,13 @@ enum block_state
 
 //namespace detail {
 
-template<class = void>
-class deflate_stream_t : public z_stream
+template<class Allocator>
+class basic_deflate_stream : public z_stream
 {
 public:
-    deflate_stream_t();
+    basic_deflate_stream();
 
-    ~deflate_stream_t();
+    ~basic_deflate_stream();
 
     int deflate(int flush);
 
@@ -260,59 +261,59 @@ public:
      */
     std::uint32_t high_water_;
 
-    static void fill_window(deflate_stream_t *s);
-    static block_state deflate_stored(deflate_stream_t *s, int flush);
-    static block_state deflate_fast(deflate_stream_t *s, int flush);
-    static block_state deflate_slow(deflate_stream_t *s, int flush);
-    static block_state deflate_rle(deflate_stream_t *s, int flush);
-    static block_state deflate_huff(deflate_stream_t *s, int flush);
+    static void fill_window(basic_deflate_stream *s);
+    static block_state deflate_stored(basic_deflate_stream *s, int flush);
+    static block_state deflate_fast(basic_deflate_stream *s, int flush);
+    static block_state deflate_slow(basic_deflate_stream *s, int flush);
+    static block_state deflate_rle(basic_deflate_stream *s, int flush);
+    static block_state deflate_huff(basic_deflate_stream *s, int flush);
 
-    static void lm_init        (deflate_stream_t *s);
-    static void flush_pending  (deflate_stream_t* strm);
-    static int read_buf        (deflate_stream_t* strm, Byte *buf, unsigned size);
-    static uInt longest_match  (deflate_stream_t *s, IPos cur_match);
+    static void lm_init        (basic_deflate_stream *s);
+    static void flush_pending  (basic_deflate_stream* strm);
+    static int read_buf        (basic_deflate_stream* strm, Byte *buf, unsigned size);
+    static uInt longest_match  (basic_deflate_stream *s, IPos cur_match);
 
-    static int deflateEnd (deflate_stream_t* strm);
-    static int deflateResetKeep (deflate_stream_t* strm);
-    static int deflateReset (deflate_stream_t* strm);
-    static int deflateParams (deflate_stream_t* strm, int level, int strategy);
-    static int deflateTune (deflate_stream_t* strm,
+    static int deflateEnd (basic_deflate_stream* strm);
+    static int deflateResetKeep (basic_deflate_stream* strm);
+    static int deflateReset (basic_deflate_stream* strm);
+    static int deflateParams (basic_deflate_stream* strm, int level, int strategy);
+    static int deflateTune (basic_deflate_stream* strm,
         int good_length, int max_lazy, int nice_length, int max_chain);
-    static uLong deflateBound (deflate_stream_t* strm, uLong sourceLen);
-    static int deflatePending (deflate_stream_t* strm, unsigned *pending, int *bits);
-    static int deflatePrime (deflate_stream_t* strm, int bits, int value);
-    static int deflateInit (deflate_stream_t* strm, int level);
-    static int deflateInit2 (deflate_stream_t* strm, int level, int  method,
+    static uLong deflateBound (basic_deflate_stream* strm, uLong sourceLen);
+    static int deflatePending (basic_deflate_stream* strm, unsigned *pending, int *bits);
+    static int deflatePrime (basic_deflate_stream* strm, int bits, int value);
+    static int deflateInit (basic_deflate_stream* strm, int level);
+    static int deflateInit2 (basic_deflate_stream* strm, int level, int  method,
         int windowBits, int memLevel, int strategy);
 
-    static void init_block     (deflate_stream_t *s);
-    static void pqdownheap     (deflate_stream_t *s, detail::ct_data *tree, int k);
-    static void gen_bitlen     (deflate_stream_t *s, tree_desc *desc);
-    static void build_tree     (deflate_stream_t *s, tree_desc *desc);
-    static void scan_tree      (deflate_stream_t *s, detail::ct_data *tree, int max_code);
-    static void send_tree      (deflate_stream_t *s, detail::ct_data *tree, int max_code);
-    static int  build_bl_tree  (deflate_stream_t *s);
-    static void send_all_trees (deflate_stream_t *s, int lcodes, int dcodes,
+    static void init_block     (basic_deflate_stream *s);
+    static void pqdownheap     (basic_deflate_stream *s, detail::ct_data *tree, int k);
+    static void gen_bitlen     (basic_deflate_stream *s, tree_desc *desc);
+    static void build_tree     (basic_deflate_stream *s, tree_desc *desc);
+    static void scan_tree      (basic_deflate_stream *s, detail::ct_data *tree, int max_code);
+    static void send_tree      (basic_deflate_stream *s, detail::ct_data *tree, int max_code);
+    static int  build_bl_tree  (basic_deflate_stream *s);
+    static void send_all_trees (basic_deflate_stream *s, int lcodes, int dcodes,
                                 int blcodes);
 
-    static void _tr_init (deflate_stream_t *s);
-    static int _tr_tally (deflate_stream_t *s, unsigned dist, unsigned lc);
-    static void _tr_flush_block (deflate_stream_t *s, char *buf,
+    static void _tr_init (basic_deflate_stream *s);
+    static int _tr_tally (basic_deflate_stream *s, unsigned dist, unsigned lc);
+    static void _tr_flush_block (basic_deflate_stream *s, char *buf,
                             std::uint32_t stored_len, int last);
-    static void _tr_flush_bits (deflate_stream_t *s);
-    static void _tr_align (deflate_stream_t *s);
-    static void _tr_stored_block (deflate_stream_t *s, char *bu,
+    static void _tr_flush_bits (basic_deflate_stream *s);
+    static void _tr_align (basic_deflate_stream *s);
+    static void _tr_stored_block (basic_deflate_stream *s, char *bu,
                             std::uint32_t stored_len, int last);
 
-    static void compress_block (deflate_stream_t *s, const detail::ct_data *ltree,
+    static void compress_block (basic_deflate_stream *s, const detail::ct_data *ltree,
                                 const detail::ct_data *dtree);
-    static int  detect_data_type (deflate_stream_t *s);
-    static void bi_flush       (deflate_stream_t *s);
-    static void bi_windup      (deflate_stream_t *s);
-    static void copy_block     (deflate_stream_t *s, char *buf, unsigned len,
+    static int  detect_data_type (basic_deflate_stream *s);
+    static void bi_flush       (basic_deflate_stream *s);
+    static void bi_windup      (basic_deflate_stream *s);
+    static void copy_block     (basic_deflate_stream *s, char *buf, unsigned len,
                                   int header);
 
-    using compress_func = block_state(*)(deflate_stream_t*, int flush);
+    using compress_func = block_state(*)(basic_deflate_stream*, int flush);
 
     /* Values for max_lazy_match, good_match and max_chain_length, depending on
      * the desired pack level (0..9). The values given below have been tuned to
@@ -365,7 +366,7 @@ public:
 
 //} // detail
 
-using deflate_stream = deflate_stream_t<>;
+using deflate_stream = basic_deflate_stream<std::allocator<std::uint8_t>>;
 
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.

@@ -89,16 +89,18 @@ namespace beast {
  *
  */
 
-template<class _>
-deflate_stream_t<_>::deflate_stream_t()
+template<class Allocator>
+basic_deflate_stream<Allocator>::
+basic_deflate_stream()
     : lut_(detail::get_deflate_tables())
 {
     // default level 6
     //deflateInit2(this, 6, Z_DEFLATED, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
 }
 
-template<class _>
-deflate_stream_t<_>::~deflate_stream_t()
+template<class Allocator>
+basic_deflate_stream<Allocator>::
+~basic_deflate_stream()
 {
     deflateEnd(this);
 }
@@ -151,10 +153,10 @@ deflate_stream_t<_>::~deflate_stream_t()
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::_tr_init(
-    deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+_tr_init(basic_deflate_stream *s)
 {
     s->l_desc_.dyn_tree = s->dyn_ltree_;
     s->l_desc_.stat_desc = &s->lut_.l_desc;
@@ -175,10 +177,10 @@ deflate_stream_t<_>::_tr_init(
 /* ===========================================================================
  * Initialize a new block.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::init_block(
-    deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+init_block(basic_deflate_stream *s)
 {
     int n; /* iterates over tree elements */
 
@@ -221,10 +223,11 @@ deflate_stream_t<_>::init_block(
  * when the heap property is re-established (each father smaller than its
  * two sons).
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::pqdownheap(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+pqdownheap(
+    basic_deflate_stream *s,
     detail::ct_data *tree,  /* the tree to restore */
     int k)               /* node to move down */
 {
@@ -258,10 +261,11 @@ deflate_stream_t<_>::pqdownheap(
  *     The length opt_len is updated; static_len is also updated if stree is
  *     not null.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::gen_bitlen(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+gen_bitlen(
+    basic_deflate_stream *s,
     tree_desc *desc)    /* the tree descriptor */
 {
     detail::ct_data *tree        = desc->dyn_tree;
@@ -347,10 +351,11 @@ deflate_stream_t<_>::gen_bitlen(
  *     and corresponding code. The length opt_len is updated; static_len is
  *     also updated if stree is not null. The field max_code is set.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::build_tree(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+build_tree(
+    basic_deflate_stream *s,
     tree_desc *desc) /* the tree descriptor */
 {
     detail::ct_data *tree         = desc->dyn_tree;
@@ -431,10 +436,11 @@ deflate_stream_t<_>::build_tree(
  * Scan a literal or distance tree to determine the frequencies of the codes
  * in the bit length tree.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::scan_tree (
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+scan_tree(
+    basic_deflate_stream *s,
     detail::ct_data *tree,   /* the tree to be scanned */
     int max_code)    /* and its largest code of non zero frequency */
 {
@@ -478,10 +484,11 @@ deflate_stream_t<_>::scan_tree (
  * Send a literal or distance tree in compressed form, using the codes in
  * bl_tree.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::send_tree (
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+send_tree (
+    basic_deflate_stream *s,
     detail::ct_data *tree, /* the tree to be scanned */
     int max_code)       /* and its largest code of non zero frequency */
 {
@@ -531,9 +538,10 @@ deflate_stream_t<_>::send_tree (
  * Construct the Huffman tree for the bit lengths and return the index in
  * bl_order of the last bit length code to send.
  */
-template<class _>
+template<class Allocator>
 int
-deflate_stream_t<_>::build_bl_tree(deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+build_bl_tree(basic_deflate_stream *s)
 {
     int max_blindex;  /* index of last bit length code of non zero freq */
 
@@ -567,10 +575,11 @@ deflate_stream_t<_>::build_bl_tree(deflate_stream_t *s)
  * lengths of the bit length codes, the literal tree and the distance tree.
  * IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::send_all_trees(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+send_all_trees(
+    basic_deflate_stream *s,
     int lcodes,
     int dcodes,
     int blcodes) /* number of codes for each tree */
@@ -600,10 +609,11 @@ deflate_stream_t<_>::send_all_trees(
 /* ===========================================================================
  * Send a stored block
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::_tr_stored_block(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+_tr_stored_block(
+    basic_deflate_stream *s,
     char *buf,       /* input block */
     std::uint32_t stored_len,   /* length of input block */
     int last)         /* one if this is the last block for a file */
@@ -615,9 +625,10 @@ deflate_stream_t<_>::_tr_stored_block(
 /* ===========================================================================
  * Flush the bits in the bit buffer to pending output (leaves at most 7 bits)
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::_tr_flush_bits(deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+_tr_flush_bits(basic_deflate_stream *s)
 {
     bi_flush(s);
 }
@@ -626,9 +637,10 @@ deflate_stream_t<_>::_tr_flush_bits(deflate_stream_t *s)
  * Send one empty static block to give enough lookahead for inflate.
  * This takes 10 bits, of which 7 may remain in the bit buffer.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::_tr_align(deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+_tr_align(basic_deflate_stream *s)
 {
     send_bits(s, STATIC_TREES<<1, 3);
     send_code(s, END_BLOCK, s->lut_.ltree);
@@ -639,10 +651,11 @@ deflate_stream_t<_>::_tr_align(deflate_stream_t *s)
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and output the encoded block to the zip file.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::_tr_flush_block(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+_tr_flush_block(
+    basic_deflate_stream *s,
     char *buf,       /* input block, or NULL if too old */
     std::uint32_t stored_len,   /* length of input block */
     int last)         /* one if this is the last block for a file */
@@ -734,10 +747,11 @@ deflate_stream_t<_>::_tr_flush_block(
  * Save the match info and tally the frequency counts. Return true if
  * the current block must be flushed.
  */
-template<class _>
+template<class Allocator>
 int
-deflate_stream_t<_>::_tr_tally (
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+_tr_tally (
+    basic_deflate_stream *s,
     unsigned dist,  /* distance of matched string */
     unsigned lc)    /* match length-limits::minMatch or unmatched char (if dist==0) */
 {
@@ -786,10 +800,11 @@ deflate_stream_t<_>::_tr_tally (
 /* ===========================================================================
  * Send the block data compressed using the given Huffman trees
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::compress_block(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+compress_block(
+    basic_deflate_stream *s,
     const detail::ct_data *ltree, /* literal tree */
     const detail::ct_data *dtree) /* distance tree */
 {
@@ -848,9 +863,10 @@ deflate_stream_t<_>::compress_block(
  *   (7 {BEL}, 8 {BS}, 11 {VT}, 12 {FF}, 26 {SUB}, 27 {ESC}).
  * IN assertion: the fields fc of dyn_ltree are set.
  */
-template<class _>
+template<class Allocator>
 int
-deflate_stream_t<_>::detect_data_type(deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+detect_data_type(basic_deflate_stream *s)
 {
     /* black_mask is the bit mask of black-listed bytes
      * set bits 0..6, 14..25, and 28..31
@@ -881,10 +897,11 @@ deflate_stream_t<_>::detect_data_type(deflate_stream_t *s)
 /* ===========================================================================
  * Flush the bit buffer, keeping at most 7 bits in it.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::bi_flush(
-    deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+bi_flush(
+    basic_deflate_stream *s)
 {
     if (s->bi_valid_ == 16) {
         put_short(s, s->bi_buf_);
@@ -900,9 +917,10 @@ deflate_stream_t<_>::bi_flush(
 /* ===========================================================================
  * Flush the bit buffer and align the output on a byte boundary
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::bi_windup(deflate_stream_t *s)
+basic_deflate_stream<Allocator>::
+bi_windup(basic_deflate_stream *s)
 {
     if (s->bi_valid_ > 8) {
         put_short(s, s->bi_buf_);
@@ -917,10 +935,11 @@ deflate_stream_t<_>::bi_windup(deflate_stream_t *s)
  * Copy a stored block, storing first the length and its
  * one's complement if requested.
  */
-template<class _>
+template<class Allocator>
 void
-deflate_stream_t<_>::copy_block(
-    deflate_stream_t *s,
+basic_deflate_stream<Allocator>::
+copy_block(
+    basic_deflate_stream *s,
     char    *buf,    /* the input data */
     unsigned len,     /* its length */
     int      header)  /* true if block header must be written */
