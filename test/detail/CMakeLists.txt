@@ -7,6 +7,8 @@ GroupSources(test/core "/")
 add_executable (detail-tests
     ${BEAST_INCLUDES}
     ../../extras/beast/unit_test/main.cpp
+    deflate_stream.cpp
+    inflate_stream.cpp
     zlib.cpp
 )
 

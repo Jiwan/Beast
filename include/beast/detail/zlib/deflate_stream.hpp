@@ -369,34 +369,6 @@ public:
 
 using deflate_stream = basic_deflate_stream<std::allocator<std::uint8_t>>;
 
-/* Output a byte on the stream.
- * IN assertion: there is enough room in pending_buf.
- */
-#define put_byte(s, c) {s->pending_buf_[s->pending_++] = (c);}
-
-
-#define MIN_LOOKAHEAD (limits::maxMatch+limits::minMatch+1)
-/* Minimum amount of lookahead, except at the end of the input file.
- * See deflate.c for comments about the limits::minMatch+1.
- */
-
-#define MAX_DIST(s)  ((s)->w_size_-MIN_LOOKAHEAD)
-/* In order to simplify the code, particularly on 16 bit machines, match
- * distances are limited to MAX_DIST instead of WSIZE.
- */
-
-#define WIN_INIT limits::maxMatch
-/* Number of bytes after end of data in window to initialize in order to avoid
-   memory checker errors from longest match routines */
-
-
-/* Mapping from a distance to a distance code. dist is the distance - 1 and
- * must not have side effects. _dist_code[256] and _dist_code[257] are never
- * used.
- */
-#define d_code(dist) \
-   ((dist) < 256 ? s->lut_.dist_code[dist] : s->lut_.dist_code[256+((dist)>>7)])
-
 } // zlib
 } // beast
 

@@ -15,6 +15,8 @@ compile zlib.cpp : : ;
 
 unit-test detail-tests :
     ../extras/beast/unit_test/main.cpp
+    detail/deflate_stream.cpp
+    detail/inflate_stream.cpp
     detail/zlib.cpp
     ;
 
