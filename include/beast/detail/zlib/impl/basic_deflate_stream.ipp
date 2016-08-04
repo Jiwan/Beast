@@ -1882,11 +1882,10 @@ longest_match(basic_deflate_stream *s, IPos cur_match)
  * window to pending_buf.
  */
 template<class Allocator>
-block_state
+auto
 basic_deflate_stream<Allocator>::
-deflate_stored(
-    basic_deflate_stream *s,
-    int flush)
+deflate_stored(basic_deflate_stream *s, int flush) ->
+block_state
 {
     /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
      * to pending_buf_size, and each stored block has a 5 byte header:
@@ -1949,9 +1948,10 @@ deflate_stored(
  * matches. It is used only for the fast compression options.
  */
 template<class Allocator>
-block_state
+auto
 basic_deflate_stream<Allocator>::
-deflate_fast(basic_deflate_stream *s, int flush)
+deflate_fast(basic_deflate_stream *s, int flush) ->
+    block_state
 {
     IPos hash_head;       /* head of the hash chain */
     int bflush;           /* set if current block must be flushed */
@@ -2046,9 +2046,10 @@ deflate_fast(basic_deflate_stream *s, int flush)
  * no better match at the next window position.
  */
 template<class Allocator>
-block_state
+auto
 basic_deflate_stream<Allocator>::
-deflate_slow(basic_deflate_stream *s, int flush)
+deflate_slow(basic_deflate_stream *s, int flush) ->
+    block_state
 {
     IPos hash_head;          /* head of hash chain */
     int bflush;              /* set if current block must be flushed */
@@ -2177,9 +2178,10 @@ deflate_slow(basic_deflate_stream *s, int flush)
  * deflate switches away from Z_RLE.)
  */
 template<class Allocator>
-block_state
+auto
 basic_deflate_stream<Allocator>::
-deflate_rle(basic_deflate_stream *s, int flush)
+deflate_rle(basic_deflate_stream *s, int flush) ->
+    block_state
 {
     int bflush;             /* set if current block must be flushed */
     uInt prev;              /* byte at distance one to match */
@@ -2251,9 +2253,10 @@ deflate_rle(basic_deflate_stream *s, int flush)
  * (It will be regenerated if this run of deflate switches away from Huffman.)
  */
 template<class Allocator>
-block_state
+auto
 basic_deflate_stream<Allocator>::
-deflate_huff(basic_deflate_stream *s, int flush)
+deflate_huff(basic_deflate_stream *s, int flush) ->
+    block_state
 {
     int bflush;             /* set if current block must be flushed */
 

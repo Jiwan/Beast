@@ -43,43 +43,6 @@
 namespace beast {
 namespace zlib {
 
-// maximum heap size
-std::uint16_t constexpr HEAP_SIZE = 2 * limits::lCodes + 1;
-
-// size of bit buffer in bi_buf
-std::uint8_t constexpr Buf_size = 16;
-
-// VFALCO THis might not be needed, e.g. for zip/gzip
-enum StreamStatus
-{
-    EXTRA_STATE = 69,
-    NAME_STATE = 73,
-    COMMENT_STATE = 91,
-    HCRC_STATE = 103,
-    BUSY_STATE = 113,
-    FINISH_STATE = 666
-};
-
-struct tree_desc
-{
-    detail::ct_data *dyn_tree;           /* the dynamic tree */
-    int     max_code;            /* largest code with non zero frequency */
-    detail::static_tree_desc const* stat_desc; /* the corresponding static tree */
-};
-
-/* A std::uint16_t is an index in the character window. We use short instead of int to
- * save space in the various tables. IPos is used only for parameter passing.
- */
-using IPos = unsigned;
-
-enum block_state
-{
-    need_more,      /* block not completed, need more input or more output */
-    block_done,     /* block flush performed */
-    finish_started, /* finish started, need only more output at next deflate */
-    finish_done     /* finish done, accept no more input or output */
-};
-
 /** Raw deflate compressor.
 
     This is a port of zlib's "deflate" functionality to C++.
@@ -87,6 +50,43 @@ enum block_state
 template<class Allocator>
 class basic_deflate_stream : public z_stream
 {
+    // maximum heap size
+    static std::uint16_t constexpr HEAP_SIZE = 2 * limits::lCodes + 1;
+
+    // size of bit buffer in bi_buf
+    static std::uint8_t constexpr Buf_size = 16;
+
+    // VFALCO This might not be needed, e.g. for zip/gzip
+    enum StreamStatus
+    {
+        EXTRA_STATE = 69,
+        NAME_STATE = 73,
+        COMMENT_STATE = 91,
+        HCRC_STATE = 103,
+        BUSY_STATE = 113,
+        FINISH_STATE = 666
+    };
+
+    struct tree_desc
+    {
+        detail::ct_data *dyn_tree;           /* the dynamic tree */
+        int     max_code;            /* largest code with non zero frequency */
+        detail::static_tree_desc const* stat_desc; /* the corresponding static tree */
+    };
+
+    /* A std::uint16_t is an index in the character window. We use short instead of int to
+     * save space in the various tables. IPos is used only for parameter passing.
+     */
+    using IPos = unsigned;
+
+    enum block_state
+    {
+        need_more,      /* block not completed, need more input or more output */
+        block_done,     /* block flush performed */
+        finish_started, /* finish started, need only more output at next deflate */
+        finish_done     /* finish done, accept no more input or output */
+    };
+
 public:
     basic_deflate_stream();
 
