@@ -13,14 +13,20 @@ compile version.cpp : : ;
 compile websocket.cpp : : ;
 
 zlib_sources =
-    ../include/beast/core/detail/zlib/deflate.cpp
-    ../include/beast/core/detail/zlib/inffast.cpp
-    ../include/beast/core/detail/zlib/inflate.cpp
+    ../include/beast/detail/zlib/deflate.cpp
+    ../include/beast/detail/zlib/inffast.cpp
+    ../include/beast/detail/zlib/inflate.cpp
     ;
 
-unit-test core-tests :
+unit-test detail-tests :
     $(zlib_sources)
     ../extras/beast/unit_test/main.cpp
+    detail/zlib.cpp
+    ;
+
+#unit-test core-tests :
+#    $(zlib_sources)
+#    ../extras/beast/unit_test/main.cpp
 #    core/async_completion.cpp
 #    core/basic_streambuf.cpp
 #    core/bind_handler.cpp
@@ -44,8 +50,8 @@ unit-test core-tests :
 #    core/detail/empty_base_optimization.cpp
 #    core/detail/get_lowest_layer.cpp
 #    core/detail/sha1.cpp
-    core/detail/zlib.cpp
-    ;
+#    core/detail/zlib.cpp
+#    ;
 
 #unit-test http-tests :
 #    ../extras/beast/unit_test/main.cpp

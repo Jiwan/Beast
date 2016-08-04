@@ -35,7 +35,7 @@
 #ifndef BEAST_CORE_DETAIL_ZLIB_IMPL_DEFLATE_STREAM_IPP
 #define BEAST_CORE_DETAIL_ZLIB_IMPL_DEFLATE_STREAM_IPP
 
-#include <beast/core/detail/zlib/detail/deflate.hpp>
+#include <beast/detail/zlib/detail/deflate.hpp>
 
 namespace beast {
 

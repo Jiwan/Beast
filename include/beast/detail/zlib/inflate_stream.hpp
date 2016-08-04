@@ -36,7 +36,7 @@
 #define BEAST_CORE_DETAIL_ZLIB_INFLATE_STREAM_HPP
 
 #include <beast/core/error.hpp>
-#include <beast/core/detail/zlib/detail/inflate_tables.hpp>
+#include <beast/detail/zlib/detail/inflate_tables.hpp>
 
 #include "zlib.hpp"
 #include <cstdint>

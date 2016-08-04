@@ -32,7 +32,7 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#include <beast/core/detail/zlib/deflate_stream.hpp>
+#include <beast/detail/zlib/deflate_stream.hpp>
 #include <cassert>
 #include <cstring>
 #include <memory>

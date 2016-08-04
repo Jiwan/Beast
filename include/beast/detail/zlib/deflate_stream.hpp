@@ -37,7 +37,7 @@
 
 #include "zlib.hpp"
 
-#include <beast/core/detail/zlib/detail/deflate.hpp>
+#include <beast/detail/zlib/detail/deflate.hpp>
 
 #include <cstdlib>
 
@@ -399,6 +399,6 @@ using deflate_stream = deflate_stream_t<>;
 
 } // beast
 
-#include <beast/core/detail/zlib/impl/deflate_stream.ipp>
+#include <beast/detail/zlib/impl/deflate_stream.ipp>
 
 #endif
