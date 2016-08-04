@@ -103,7 +103,7 @@ WARN_LOGFILE           =
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT = \
-        ../include/beast/core/detail/zlib
+        ../include/beast/detail/zlib
 
         ../include/beast/ \
         ../include/beast/core \
