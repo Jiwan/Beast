@@ -11,6 +11,7 @@ compile core.cpp : : ;
 compile http.cpp : : ;
 compile version.cpp : : ;
 compile websocket.cpp : : ;
+compile zlib.cpp : : ;
 
 zlib_sources =
     ../include/beast/detail/zlib/deflate.cpp

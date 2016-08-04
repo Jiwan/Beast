@@ -32,8 +32,8 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef BEAST_CORE_DETAIL_ZLIB_ZLIB_HPP
-#define BEAST_CORE_DETAIL_ZLIB_ZLIB_HPP
+#ifndef BEAST_ZLIB_ZLIB_HPP
+#define BEAST_ZLIB_ZLIB_HPP
 
 #include <cstdint>
 #include <cstdlib>
@@ -150,4 +150,5 @@ std::uint8_t constexpr Z_DEFLATED = 8; // VFALCO Useless, remove
 
 } // beast
 
-#endif /* ZLIB_H */
+#endif
+

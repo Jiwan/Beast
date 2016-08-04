@@ -11,6 +11,7 @@ add_executable (lib-tests
     http.cpp
     version.cpp
     websocket.cpp
+    zlib.cpp
 )
 
 if (NOT WIN32)

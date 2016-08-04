@@ -32,13 +32,12 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef BEAST_CORE_DETAIL_ZLIB_INFLATE_STREAM_HPP
-#define BEAST_CORE_DETAIL_ZLIB_INFLATE_STREAM_HPP
+#ifndef BEAST_ZLIB_INFLATE_STREAM_HPP
+#define BEAST_ZLIB_INFLATE_STREAM_HPP
 
-#include <beast/core/error.hpp>
+#include <beast/detail/zlib/zlib.hpp>
 #include <beast/detail/zlib/detail/inflate_tables.hpp>
-
-#include "zlib.hpp"
+#include <beast/core/error.hpp>
 #include <cstdint>
 #include <cstdlib>
 
