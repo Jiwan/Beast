@@ -76,7 +76,6 @@ file(GLOB_RECURSE BEAST_INCLUDES
 
 set (ZLIB_SOURCES
     ${PROJECT_SOURCE_DIR}/include/beast/detail/zlib/impl/deflate.cpp
-    ${PROJECT_SOURCE_DIR}/include/beast/detail/zlib/impl/inflate.cpp
     )
 
 #add_subdirectory (examples)
