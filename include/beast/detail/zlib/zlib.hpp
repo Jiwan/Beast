@@ -45,7 +45,6 @@ namespace zlib {
 typedef unsigned char  Byte;  /* 8 bits */
 #endif
 typedef unsigned int   uInt;  /* 16 bits or more */
-typedef unsigned long  uLong; /* 32 bits or more */
 
 /*
      The application must update next_in and avail_in when avail_in has dropped

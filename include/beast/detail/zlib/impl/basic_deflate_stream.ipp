@@ -762,7 +762,7 @@ _tr_flush_block(
     }
     Assert (s->compressed_len_ == s->bits_sent_, "bad compressed size");
     /* The above check is made mod 2^32, for files larger than 512 MB
-     * and uLong implemented on 32 bits.
+     * and std::size_t implemented on 32 bits.
      */
     init_block(s);
 
@@ -1487,13 +1487,14 @@ deflateTune(
  * allocation.
  */
 template<class Allocator>
-uLong
+std::size_t
 basic_deflate_stream<Allocator>::
 deflateBound(
     basic_deflate_stream* strm,
-    uLong sourceLen)
+    std::size_t sourceLen)
 {
-    uLong complen, wraplen;
+    std::size_t complen;
+    std::size_t wraplen;
 
     /* conservative upper bound for compressed data */
     complen = sourceLen +

@@ -38,6 +38,7 @@
 #include <beast/detail/zlib/zlib.hpp>
 #include <beast/detail/zlib/detail/deflate.hpp>
 #include <cstdlib>
+
 #include <memory>
 
 namespace beast {
@@ -282,7 +283,7 @@ public:
     static int deflateParams (basic_deflate_stream* strm, int level, int strategy);
     static int deflateTune (basic_deflate_stream* strm,
         int good_length, int max_lazy, int nice_length, int max_chain);
-    static uLong deflateBound (basic_deflate_stream* strm, uLong sourceLen);
+    static std::size_t deflateBound (basic_deflate_stream* strm, std::size_t sourceLen);
     static int deflatePending (basic_deflate_stream* strm, unsigned *pending, int *bits);
     static int deflatePrime (basic_deflate_stream* strm, int bits, int value);
     static int deflateInit (basic_deflate_stream* strm, int level);
