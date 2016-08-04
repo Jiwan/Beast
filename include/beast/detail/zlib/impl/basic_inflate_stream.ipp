@@ -40,6 +40,7 @@
 #include <cstring>
 
 namespace beast {
+namespace zlib {
 
 template<class Allocator>
 basic_inflate_stream<Allocator>::
@@ -945,6 +946,7 @@ inflate_fast(
    - Moving len -= 3 statement into middle of loop
  */
 
+} // zlib
 } // beast
 
 #endif

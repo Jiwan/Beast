@@ -38,6 +38,7 @@
 #include <cstdint>
 
 namespace beast {
+namespace zlib {
 
 /*
     Structure for decoding tables.  Each entry provides either the
@@ -469,6 +470,7 @@ get_fixed_tables()
     return fc;
 }
 
+} // zlib
 } // beast
 
 #endif

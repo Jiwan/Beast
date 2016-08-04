@@ -41,6 +41,7 @@
 #include <memory>
 
 namespace beast {
+namespace zlib {
 
 /*
  *  ALGORITHM
@@ -2259,6 +2260,7 @@ deflate_huff(basic_deflate_stream *s, int flush)
     return block_done;
 }
 
+} // zlib
 } // beast
 
 #endif

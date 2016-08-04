@@ -16,7 +16,7 @@
 #include <random>
 
 namespace beast {
-namespace detail {
+namespace zlib {
 
 class zlib_test : public beast::unit_test::suite
 {
@@ -228,6 +228,5 @@ public:
 
 BEAST_DEFINE_TESTSUITE(zlib,core,beast);
 
-} // detail
+} // zlib
 } // beast
-

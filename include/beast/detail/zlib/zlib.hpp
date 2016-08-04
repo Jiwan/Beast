@@ -39,6 +39,7 @@
 #include <cstdlib>
 
 namespace beast {
+namespace zlib {
 
 #if !defined(__MACTYPES__)
 typedef unsigned char  Byte;  /* 8 bits */
@@ -148,6 +149,7 @@ enum z_Type
 
 std::uint8_t constexpr Z_DEFLATED = 8; // VFALCO Useless, remove
 
+} // zlib
 } // beast
 
 #endif

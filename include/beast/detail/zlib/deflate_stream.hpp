@@ -41,6 +41,7 @@
 #include <memory>
 
 namespace beast {
+namespace zlib {
 
 // maximum heap size
 std::uint16_t constexpr HEAP_SIZE = 2 * limits::lCodes + 1;
@@ -396,6 +397,7 @@ using deflate_stream = basic_deflate_stream<std::allocator<std::uint8_t>>;
 #define d_code(dist) \
    ((dist) < 256 ? s->lut_.dist_code[dist] : s->lut_.dist_code[256+((dist)>>7)])
 
+} // zlib
 } // beast
 
 #include <beast/detail/zlib/impl/basic_deflate_stream.ipp>

@@ -43,6 +43,7 @@
 #include <memory>
 
 namespace beast {
+namespace zlib {
 
 /** Raw deflate decompressor.
 
@@ -193,6 +194,7 @@ private:
 using inflate_stream =
     basic_inflate_stream<std::allocator<std::uint8_t>>;
 
+} // zlib
 } // beast
 
 #include <beast/detail/zlib/impl/basic_inflate_stream.ipp>

@@ -40,6 +40,7 @@
 #include <cstring>
 
 namespace beast {
+namespace zlib {
 
 /* default memLevel */
 #if MAX_MEM_LEVEL >= 8
@@ -307,6 +308,8 @@ get_deflate_tables()
 }
 
 } // detail
+
+} // zlib
 } // beast
 
 #endif
