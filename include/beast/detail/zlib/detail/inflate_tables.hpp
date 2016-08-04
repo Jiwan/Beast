@@ -32,8 +32,8 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef BEAST_CORE_DETAIL_ZLIB_DETAIL_INFLATE_TABLES_HPP
-#define BEAST_CORE_DETAIL_ZLIB_DETAIL_INFLATE_TABLES_HPP
+#ifndef BEAST_ZLIB_DETAIL_INFLATE_TABLES_HPP
+#define BEAST_ZLIB_DETAIL_INFLATE_TABLES_HPP
 
 #include <cstdint>
 

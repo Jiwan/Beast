@@ -79,8 +79,10 @@ enum block_state
     finish_done     /* finish done, accept no more input or output */
 };
 
-//namespace detail {
+/** Raw deflate compressor.
 
+    This is a port of zlib's "deflate" functionality to C++.
+*/
 template<class Allocator>
 class basic_deflate_stream : public z_stream
 {
@@ -364,8 +366,6 @@ public:
     }
 };
 
-//} // detail
-
 using deflate_stream = basic_deflate_stream<std::allocator<std::uint8_t>>;
 
 /* Output a byte on the stream.
@@ -398,6 +398,6 @@ using deflate_stream = basic_deflate_stream<std::allocator<std::uint8_t>>;
 
 } // beast
 
-#include <beast/detail/zlib/impl/deflate_stream.ipp>
+#include <beast/detail/zlib/impl/basic_deflate_stream.ipp>
 
 #endif

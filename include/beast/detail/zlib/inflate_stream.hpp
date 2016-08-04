@@ -195,4 +195,6 @@ using inflate_stream =
 
 } // beast
 
+#include <beast/detail/zlib/impl/basic_inflate_stream.ipp>
+
 #endif

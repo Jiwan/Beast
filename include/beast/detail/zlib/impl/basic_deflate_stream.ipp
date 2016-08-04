@@ -32,8 +32,8 @@
     (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
-#ifndef BEAST_CORE_DETAIL_ZLIB_IMPL_DEFLATE_STREAM_IPP
-#define BEAST_CORE_DETAIL_ZLIB_IMPL_DEFLATE_STREAM_IPP
+#ifndef BEAST_ZLIB_IMPL_BASIC_DEFLATE_STREAM_IPP
+#define BEAST_ZLIB_IMPL_BASIC_DEFLATE_STREAM_IPP
 
 #include <beast/detail/zlib/detail/deflate.hpp>
 
