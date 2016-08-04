@@ -147,8 +147,6 @@ enum z_Type
     Z_UNKNOWN   = 2
 };
 
-std::uint8_t constexpr Z_DEFLATED = 8; // VFALCO Useless, remove
-
 } // zlib
 } // beast
 

@@ -199,7 +199,6 @@ public:
                         zs.next_in = 0;
                         expect(deflate_stream::deflateInit2(&zs,
                             level,
-                            Z_DEFLATED,
                             wbits,
                             4,
                             strategy) == Z_OK);

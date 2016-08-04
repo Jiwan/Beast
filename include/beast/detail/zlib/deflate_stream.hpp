@@ -286,7 +286,7 @@ public:
     static int deflatePending (basic_deflate_stream* strm, unsigned *pending, int *bits);
     static int deflatePrime (basic_deflate_stream* strm, int bits, int value);
     static int deflateInit (basic_deflate_stream* strm, int level);
-    static int deflateInit2 (basic_deflate_stream* strm, int level, int  method,
+    static int deflateInit2 (basic_deflate_stream* strm, int level,
         int windowBits, int memLevel, int strategy);
 
     static void init_block     (basic_deflate_stream *s);

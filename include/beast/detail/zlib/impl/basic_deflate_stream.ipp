@@ -99,7 +99,7 @@ basic_deflate_stream()
     : lut_(detail::get_deflate_tables())
 {
     // default level 6
-    //deflateInit2(this, 6, Z_DEFLATED, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+    //deflateInit2(this, 6, 15, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
 }
 
 template<class Allocator>
@@ -1059,7 +1059,7 @@ int
 basic_deflate_stream<Allocator>::
 deflateInit(basic_deflate_stream* strm, int level)
 {
-    return deflateInit2(strm, level, Z_DEFLATED, 15, DEF_MEM_LEVEL,
+    return deflateInit2(strm, level, 15, DEF_MEM_LEVEL,
                          Z_DEFAULT_STRATEGY);
     /* To do: ignore strm->next_in if we use it as window */
 }
@@ -1211,7 +1211,6 @@ basic_deflate_stream<Allocator>::
 deflateInit2(
     basic_deflate_stream* strm,
     int  level,
-    int  method,
     int  windowBits,
     int  memLevel,
     int  strategy)
@@ -1229,7 +1228,7 @@ deflateInit2(
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
 
     assert(windowBits >= 0);
-    if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED ||
+    if (memLevel < 1 || memLevel > MAX_MEM_LEVEL ||
         windowBits < 8 || windowBits > 15 || level < 0 || level > 9 ||
         strategy < 0 || strategy > Z_FIXED) {
         return Z_STREAM_ERROR;
