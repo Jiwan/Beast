@@ -40,6 +40,7 @@
 #include <beast/core/error.hpp>
 #include <cstdint>
 #include <cstdlib>
+#include <memory>
 
 namespace beast {
 
@@ -47,7 +48,8 @@ namespace beast {
 
     This is a port of zlib's "inflate" functionality to C++.
 */
-class inflate_stream : public z_stream
+template<class Allocator>
+class basic_inflate_stream : public z_stream
 {
 public:
     struct params
@@ -65,10 +67,10 @@ public:
 
         The window size is set to the default of 15 bits.
     */
-    inflate_stream();
+    basic_inflate_stream();
 
     /// Destructor.
-    ~inflate_stream();
+    ~basic_inflate_stream();
 
     /** Reset the stream.
 
@@ -79,12 +81,14 @@ public:
     void
     reset(std::uint8_t windowBits);
 
+#if 0
     /** Write compressed data to the stream.
 
         @return `true` if the end of stream is reached.
     */
     bool
     write(params& ps, error_code& ec);
+#endif
 
     int
     write(int flush);
@@ -170,11 +174,11 @@ private:
 private:
     static
     void
-    inflate_fast(inflate_stream* strm, unsigned start);
+    inflate_fast(basic_inflate_stream* strm, unsigned start);
 
     static
     int
-    write(inflate_stream* strm, int flush);
+    write(basic_inflate_stream* strm, int flush);
 
     void
     resetKeep();
@@ -185,6 +189,9 @@ private:
     int
     updatewindow(const Byte *end, unsigned copy);
 };
+
+using inflate_stream =
+    basic_inflate_stream<std::allocator<std::uint8_t>>;
 
 } // beast
 
