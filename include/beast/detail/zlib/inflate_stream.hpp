@@ -129,48 +129,49 @@ private:
         SYNC        // looking for synchronization bytes to restart inflate()
     };
 
-    inflate_mode mode;              // current inflate mode
-    int last;                       // true if processing last block
-    unsigned dmax;                  // zlib header max distance (INFLATE_STRICT)
-    unsigned long total;            // protected copy of output count
+    inflate_mode mode_;             // current inflate mode
+    int last_;                      // true if processing last block
+    unsigned dmax_;                 // zlib header max distance (INFLATE_STRICT)
+    // VFALCO This might be unused
+    unsigned long total_;           // protected copy of output count
 
     // sliding window
-    unsigned wbits;                 // log base 2 of requested window size
-    unsigned wsize;                 // window size or zero if not using window
-    unsigned whave;                 // valid bytes in the window
-    unsigned wnext;                 // window write index
-    unsigned char *window =
+    unsigned wbits_;                // log base 2 of requested window size
+    unsigned wsize_;                // window size or zero if not using window
+    unsigned whave_;                // valid bytes in the window
+    unsigned wnext_;                // window write index
+    unsigned char *window_ =
         nullptr;                    // allocated sliding window, if needed
 
     // bit accumulator
-    unsigned long hold;             // input bit accumulator
-    unsigned bits;                  // number of bits in "in"
+    unsigned long hold_;            // input bit accumulator
+    unsigned bits_;                 // number of bits in "in"
 
     // for string and stored block copying
-    unsigned length;                // literal or length of data to copy
-    unsigned offset;                // distance back to copy string from
+    unsigned length_;               // literal or length of data to copy
+    unsigned offset_;               // distance back to copy string from
 
     // for table and code decoding
-    unsigned extra;                 // extra bits needed
+    unsigned extra_;                // extra bits needed
     
     // fixed and dynamic code tables
-    detail::code const *lencode;    // starting table for length/literal codes
-    detail::code const *distcode;   // starting table for distance codes
-    unsigned lenbits;               // index bits for lencode
-    unsigned distbits;              // index bits for distcode
+    detail::code const *lencode_;   // starting table for length/literal codes
+    detail::code const *distcode_;  // starting table for distance codes
+    unsigned lenbits_;              // index bits for lencode
+    unsigned distbits_;             // index bits for distcode
 
     // dynamic table building
-    unsigned ncode;                 // number of code length code lengths
-    unsigned nlen;                  // number of length code lengths
-    unsigned ndist;                 // number of distance code lengths
-    unsigned have;                  // number of code lengths in lens[]
-    detail::code *next;             // next available space in codes[]
-    unsigned short lens[320];       // temporary storage for code lengths
-    unsigned short work[288];       // work area for code table building
-    detail::code codes[detail::ENOUGH];     // space for code tables
-    int sane;                       // if false, allow invalid distance too far
-    int back;                       // bits back of last unprocessed length/lit
-    unsigned was;                   // initial length of match
+    unsigned ncode_;                // number of code length code lengths
+    unsigned nlen_;                 // number of length code lengths
+    unsigned ndist_;                // number of distance code lengths
+    unsigned have_;                 // number of code lengths in lens[]
+    detail::code *next_;            // next available space in codes[]
+    unsigned short lens_[320];      // temporary storage for code lengths
+    unsigned short work_[288];      // work area for code table building
+    detail::code codes_[detail::ENOUGH];     // space for code tables
+    int sane_;                      // if false, allow invalid distance too far
+    int back_;                      // bits back of last unprocessed length/lit
+    unsigned was_;                  // initial length of match
 
 private:
     static
