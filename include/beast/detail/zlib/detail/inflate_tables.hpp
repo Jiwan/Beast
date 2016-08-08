@@ -39,6 +39,7 @@
 
 namespace beast {
 namespace zlib {
+namespace detail {
 
 /*
     Structure for decoding tables.  Each entry provides either the
@@ -470,6 +471,7 @@ get_fixed_tables()
     return fc;
 }
 
+} // detail
 } // zlib
 } // beast
 

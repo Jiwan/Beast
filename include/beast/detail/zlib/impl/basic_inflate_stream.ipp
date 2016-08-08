@@ -110,7 +110,7 @@ basic_inflate_stream<Allocator>::
 fixedTables()
 {
 auto strm = this;
-    auto const fc = get_fixed_tables();
+    auto const fc = detail::get_fixed_tables();
     strm->lencode = fc.lencode;
     strm->lenbits = fc.lenbits;
     strm->distcode = fc.distcode;
@@ -231,14 +231,14 @@ int
 basic_inflate_stream<Allocator>::
 write(basic_inflate_stream* strm, int flush)
 {
-    unsigned in, out;           /* save starting available input and output */
-    unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;    /* where to copy match bytes from */
-    code here;                  /* current decoding table entry */
-    code last;                  /* parent table entry */
-    unsigned len;               /* length to copy for repeats, bits to drop */
-    int ret;                    /* return code */
-    static const unsigned short order[19] = /* permutation of code lengths */
+    unsigned in, out;       // save starting available input and output
+    unsigned copy;          // number of stored or match bytes to copy
+    unsigned char *from;    // where to copy match bytes from
+    detail::code here;      // current decoding table entry
+    detail::code last;      // parent table entry
+    unsigned len;           // length to copy for repeats, bits to drop
+    int ret;                // return code
+    static unsigned short constexpr order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
     if (strm->next_out == 0 ||
@@ -342,9 +342,9 @@ write(basic_inflate_stream* strm, int flush)
             while (strm->have < 19)
                 strm->lens[order[strm->have++]] = 0;
             strm->next = strm->codes;
-            strm->lencode = (const code *)(strm->next);
+            strm->lencode = (detail::code const*)(strm->next);
             strm->lenbits = 7;
-            ret = inflate_table(CODES, strm->lens, 19, &(strm->next),
+            ret = inflate_table(detail::CODES, strm->lens, 19, &(strm->next),
                                 &(strm->lenbits), strm->work);
             if (ret) {
                 strm->msg = (char *)"invalid code lengths set";
@@ -415,18 +415,18 @@ write(basic_inflate_stream* strm, int flush)
                values here (9 and 6) without reading the comments in inftrees.hpp
                concerning the ENOUGH constants, which depend on those values */
             strm->next = strm->codes;
-            strm->lencode = (const code *)(strm->next);
+            strm->lencode = (detail::code const*)(strm->next);
             strm->lenbits = 9;
-            ret = inflate_table(LENS, strm->lens, strm->nlen, &(strm->next),
+            ret = inflate_table(detail::LENS, strm->lens, strm->nlen, &(strm->next),
                                 &(strm->lenbits), strm->work);
             if (ret) {
                 strm->msg = (char *)"invalid literal/lengths set";
                 strm->mode = BAD;
                 break;
             }
-            strm->distcode = (const code *)(strm->next);
+            strm->distcode = (detail::code const *)(strm->next);
             strm->distbits = 6;
-            ret = inflate_table(DISTS, strm->lens + strm->nlen, strm->ndist,
+            ret = inflate_table(detail::DISTS, strm->lens + strm->nlen, strm->ndist,
                             &(strm->next), &(strm->distbits), strm->work);
             if (ret) {
                 strm->msg = (char *)"invalid distances set";
@@ -682,32 +682,31 @@ void
 basic_inflate_stream<Allocator>::
 inflate_fast(
     basic_inflate_stream* strm,
-    unsigned start)         /* inflate()'s starting value for strm->avail_out */
+    unsigned start)             // inflate()'s starting value for strm->avail_out
 {
-    const unsigned char *in;      /* local strm->next_in */
-    const unsigned char *last;    /* have enough input while in < last */
-    unsigned char *out;     /* local strm->next_out */
-    unsigned char *beg;     /* inflate()'s initial strm->next_out */
-    unsigned char *end;     /* while out < end, enough space available */
+    const unsigned char *in;    // local strm->next_in
+    const unsigned char *last;  // have enough input while in < last
+    unsigned char *out;         // local strm->next_out
+    unsigned char *beg;         // inflate()'s initial strm->next_out
+    unsigned char *end;         // while out < end, enough space available
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
-    unsigned wsize;             /* window size or zero if not using window */
-    unsigned whave;             /* valid bytes in the window */
-    unsigned wnext;             /* window write index */
-    unsigned char *window;  /* allocated sliding window, if wsize != 0 */
-    unsigned long hold;         /* local strm->hold */
-    unsigned bits;              /* local strm->bits */
-    code const *lcode;      /* local strm->lencode */
-    code const *dcode;      /* local strm->distcode */
-    unsigned lmask;             /* mask for first level of length codes */
-    unsigned dmask;             /* mask for first level of distance codes */
-    code here;                  /* retrieved table entry */
-    unsigned op;                /* code bits, operation, extra bits, or */
-                                /*  window position, window bytes to copy */
-    unsigned len;               /* match length, unused bytes */
-    unsigned dist;              /* match distance */
-    unsigned char *from;    /* where to copy match from */
+    unsigned wsize;             // window size or zero if not using window
+    unsigned whave;             // valid bytes in the window
+    unsigned wnext;             // window write index
+    unsigned char *window;      // allocated sliding window, if wsize != 0
+    unsigned long hold;         // local strm->hold
+    unsigned bits;              // local strm->bits
+    detail::code const *lcode;  // local strm->lencode
+    detail::code const *dcode;  // local strm->distcode
+    unsigned lmask;             // mask for first level of length codes
+    unsigned dmask;             // mask for first level of distance codes
+    detail::code here;          // retrieved table entry
+    unsigned op;                // code bits, operation, extra bits, or window position, window bytes to copy
+    unsigned len;               // match length, unused bytes
+    unsigned dist;              // match distance
+    unsigned char *from;        // where to copy match from
 
     /* copy state to local variables */
     auto state = strm;
