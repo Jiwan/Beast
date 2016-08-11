@@ -103,7 +103,11 @@ WARN_LOGFILE           =
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
 INPUT = \
-        ../include/beast/detail/zlib
+        ../include/beast/detail/zlib/basic_deflate_stream.hpp \
+        ../include/beast/detail/zlib/basic_inflate_stream.hpp \
+        ../include/beast/detail/zlib/deflate_stream.hpp \
+        ../include/beast/detail/zlib/inflate_stream.hpp \
+        ../include/beast/detail/zlib/zlib.hpp \
 
         ../include/beast/ \
         ../include/beast/core \
