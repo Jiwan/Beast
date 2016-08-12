@@ -36,6 +36,7 @@
 #define BEAST_ZLIB_BASIC_INFLATE_STREAM_HPP
 
 #include <beast/detail/zlib/zlib.hpp>
+#include <beast/detail/zlib/detail/bitstream.hpp>
 #include <beast/detail/zlib/detail/inflate_tables.hpp>
 #include <beast/core/error.hpp>
 #include <cstdint>
@@ -129,6 +130,25 @@ private:
         SYNC        // looking for synchronization bytes to restart inflate()
     };
 
+    static
+    void
+    inflate_fast(basic_inflate_stream* strm, unsigned start);
+
+    static
+    int
+    write(basic_inflate_stream* strm, int flush);
+
+    void
+    resetKeep();
+
+    void
+    fixedTables();
+
+    int
+    updatewindow(const Byte *end, unsigned copy);
+
+    detail::bitstream bi_;
+
     inflate_mode mode_;             // current inflate mode
     int last_;                      // true if processing last block
     unsigned dmax_;                 // zlib header max distance (INFLATE_STRICT)
@@ -172,24 +192,6 @@ private:
     int sane_;                      // if false, allow invalid distance too far
     int back_;                      // bits back of last unprocessed length/lit
     unsigned was_;                  // initial length of match
-
-private:
-    static
-    void
-    inflate_fast(basic_inflate_stream* strm, unsigned start);
-
-    static
-    int
-    write(basic_inflate_stream* strm, int flush);
-
-    void
-    resetKeep();
-
-    void
-    fixedTables();
-
-    int
-    updatewindow(const Byte *end, unsigned copy);
 };
 
 } // zlib
