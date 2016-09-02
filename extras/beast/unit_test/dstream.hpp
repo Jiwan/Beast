@@ -8,7 +8,6 @@
 #ifndef BEAST_UNIT_TEST_DSTREAM_HPP
 #define BEAST_UNIT_TEST_DSTREAM_HPP
 
-#include <boost/utility/base_from_member.hpp>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -38,7 +37,10 @@ template<class CharT, class Traits, class Allocator>
 class dstream_buf
     : public std::basic_stringbuf<CharT, Traits, Allocator>
 {
+    using ostream = std::basic_ostream<CharT, Traits>;
+
     bool dbg_;
+    ostream& os_;
 
     template<class T>
     void write(T const*) = delete;
@@ -47,21 +49,21 @@ class dstream_buf
     {
         if(dbg_)
             OutputDebugStringA(s);
-        else
-            std::cout << s;
+        os_ << s;
     }
 
     void write(wchar_t const* s)
     {
         if(dbg_)
             OutputDebugStringW(s);
-        else
-            std::wcout << s;
+        os_ << s;
     }
 
 public:
-    dstream_buf()
-        : dbg_(IsDebuggerPresent() != FALSE)
+    explicit
+    dstream_buf(ostream& os)
+        : os_(os)
+        , dbg_(IsDebuggerPresent() != FALSE)
     {
     }
 
@@ -78,42 +80,6 @@ public:
         return 0;
     }
 };
-
-#else
-
-template<class CharT, class Traits, class Allocator>
-class dstream_buf
-    : public std::basic_stringbuf<CharT, Traits, Allocator>
-{
-    template<class T>
-    void write(T const*) = delete;
-
-    void write(char const* s)
-    {
-        std::cout << s;
-    }
-
-    void write(wchar_t const* s)
-    {
-        std::wcout << s;
-    }
-
-public:
-    ~dstream_buf()
-    {
-        sync();
-    }
-
-    int
-    sync() override
-    {
-        write(this->str().c_str());
-        this->str("");
-        return 0;
-    }
-};
-
-#endif
 
 } // detail
 
@@ -124,19 +90,30 @@ template<
     class Allocator = std::allocator<CharT>
 >
 class basic_dstream
-    : private boost::base_from_member<
-        detail::dstream_buf<CharT, Traits, Allocator>>
-    , public std::basic_ostream<CharT, Traits>
+    : public std::basic_ostream<CharT, Traits>
 {
+    detail::dstream_buf<
+        CharT, Traits, Allocator> buf_;
+
 public:
-    basic_dstream()
-        : std::basic_ostream<CharT, Traits>(&this->member)
+    basic_dstream(std::ostream& os = std::cout)
+        : std::basic_ostream<CharT, Traits>(&buf_)
+        , buf_(os)
     {
+        if(os.flags() && std::ios::unitbuf)
+            std::unitbuf(*this);
     }
 };
 
 using dstream = basic_dstream<char>;
 using dwstream = basic_dstream<wchar_t>;
+
+#else
+
+using dstream = std::ostream&;
+using dwstream = std::owstream&;
+
+#endif
 
 } // test
 } // beast

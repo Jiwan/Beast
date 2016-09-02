@@ -100,6 +100,7 @@ int main(int ac, char const* av[])
     po::notify(vm);
 
     dstream log;
+    std::unitbuf(log);
 
     if(vm.count("help"))
     {
